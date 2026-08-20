@@ -27,6 +27,21 @@ export const REFINE_FIELDS = [
     },
   },
   {
+    field: 'hasAdjustedAreaHome',
+    label: '조정대상지역에 있는 집이 포함되어 있나요?',
+    short: '조정대상지역 주택',
+    why: '2028년부터 3주택 이상이거나 조정대상지역 주택이 포함된 다주택자는 공정시장가액비율이 80%로 올라갈 수 있어요.',
+    impact: 'HIGH',
+    input: {
+      type: 'options',
+      options: [
+        { value: true, label: '포함되어 있어요', hint: '2028년 공정시장가액비율 80%' },
+        { value: false, label: '포함되지 않아요', hint: '2028년 공정시장가액비율 70%' },
+        { value: null, label: '잘 모르겠어요', neutral: true },
+      ],
+    },
+  },
+  {
     field: 'isResidingHome',
     label: '이 집에 직접 살고 계신가요?',
     short: '실거주 여부',

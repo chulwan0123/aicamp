@@ -1,12 +1,14 @@
 {
   "property": {
     "address": "서울 서초구 반포동 반포자이 84.94㎡",
-    "officialPrice": 3491000000,
+    "officialPrice": 2462000000,
     "marketPrice": 4700000000,
     "confidence": "HIGH",
     "tradeCount": 12,
-    "areaM2": 84.94,
+    "areaM2": 84.943,
     "complexName": "반포자이",
+    "dong": "101동",
+    "ho": "101호",
     "region": "서울 서초구",
     "isCapitalArea": true,
     "acquisitionYear": 2008,

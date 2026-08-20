@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#fff">
   <title>부모님 노후 준비 진단</title>
+  <link rel="icon" href="./assets/silver-logo.png">
   <link rel="stylesheet" href="./assets/design-system/styles.css">
   <style>
     :root{color-scheme:light;background:var(--color-bg-secondary);--blue:var(--color-button-fill-blue,#2588eb);--color-border-subtle:var(--color-gray-100,#f2f2f3);--page-gutter:20px}
@@ -128,9 +129,9 @@
 
   <section class="screen" data-screen="4" hidden>
     <header class="topbar"><button class="back" data-back aria-label="뒤로가기"><img src="./assets/icons/lucide/arrow-left.svg" alt=""></button><div class="step">4/8</div></header>
-    <div class="content"><h2 class="title">부모님 부동산의<br>최근 실거래가를 확인했어요</h2><p class="desc">입력한 주소와 동일 평형의 최근 거래를 기준으로 확인했어요.</p><div class="stack" style="gap:18px">
+    <div class="content"><h2 class="title">부모님 부동산의<br>가격을 확인해 주세요</h2><p class="desc">공시가격은 공공데이터로 확인했고, 현재 예상 매매가격은 직접 입력해요.</p><div class="stack" style="gap:18px">
       <div id="lookup-items" class="card lookup"></div>
-      <div class="info"><strong>최근 실거래가 <span id="total-assessed-value">47억원</span></strong><br>전용 84.94㎡·10층 거래금액을 기준으로 활용해요.</div>
+      <div class="info"><strong>현재 예상 매매가격 합계 <span id="total-assessed-value">47억원</span></strong><br>세금은 공시가격으로, 매도·주택연금·현금흐름은 입력한 예상 매매가격으로 계산해요.</div>
     </div></div><div class="cta"><button class="primary" data-next>다음</button></div>
   </section>
 
@@ -185,7 +186,7 @@
   <section class="screen" data-screen="10" hidden>
     <header class="topbar result-topbar"><button class="back" data-back aria-label="뒤로가기"><img src="./assets/icons/lucide/arrow-left.svg" alt=""></button><div class="top-title">분석 결과</div><button class="top-home-link" type="button" data-go="0">홈으로</button></header>
     <div class="content result-home">
-      <section class="result-status"><h2 class="result-status-title">집은 충분하지만,<br>월 130만원이 부족해요</h2><p class="result-status-copy">반포자이 120동 1002호·32평형·최근 실거래가 47억원을 기준으로 분석했어요.</p><div class="cashflow-grid"><div class="cashflow-item"><span>필요 생활비</span><strong>320만원</strong></div><div class="cashflow-item"><span>예상 소득</span><strong>190만원</strong></div><div class="cashflow-item shortage"><span>월 부족액</span><strong>130만원</strong></div></div><button class="ai-consult-button" type="button" data-ai-open>AI 컨설팅 받아보기</button></section><div class="result-divider" aria-hidden="true"></div>
+      <section class="result-status"><h2 class="result-status-title">집은 충분하지만,<br>월 130만원이 부족해요</h2><p class="result-status-copy">반포자이 101동 101호·32평형·최근 실거래가 47억원을 기준으로 분석했어요.</p><div class="cashflow-grid"><div class="cashflow-item"><span>필요 생활비</span><strong>320만원</strong></div><div class="cashflow-item"><span>예상 소득</span><strong>190만원</strong></div><div class="cashflow-item shortage"><span>월 부족액</span><strong>130만원</strong></div></div><button class="ai-consult-button" type="button" data-ai-open>AI 컨설팅 받아보기</button></section><div class="result-divider" aria-hidden="true"></div>
 
       <h3 class="section-title">가장 먼저 확인해 보세요</h3><div class="ai-recommendation-group"><article class="ai-card"><div class="ai-label"><img src="./assets/icons/lucide/sparkles.svg" alt=""><p class="overview-kicker">AI 추천</p></div><h3 class="ai-title">주택연금으로 생활비를 채우고<br>5년 후 다운사이징을 검토해요</h3><p class="ai-copy">현재 집에 계속 거주하면서 월 현금흐름을 먼저 보완하는 방향이에요.</p></article><div class="overview-metric"><span>주택연금 월 예상액</span><strong>310만원</strong></div><button class="detail-link" type="button" data-go="14">추천 결과 자세히 보기</button></div><div class="result-divider" aria-hidden="true"></div>
 
@@ -244,7 +245,7 @@
 
   <section class="screen" data-screen="15" hidden>
     <header class="topbar"><button class="back" data-back aria-label="뒤로가기"><img src="./assets/icons/lucide/arrow-left.svg" alt=""></button><div class="top-title">주택연금 예상 결과</div><div class="step">상세</div></header>
-    <div class="content"><p class="eyebrow">집을 지키며 만드는 생활비</p><h2 class="title">주택연금으로 매월<br>얼마를 받을 수 있을까요?</h2><p class="desc">부모님 연령과 반포자이 32평형 최근 실거래가를 바탕으로 예상했어요.</p><div class="hero"><p class="hero-label">월 세후 예상 수령액</p><p class="hero-value">310만원</p><p class="hero-caption">종신 지급 방식 기준</p></div><div class="card summary" style="margin-top:20px"><div class="summary-row"><span class="summary-label">가입 대상 주택</span><span class="summary-value">반포자이 120동 1002호</span></div><div class="summary-row"><span class="summary-label">전용면적</span><span class="summary-value">84.94㎡ · 32평형</span></div><div class="summary-row"><span class="summary-label">최근 실거래가</span><span class="summary-value">47억원</span></div><div class="summary-row"><span class="summary-label">거주 유지</span><span class="summary-value">가능</span></div><div class="summary-row"><span class="summary-label">지급 방식</span><span class="summary-value">종신 정액형</span></div></div><div class="info" style="margin-top:18px"><strong>추천 이유</strong><br>현재 집에서 계속 거주하면서 월 130만원의 생활비 부족분을 우선 보완할 수 있어요.</div><p class="disclaimer">※ 실제 가입 가능 여부와 수령액은 심사 시점에 달라질 수 있습니다.</p></div><div class="cta"><button class="primary" data-go="10">결과 요약으로 돌아가기</button></div>
+    <div class="content"><p class="eyebrow">집을 지키며 만드는 생활비</p><h2 class="title">주택연금으로 매월<br>얼마를 받을 수 있을까요?</h2><p class="desc">부모님 연령과 반포자이 32평형 최근 실거래가를 바탕으로 예상했어요.</p><div class="hero"><p class="hero-label">월 세후 예상 수령액</p><p class="hero-value">310만원</p><p class="hero-caption">종신 지급 방식 기준</p></div><div class="card summary" style="margin-top:20px"><div class="summary-row"><span class="summary-label">가입 대상 주택</span><span class="summary-value">반포자이 101동 101호</span></div><div class="summary-row"><span class="summary-label">전용면적</span><span class="summary-value">84.943㎡ · 32평형</span></div><div class="summary-row"><span class="summary-label">최근 실거래가</span><span class="summary-value">47억원</span></div><div class="summary-row"><span class="summary-label">거주 유지</span><span class="summary-value">가능</span></div><div class="summary-row"><span class="summary-label">지급 방식</span><span class="summary-value">종신 정액형</span></div></div><div class="info" style="margin-top:18px"><strong>추천 이유</strong><br>현재 집에서 계속 거주하면서 월 130만원의 생활비 부족분을 우선 보완할 수 있어요.</div><p class="disclaimer">※ 실제 가입 가능 여부와 수령액은 심사 시점에 달라질 수 있습니다.</p></div><div class="cta"><button class="primary" data-go="10">결과 요약으로 돌아가기</button></div>
   </section>
 
   <section class="screen" data-screen="16" hidden>
@@ -296,9 +297,9 @@
   const screens=[...document.querySelectorAll("[data-screen]")];let current=0;
   const routes=["home","parents-age","property-count","ownership","address","property-value","acquisition","preferences","retirement-region","analyzing","result","tax","cashflow","downsizing","recommendation","home-pension","inheritance","my","tax-reform"];
   const propertyExamples=[
-    {road:"서울특별시 서초구 신반포로 270",detail:"120동 1002호",area:"전용 84.94㎡ · 32평형",value:"47억원",pnu:"1165010700000200043"},
-    {road:"경기도 성남시 분당구 판교역로 166",detail:"202동 804호",value:"7억 6,000만원"},
-    {road:"서울특별시 마포구 월드컵북로 396",detail:"301동 502호",value:"4억 9,000만원"}
+    {road:"서울특별시 서초구 신반포로 270",detail:"101동 101호",area:"전용 84.943㎡ · 32평형",value:"47억원",pnu:"1165010700000200043",acquisitionYear:2008,acquisitionPrice:1082470000},
+    {road:"경기도 성남시 분당구 판교역로 166",detail:"202동 804호",value:"7억 6,000만원",acquisitionYear:2016,acquisitionPrice:760000000},
+    {road:"서울특별시 마포구 월드컵북로 396",detail:"301동 502호",value:"4억 9,000만원",acquisitionYear:2020,acquisitionPrice:490000000}
   ];
   const assessedTotals={1:"47억원",2:"54억 6,000만원",3:"59억 5,000만원"};
   let propertyCount=1;
@@ -434,7 +435,7 @@
     addresses.innerHTML=propertyExamples.slice(0,propertyCount).map((item,index)=>
       '<section class="property"'+(item.pnu?' data-pnu="'+item.pnu+'"':'')+'><div class="row"><h3 class="card-title">주택 '+(index+1)+'</h3><span class="badge">'+(jointOwnership[index]?'공동명의':'단독명의')+'</span></div>'+
       '<label class="field"><span class="label">주택의 도로명주소를 입력해 주세요</span><span class="input-row"><input class="input" data-address-input readonly value="'+item.road+'"><button class="small" type="button" aria-haspopup="dialog">주소 검색</button></span></label>'+
-      '<label class="field"><span class="label">동·호수 등 상세주소를 입력해 주세요</span><input class="input" value="'+item.detail+'"></label>'+
+      '<label class="field"><span class="label">동·호수 등 상세주소를 입력해 주세요</span><input class="input" data-detail-input value="'+item.detail+'"></label>'+
       (item.area?'<div class="info"><strong>반포자이 '+item.area+'</strong><br>최근 동일 평형 실거래가를 확인해요.</div>':'')+'</section>'
     ).join("");
 
@@ -442,8 +443,10 @@
       '<div class="lookup-item"><div class="lookup-address">주택 '+(index+1)+' · '+(jointOwnership[index]?'공동명의':'단독명의')+' · '+item.road+'</div>'+(item.area?'<div class="lookup-address">'+item.detail+' · '+item.area+'</div>':'')+'<div class="lookup-value">'+item.value+'</div></div>'
     ).join("");
 
-    acquisitions.innerHTML=Array.from({length:propertyCount},(_,index)=>
-      '<label class="field"><span class="label">주택 '+(index+1)+'을 취득한 연도를 선택해 주세요</span><select class="select"><option>'+(index===0?'2008년':index===1?'2016년':'2020년')+'</option><option>2012년</option><option>2018년</option><option>2022년</option></select></label>'
+    acquisitions.innerHTML=propertyExamples.slice(0,propertyCount).map((item,index)=>
+      '<section class="property"><h3 class="card-title">주택 '+(index+1)+'</h3>'+
+      '<label class="field"><span class="label">취득한 연도를 입력해 주세요</span><input class="input" data-acquisition-year="'+index+'" type="number" inputmode="numeric" min="1950" max="2026" value="'+item.acquisitionYear+'"></label>'+
+      '<label class="field"><span class="label">매매 당시 가격을 입력해 주세요</span><input class="input" data-acquisition-price="'+index+'" type="text" inputmode="numeric" value="'+item.acquisitionPrice.toLocaleString("ko-KR")+'" aria-describedby="acquisition-price-help-'+index+'"><span id="acquisition-price-help-'+index+'" class="hint">원 단위로 입력해 주세요. 나중에 언제든 바꿀 수 있어요.</span></label></section>'
     ).join("");
     acquisitions.style.gap="34px";
 
@@ -451,7 +454,6 @@
     document.querySelector("#summary-property-count").textContent=propertyCount+"채";
     document.querySelector("#summary-assessed-value").textContent=assessedTotals[propertyCount];
     upgradeSelectionFields(ownership);
-    upgradeSelectionFields(acquisitions);
   }
 
   function show(index,updateUrl=true){
@@ -587,23 +589,6 @@
     if(event.target.closest("[data-restart]"))show(0);
     if(event.target===selectionSheet||event.target.closest("#sheet-close"))closeSheet();
   });
-  document.querySelector("[data-chat-form]").addEventListener("submit",event=>{
-    event.preventDefault();
-    const input=event.currentTarget.elements.message;
-    const message=input.value.trim();
-    if(!message)return;
-    const messages=document.querySelector("[data-chat-messages]");
-    const userBubble=document.createElement("div");
-    userBubble.className="chat-bubble user";
-    userBubble.textContent=message;
-    messages.append(userBubble);
-    input.value="";
-    const aiBubble=document.createElement("div");
-    aiBubble.className="chat-bubble ai";
-    aiBubble.textContent="현재 분석에서는 월 130만원의 부족분을 먼저 보완하는 것이 중요해요. 주택연금 예상액은 월 310만원으로, 거주를 유지하면서 생활비를 확보하는 선택지를 우선 비교해 볼 수 있어요.";
-    messages.append(aiBubble);
-    messages.scrollTop=messages.scrollHeight;
-  });
   document.addEventListener("keydown",event=>{if(event.key==="Escape"&&!selectionSheet.hidden)closeSheet()});
   document.addEventListener("visibilitychange",syncAutoplayVideos);
   window.addEventListener("pageshow",syncAutoplayVideos);
@@ -615,5 +600,6 @@
   restoreFromUrl();
 </script>
 <script type="module" src="./js/silver-engine.js"></script>
+<script type="module" src="./js/service-features.js"></script>
 </body>
 </html>

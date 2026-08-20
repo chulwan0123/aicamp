@@ -1,0 +1,450 @@
+import { createResultLink, shareResult } from './kakao-share.js';
+
+const SESSION_KEY = 'silver-analysis-session-v2';
+const NOTIFICATION_KEY = 'silver-notification-preference-v1';
+const shell = window.SILVER_SHELL;
+
+const ARTICLES = [
+  {
+    title: '달라지는 부동산 세금, 부모님께 미치는 영향',
+    description: '보유·거주·매각 단계에서 부모님 주택에 영향을 줄 수 있는 항목을 함께 확인해요.',
+    points: ['공시가격과 주택 수에 따른 보유세', '취득가와 거주기간에 따른 매각 세금', '시행 전 개편안의 확정 여부'],
+    action: 18,
+  },
+  {
+    title: '주택연금으로 만드는 안정적인 월 생활비',
+    description: '집에 계속 거주하면서 매달 받을 수 있는 금액과 가입 조건을 살펴봐요.',
+    points: ['부부 중 연소자 연령', '대상 주택의 공시가격', '지급 방식과 실제 심사 조건'],
+    action: 15,
+  },
+  {
+    title: '상속 전에 가족이 함께 확인해야 할 것들',
+    description: '부모님의 거주 의향과 생활비를 먼저 확인한 뒤 자산 이전 순서를 정해요.',
+    points: ['부모님의 장기 거주 의향', '현재와 향후의 월 생활비', '공동명의와 가족별 이전 계획'],
+    action: 16,
+  },
+  {
+    title: '2027년 종부세, 무엇이 달라질까요?',
+    description: '거주 1주택 기본공제와 공정시장가액비율 변화를 현재 분석 결과와 함께 확인해요.',
+    points: ['거주 여부에 따른 기본공제', '공정시장가액비율 적용 시점', '확정 법령과 실제 고지액 재확인'],
+    action: 18,
+  },
+  {
+    title: '주택연금 가입 전 확인할 세 가지',
+    description: '부모님 연령과 주택가격, 거주 계획에 따라 가입 가능 여부와 월 수령액이 달라져요.',
+    points: ['연령과 주택가격 기준', '계속 거주할 계획', '심사 시점의 공식 예상액'],
+    action: 15,
+  },
+  {
+    title: '다운사이징, 언제 시작하면 좋을까요?',
+    description: '현재 집의 매각 세금과 새 거주지 비용, 남는 생활비 재원을 함께 비교해요.',
+    points: ['매각 후 세후 수령액', '새 주택 또는 임차 비용', '이사 후 남는 월 현금흐름'],
+    action: 13,
+  },
+  {
+    title: '상속과 증여를 준비하는 가족 대화법',
+    description: '자산 이전보다 부모님의 생활비와 거주 의향을 먼저 이야기해 보세요.',
+    points: ['부모님이 원하는 거주 방식', '자녀별 역할과 비용 분담', '실행 전 세무·법률 검토'],
+    action: 16,
+  },
+];
+
+const CATEGORY_ACTIONS = {
+  서비스: [
+    { label: '내 노후 준비 결과', action: 'result' },
+    { label: '부모님 정보 관리', action: 'parent-info' },
+    { label: '알림 설정', action: 'notifications' },
+    { label: '로그아웃', action: 'logout' },
+  ],
+  AI: [
+    { label: 'AI 노후 컨설팅', action: 'ai' },
+    { label: '추천 결과 자세히 보기', action: 'recommendation' },
+  ],
+  세금: [
+    { label: '보유·매각 세금 결과', action: 'tax' },
+    { label: '최신 세제개편안', action: 'tax-reform' },
+  ],
+  주택연금: [
+    { label: '주택연금 예상 결과', action: 'pension' },
+    { label: '전문가 상담 신청', action: 'consult' },
+  ],
+  '상속·증여': [
+    { label: '상속·증여 시나리오', action: 'inheritance' },
+    { label: '부모님 초대', action: 'invite' },
+  ],
+};
+
+let lastFocus = null;
+
+function element(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function buildSheet() {
+  const overlay = element('div', 'sheet-overlay');
+  overlay.id = 'service-sheet';
+  overlay.hidden = true;
+  const panel = element('section', 'bottom-sheet');
+  panel.setAttribute('role', 'dialog');
+  panel.setAttribute('aria-modal', 'true');
+  panel.setAttribute('aria-labelledby', 'service-sheet-title');
+  panel.append(element('div', 'sheet-handle'));
+  const header = element('header', 'sheet-header');
+  const title = element('h2', 'sheet-title');
+  title.id = 'service-sheet-title';
+  const close = element('button', 'sheet-close');
+  close.type = 'button';
+  close.setAttribute('aria-label', '닫기');
+  close.dataset.serviceClose = '';
+  const icon = document.createElement('img');
+  icon.src = './assets/icons/lucide/x.svg';
+  icon.alt = '';
+  close.append(icon);
+  header.append(title, close);
+  const content = element('div', 'sheet-options');
+  content.id = 'service-sheet-content';
+  panel.append(header, content);
+  overlay.append(panel);
+  document.body.append(overlay);
+  return { overlay, title, content, close };
+}
+
+const sheet = buildSheet();
+
+function closeSheet() {
+  if (sheet.overlay.hidden) return;
+  sheet.overlay.hidden = true;
+  document.body.classList.remove('sheet-open');
+  lastFocus?.focus?.();
+}
+
+function openSheet(title, render) {
+  lastFocus = document.activeElement;
+  sheet.title.textContent = title;
+  sheet.content.replaceChildren();
+  render(sheet.content);
+  sheet.overlay.hidden = false;
+  document.body.classList.add('sheet-open');
+  sheet.close.focus();
+}
+
+function info(message) {
+  return element('div', 'info', message);
+}
+
+function getSession() {
+  try {
+    const value = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+    return value?.advice && value?.property ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+function requireResult() {
+  const session = getSession();
+  if (session) return session;
+  openSheet('분석 결과가 필요해요', (root) => {
+    root.append(info('부모님 정보와 주택을 먼저 분석하면 이 기능을 이용할 수 있어요.'));
+    const button = element('button', 'primary', '분석 시작하기');
+    button.type = 'button';
+    button.addEventListener('click', () => { closeSheet(); shell?.show?.(1); });
+    root.append(button);
+  });
+  return null;
+}
+
+async function inviteParent() {
+  const session = requireResult();
+  if (!session) return;
+  try {
+    const result = await shareResult(session, {
+      title: '부모님 노후 준비 결과',
+      text: session.advice.familyNote || '부모님과 함께 노후 준비 결과를 확인해 보세요.',
+    });
+    if (result.method === 'clipboard') {
+      openSheet('부모님 초대', (root) => root.append(info('암호화된 결과 링크를 복사했어요. 부모님께 전달해 주세요. 링크는 7일 후 만료돼요.')));
+    } else if (result.kakaoError) {
+      openSheet('부모님 초대', (root) => root.append(info('카카오톡 설정을 찾지 못해 기기의 공유 화면으로 전달했어요. 운영 환경에 카카오 JavaScript 키를 연결하면 카카오톡 친구 선택 화면이 바로 열려요.')));
+    }
+  } catch (error) {
+    if (error?.name === 'AbortError') return;
+    openSheet('부모님 초대', (root) => root.append(info(error.message || '초대 링크를 만들지 못했어요.')));
+  }
+}
+
+function inputField(labelText, { name, type = 'text', inputmode, placeholder, maxLength } = {}) {
+  const label = element('label', 'field');
+  label.append(element('span', 'label', labelText));
+  const input = element('input', 'input');
+  input.name = name;
+  input.type = type;
+  if (inputmode) input.inputMode = inputmode;
+  if (placeholder) input.placeholder = placeholder;
+  if (maxLength) input.maxLength = maxLength;
+  label.append(input);
+  return { label, input };
+}
+
+function openConsultation() {
+  const session = requireResult();
+  if (!session) return;
+  openSheet('전문가 상담 신청', (root) => {
+    const form = element('form', 'property');
+    const name = inputField('신청자 이름', { name: 'name', placeholder: '이름을 입력해 주세요', maxLength: 40 });
+    const phone = inputField('연락처', { name: 'phone', type: 'tel', inputmode: 'tel', placeholder: '010-0000-0000', maxLength: 30 });
+    const time = inputField('연락받기 편한 시간', { name: 'preferredTime', placeholder: '예: 평일 오후 2시 이후', maxLength: 80 });
+    const note = inputField('상담받고 싶은 내용', { name: 'note', placeholder: '예: 보유세와 주택연금 비교', maxLength: 500 });
+    const consent = element('label', 'choice');
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.name = 'consent';
+    consent.append(checkbox, document.createTextNode(' 상담을 위한 개인정보 수집·이용에 동의해요'));
+    const status = info('연락처와 암호화된 분석 결과 링크만 상담 접수에 사용해요.');
+    status.setAttribute('role', 'status');
+    const submit = element('button', 'primary', '상담 신청하기');
+    submit.type = 'submit';
+    form.append(name.label, phone.label, time.label, note.label, consent, status, submit);
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      submit.disabled = true;
+      submit.textContent = '접수 중…';
+      try {
+        const shared = await createResultLink(session);
+        const response = await fetch('./api/consultations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: name.input.value,
+            phone: phone.input.value,
+            preferredTime: time.input.value,
+            note: note.input.value,
+            consent: checkbox.checked,
+            resultToken: shared.token,
+          }),
+        });
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(body.error || '상담을 접수하지 못했어요.');
+        localStorage.setItem('silver-last-consultation-v1', JSON.stringify({ id: body.id, submittedAt: body.submittedAt }));
+        const message = body.preview
+          ? '상담 신청 화면을 확인했어요. 운영 상담 채널을 연결하면 실제 접수가 시작돼요.'
+          : `상담 신청을 접수했어요. 접수번호는 ${body.id}예요.`;
+        form.replaceChildren(info(message));
+      } catch (error) {
+        status.textContent = error.message || '상담을 접수하지 못했어요.';
+        submit.disabled = false;
+        submit.textContent = '상담 신청하기';
+      }
+    });
+    root.append(form);
+  });
+}
+
+function articleButton(item, index) {
+  const button = element('button', 'sheet-option', item.title);
+  button.type = 'button';
+  button.addEventListener('click', () => showArticle(index));
+  return button;
+}
+
+function showArticle(index) {
+  const article = ARTICLES[index];
+  if (!article) return;
+  openSheet(article.title, (root) => {
+    const body = element('article', 'property');
+    body.append(element('p', 'desc', article.description));
+    const points = element('ul', 'points');
+    article.points.forEach((point) => points.append(element('li', '', point)));
+    body.append(points, info('세금·연금·계약 조건은 실제 실행 시점의 공식 자료와 전문가 확인이 필요해요.'));
+    const button = element('button', 'primary', '내 결과에서 확인하기');
+    button.type = 'button';
+    button.addEventListener('click', () => { closeSheet(); shell?.show?.(article.action); });
+    body.append(button);
+    root.append(body);
+  });
+}
+
+function showAllNews() {
+  openSheet('자산관리 뉴스', (root) => ARTICLES.forEach((item, index) => root.append(articleButton(item, index))));
+}
+
+function showNotices() {
+  const notices = [
+    ['분석 결과 저장 안내', '분석 결과는 이 기기의 브라우저에 저장되며 결과 초기화나 로그아웃으로 지울 수 있어요.'],
+    ['공유 링크 이용 안내', '공유 결과는 암호화되며 링크는 만든 날부터 7일 동안 이용할 수 있어요.'],
+    ['예상 금액 확인 안내', '세금과 연금 금액은 입력값에 따른 예상치이므로 실행 전 공식 심사와 전문가 확인이 필요해요.'],
+  ];
+  openSheet('공지사항', (root) => notices.forEach(([title, description]) => {
+    const button = element('button', 'sheet-option', title);
+    button.type = 'button';
+    button.addEventListener('click', () => openSheet(title, (content) => content.append(info(description))));
+    root.append(button);
+  }));
+}
+
+function showCustomerCenter() {
+  const faqs = [
+    ['분석 결과는 어디에 저장되나요?', '현재 기기의 브라우저에 저장돼요. 다른 기기에서는 암호화된 공유 링크로 확인할 수 있어요.'],
+    ['세금 예상액은 확정 금액인가요?', '입력값과 현재 규칙을 적용한 예상치예요. 실제 고지·신고 전에는 확정 법령과 서류로 다시 확인해 주세요.'],
+    ['입력 정보를 바꾸고 싶어요.', '결과를 초기화한 뒤 주소·취득가·거주기간을 다시 입력해 주세요.'],
+  ];
+  openSheet('고객센터', (root) => {
+    faqs.forEach(([question, answer]) => {
+      const button = element('button', 'sheet-option', question);
+      button.type = 'button';
+      button.addEventListener('click', () => openSheet(question, (content) => content.append(info(answer))));
+      root.append(button);
+    });
+    const consult = element('button', 'primary', '전문가 상담 신청');
+    consult.type = 'button';
+    consult.addEventListener('click', openConsultation);
+    root.append(consult);
+  });
+}
+
+async function requestBrowserNotification(checkbox, status) {
+  if (!('Notification' in window)) {
+    checkbox.checked = false;
+    localStorage.setItem(NOTIFICATION_KEY, 'off');
+    status.textContent = '이 브라우저에서는 알림을 사용할 수 없어요.';
+    return;
+  }
+  const permission = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
+  if (permission !== 'granted') {
+    checkbox.checked = false;
+    localStorage.setItem(NOTIFICATION_KEY, 'off');
+    status.textContent = permission === 'denied' ? '브라우저에서 알림이 차단되어 있어요. 사이트 설정에서 허용해 주세요.' : '알림 권한을 허용하지 않아 설정을 켜지 않았어요.';
+    return;
+  }
+  localStorage.setItem(NOTIFICATION_KEY, 'on');
+  status.textContent = '브라우저 알림을 받도록 설정했어요.';
+  new Notification('SILVER 알림 설정 완료', {
+    body: '세금·노후 준비 안내를 받을 수 있어요.',
+    icon: new URL('./assets/start-card-parasol.png', document.baseURI).toString(),
+  });
+}
+
+function showNotifications() {
+  openSheet('알림 설정', (root) => {
+    const label = element('label', 'choice');
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = localStorage.getItem(NOTIFICATION_KEY) === 'on';
+    label.append(checkbox, document.createTextNode(' 세금·노후 준비 안내를 받아볼게요'));
+    const status = info(checkbox.checked ? '알림 안내를 받도록 설정되어 있어요.' : '현재 알림 안내가 꺼져 있어요.');
+    checkbox.addEventListener('change', async () => {
+      checkbox.disabled = true;
+      if (checkbox.checked) await requestBrowserNotification(checkbox, status);
+      else {
+        localStorage.setItem(NOTIFICATION_KEY, 'off');
+        status.textContent = '알림 안내를 껐어요.';
+      }
+      checkbox.disabled = false;
+    });
+    root.append(label, status);
+  });
+}
+
+function go(screen) {
+  closeSheet();
+  shell?.show?.(screen);
+}
+
+function handleAction(action) {
+  if (action === 'result') return requireResult() && go(10);
+  if (action === 'parent-info') return go(8);
+  if (action === 'notifications') return showNotifications();
+  if (action === 'ai') return requireResult() && (closeSheet(), shell?.showAi?.());
+  if (action === 'recommendation') return requireResult() && go(14);
+  if (action === 'tax') return requireResult() && go(11);
+  if (action === 'tax-reform') return go(18);
+  if (action === 'pension') return requireResult() && go(15);
+  if (action === 'consult') return openConsultation();
+  if (action === 'inheritance') return requireResult() && go(16);
+  if (action === 'invite') return inviteParent();
+  if (action === 'logout') {
+    localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem('plus-parent-result-complete');
+    return shell?.showStart?.();
+  }
+}
+
+function renderCategory(label) {
+  const list = document.querySelector('.my-service-list');
+  if (!list) return;
+  list.replaceChildren();
+  (CATEGORY_ACTIONS[label] || []).forEach((item) => {
+    const button = element('button', 'my-service-row', item.label);
+    button.type = 'button';
+    button.dataset.serviceAction = item.action;
+    if (item.action === 'logout') button.dataset.logout = '';
+    list.append(button);
+  });
+}
+
+function initializeContentCards() {
+  document.querySelectorAll('.news-banner,.content-item').forEach((node) => {
+    node.setAttribute('role', 'button');
+    node.tabIndex = 0;
+  });
+}
+
+document.addEventListener('click', (event) => {
+  if (event.target === sheet.overlay || event.target.closest('[data-service-close]')) return closeSheet();
+  if (event.target.closest('[data-consult]')) {
+    event.preventDefault();
+    return openConsultation();
+  }
+  const shortcut = event.target.closest('.my-shortcut');
+  const shortcutLabel = shortcut?.textContent?.trim();
+  if (shortcutLabel === '부모님 초대') return inviteParent();
+  if (shortcutLabel === '공지사항') return showNotices();
+  if (shortcutLabel === '고객센터') return showCustomerCenter();
+  if (event.target.closest('[aria-label="알림"]')) return showNotices();
+  if (event.target.closest('.home-section-more')) return showAllNews();
+
+  const banner = event.target.closest('.news-banner');
+  if (banner) return showArticle([...document.querySelectorAll('.news-banner')].indexOf(banner));
+  const content = event.target.closest('.content-item');
+  if (content) return showArticle(3 + [...document.querySelectorAll('.content-item')].indexOf(content));
+
+  const category = event.target.closest('.my-category');
+  if (category) {
+    document.querySelectorAll('.my-category').forEach((button) => button.classList.toggle('active', button === category));
+    renderCategory(category.textContent.trim());
+    return;
+  }
+  const action = event.target.closest('[data-service-action]')?.dataset.serviceAction;
+  if (action) handleAction(action);
+  if (event.target.closest('[data-logout]')) {
+    localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem('plus-parent-result-complete');
+  }
+});
+
+document.addEventListener('silver:share-complete', (event) => {
+  const result = event.detail;
+  if (result?.method === 'clipboard') {
+    openSheet('결과 공유', (root) => root.append(info('암호화된 결과 링크를 복사했어요. 링크는 7일 후 만료돼요.')));
+  } else if (result?.kakaoError) {
+    openSheet('결과 공유', (root) => root.append(info('카카오톡 설정을 찾지 못해 기기의 공유 화면으로 전달했어요. 운영 환경에 카카오 JavaScript 키를 연결하면 카카오톡 친구 선택 화면이 바로 열려요.')));
+  }
+});
+
+document.addEventListener('silver:share-error', (event) => {
+  openSheet('공유할 수 없어요', (root) => root.append(info(event.detail?.message || '공유 링크를 만들지 못했어요.')));
+});
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && !sheet.overlay.hidden) return closeSheet();
+  if ((event.key === 'Enter' || event.key === ' ') && event.target.matches('.news-banner,.content-item')) {
+    event.preventDefault();
+    event.target.click();
+  }
+});
+
+initializeContentCards();
+renderCategory('서비스');

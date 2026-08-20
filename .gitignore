@@ -5,5 +5,9 @@ node_modules
 .DS_Store
 *.log
 exec-*.png
+tmp/
+output/
+test-results/
+.playwright-mcp/
 .env*
 !.env.example

@@ -7,17 +7,18 @@
       "keywords": ["신반포로270", "신반포로 270", "반포자이", "서초구반포동", "반포동반포자이", "서초구신반포로"],
       "address": "서울 서초구 반포동 반포자이 84.94㎡",
       "complexName": "반포자이",
-      "dong": "120동",
-      "ho": "1002호",
+      "dong": "101동",
+      "ho": "101호",
       "roadAddress": "서울특별시 서초구 신반포로 270",
-      "officialPrice": 3491000000,
+      "officialPrice": 2462000000,
       "marketPrice": 4700000000,
-      "areaM2": 84.94,
+      "areaM2": 84.943,
       "pyeong": 32,
       "tradeCount": 12,
       "confidence": "HIGH",
       "region": "서울 서초구",
       "isCapitalArea": true,
+      "isAdjustedArea": true,
       "acquisitionYear": 2008,
       "acquisitionPrice": 1082470000
     },
@@ -37,6 +38,7 @@
       "confidence": "HIGH",
       "region": "경기 성남시",
       "isCapitalArea": true,
+      "isAdjustedArea": false,
       "acquisitionYear": 2016,
       "acquisitionPrice": 760000000
     },
@@ -56,6 +58,7 @@
       "confidence": "HIGH",
       "region": "서울 마포구",
       "isCapitalArea": true,
+      "isAdjustedArea": false,
       "acquisitionYear": 2012,
       "acquisitionPrice": 490000000
     }

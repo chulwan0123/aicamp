@@ -33,6 +33,7 @@ function toProperty(item, confidence) {
     pyeong: item.pyeong,
     region: item.region,
     isCapitalArea: item.isCapitalArea,
+    isAdjustedArea: item.isAdjustedArea,
     acquisitionYear: item.acquisitionYear,
     acquisitionPrice: item.acquisitionPrice,
     _source: 'dataset',
@@ -55,12 +56,15 @@ export async function lookupProperty(roadAddress, detailAddress = '') {
   return null;
 }
 
-/** PNU로 서버의 국토교통부 공동주택가격 API를 조회한다. */
-export async function lookupOfficialPrice(pnu) {
+/** PNU와 동·호수로 서버의 국토교통부 공동주택가격 API를 조회한다. */
+export async function lookupOfficialPrice(pnu, { dong, ho, areaM2 } = {}) {
   const normalized = String(pnu || '');
   if (!/^\d{19}$/.test(normalized)) throw new Error('올바른 PNU 19자리가 필요해요.');
+  if (!dong || !ho) throw new Error('정확한 공시가격 조회를 위해 동·호수를 입력해 주세요.');
 
-  const response = await fetch(`./api/price?pnu=${encodeURIComponent(normalized)}`, {
+  const params = new URLSearchParams({ pnu: normalized, dong: String(dong), ho: String(ho) });
+  if (Number(areaM2) > 0) params.set('areaM2', String(areaM2));
+  const response = await fetch(`./api/price?${params}`, {
     headers: { Accept: 'application/json' },
   });
   const body = await response.json().catch(() => ({}));
@@ -72,8 +76,13 @@ export async function lookupOfficialPrice(pnu) {
     complexName: body.aphusNm || null,
     officialPrice: Number(body.pblntfPc),
     officialPriceYear: body.stdrYear || null,
+    areaM2: Number(body.areaM2) || null,
+    dong: body.dongNm ? `${body.dongNm}동` : null,
+    ho: body.hoNm ? `${body.hoNm}호` : null,
     pnu: normalized,
-    _source: 'data.go.kr',
+    _source: body.source || 'data.go.kr',
+    sourceName: body.sourceName || null,
+    sourceUrl: body.sourceUrl || null,
   };
 }
 

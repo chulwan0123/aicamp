@@ -2,12 +2,13 @@ import { fmtKRW } from './format.js';
 import { openAddressSearch } from './address.js';
 import { lookupOfficialPrice, lookupProperty } from './property.js';
 import { refineAnswerLabel } from './refine-fields.js';
+import { shareResult } from './kakao-share.js';
 
 const SESSION_KEY = 'silver-analysis-session-v2';
 const TARGET_EXPENSE = 3_296_000;
 const AGE_BAND = { '50~59세': 50, '60~64세': 60, '65~69세': 65, '70세 이상': 70 };
 const shell = window.SILVER_SHELL;
-const state = { property: null, properties: [], subject: null, answers: null, advice: null, refinements: {} };
+const state = { property: null, properties: [], subject: null, answers: null, advice: null, refinements: {}, chatHistory: [] };
 
 const screen = (index) => document.querySelector(`[data-screen="${index}"]`);
 const checkedLabel = (name) => document.querySelector(`input[name="${name}"]:checked`)?.closest('label')?.textContent.trim() || '';
@@ -102,7 +103,7 @@ function optionExplanation(advice, id) {
   const alternative = advice.alternatives.find((item) => item.id === id);
   if (alternative) return alternative.oneLiner;
   const excluded = advice.excluded.find((item) => item.id === id);
-  return [excluded?.reason, excluded?.fact].filter(Boolean).join(' ')
+  return [...new Set([excluded?.reason, excluded?.fact].filter(Boolean))].join(' ')
     || advice.details.options[id]?.reason
     || '현재 입력값을 기준으로 비교했어요.';
 }
@@ -262,8 +263,11 @@ function renderEngineDetails(advice) {
   downSection?.append(calculationCard('다운사이징 산식', downsize.steps, downsize.basis));
 
   const planSection = engineSection(14, 'zip-plan', '추천 근거와 다른 선택지', '추천하지 않은 방법도 이유와 함께 확인해요.');
+  const deductionTotal = (advice.recommended.deductions || []).reduce((sum, row) => sum + Math.abs(row.amount || 0), 0);
   planSection?.append(summaryCard([
-    ['추천 방법', advice.recommended.label], ['추천 이유', advice.recommended.why], ['감수할 점', advice.recommended.tradeoff],
+    ['추천 방법', advice.recommended.label], ['추천 이유', advice.recommended.why],
+    ['월 총유입', format(advice.recommended.gross)], ['월 차감액', deductionTotal ? signed(-deductionTotal) : '없음'],
+    ['월 세후 활용액', format(advice.recommended.net)], ['감수할 점', advice.recommended.tradeoff],
   ]));
   planSection?.append(element('h3', 'section-heading', '주의할 점'), pointList(advice.recommended.cautions));
   const comparison = element('div', 'strategies');
@@ -271,7 +275,7 @@ function renderEngineDetails(advice) {
     const card = element('article', 'card strategy');
     const header = element('div', 'strategy-time');
     header.append(element('strong', '', item.label), element('span', 'age', item.net != null ? '대안' : '제외'));
-    card.append(header, element('h3', '', item.net != null ? `월 ${format(item.net)}` : '현재 적용 어려움'), element('p', '', item.oneLiner || [item.reason, item.fact].filter(Boolean).join(' ')));
+    card.append(header, element('h3', '', item.net != null ? `월 ${format(item.net)}` : '현재 적용 어려움'), element('p', '', item.oneLiner || [...new Set([item.reason, item.fact].filter(Boolean))].join(' ')));
     comparison.append(card);
   });
   planSection?.append(comparison, infoBox('가족에게 전할 내용', advice.familyNote));
@@ -317,9 +321,24 @@ function residency() {
   return { label, years };
 }
 
-function acquisitionYear() {
-  const select = document.querySelector('#acquisition-fields select');
-  return Number(select?.value?.replace(/[^0-9]/g, '')) || 2008;
+function acquisitionValues() {
+  return [...document.querySelectorAll('#acquisition-fields .property')].map((node, index) => {
+    const year = Number(node.querySelector(`[data-acquisition-year="${index}"]`)?.value);
+    const price = Number(String(node.querySelector(`[data-acquisition-price="${index}"]`)?.value || '').replace(/[^0-9]/g, ''));
+    if (!Number.isInteger(year) || year < 1950 || year > new Date().getFullYear()) {
+      throw new Error(`주택 ${index + 1}의 취득연도를 확인해 주세요.`);
+    }
+    if (!(price > 0)) throw new Error(`주택 ${index + 1}의 매매 당시 가격을 확인해 주세요.`);
+    return { acquisitionYear: year, acquisitionPrice: price };
+  });
+}
+
+function unitParts(detail) {
+  const tokens = String(detail || '').trim().split(/\s+/);
+  return {
+    dong: tokens.find((token) => /동$/.test(token)) || tokens[0] || '',
+    ho: tokens.find((token) => /호$/.test(token)) || tokens[1] || '',
+  };
 }
 
 function addressRows() {
@@ -334,31 +353,49 @@ function addressRows() {
       officialPrice: Number(propertyNode.dataset.officialPrice) || null,
       officialPriceYear: propertyNode.dataset.officialPriceYear || null,
       officialComplexName: propertyNode.dataset.officialComplexName || null,
+      officialAreaM2: Number(propertyNode.dataset.officialAreaM2) || null,
+      officialDong: propertyNode.dataset.officialDong || null,
+      officialHo: propertyNode.dataset.officialHo || null,
       priceConfirmed: propertyNode.dataset.priceConfirmed === 'true',
       officialPriceError: propertyNode.dataset.officialPriceError || null,
     };
   });
 }
 
-async function resolveProperties() {
+function marketPriceValues() {
+  return [...document.querySelectorAll('#lookup-items [data-market-price]')].map((input) =>
+    Number(String(input.value || '').replace(/[^0-9]/g, '')) || null);
+}
+
+function regionFromAddress(roadAddress) {
+  const tokens = String(roadAddress || '').split(/\s+/);
+  return tokens.slice(0, 2).join(' ').replace('특별시', '').replace('경기도', '경기');
+}
+
+async function resolveProperties({ requireMarketPrice = false } = {}) {
   const rows = addressRows();
+  const acquisitions = acquisitionValues();
+  const enteredMarketPrices = marketPriceValues();
   const properties = await Promise.all(rows.map(async (row, index) => {
     const { propertyNode, road, detail, pnu } = row;
     if (!road) throw new Error(`주택 ${index + 1}의 도로명주소를 입력해 주세요.`);
     const found = await lookupProperty(road, detail);
-    if (!found) throw new Error(`주택 ${index + 1}의 주소를 현재 데이터에서 찾지 못했어요.`);
 
+    const unit = unitParts(detail);
     let official = row.officialPrice ? {
       officialPrice: row.officialPrice,
       officialPriceYear: row.officialPriceYear,
       complexName: row.officialComplexName,
+      areaM2: row.officialAreaM2,
+      dong: row.officialDong,
+      ho: row.officialHo,
       pnu,
       _source: 'data.go.kr',
     } : null;
     if (pnu && !official) {
       try {
         setOfficialPriceLoading(propertyNode, true);
-        official = await lookupOfficialPrice(pnu);
+        official = await lookupOfficialPrice(pnu, { ...unit, areaM2: found?.areaM2 });
         cacheOfficialPrice(propertyNode, official);
       } catch (error) {
         cacheOfficialPriceError(propertyNode, error);
@@ -368,15 +405,34 @@ async function resolveProperties() {
       }
     }
 
+    if (!found && !official) throw new Error(`주택 ${index + 1}의 공시가격을 찾지 못했어요.`);
+    const base = found || {
+      address: `${road} ${detail}`,
+      marketPrice: null,
+      confidence: 'HIGH',
+      tradeCount: null,
+      areaM2: official?.areaM2,
+      complexName: official?.complexName,
+      region: regionFromAddress(road),
+      isCapitalArea: true,
+      _source: 'data.go.kr',
+    };
+    const marketPrice = enteredMarketPrices[index] || base.marketPrice;
+    if (requireMarketPrice && !(marketPrice > 0)) {
+      throw new Error(`주택 ${index + 1}의 현재 예상 매매가격을 입력해 주세요.`);
+    }
     return {
-      ...found,
+      ...base,
       ...(official || {}),
-      complexName: official?.complexName || found.complexName,
+      marketPrice,
+      complexName: official?.complexName || base.complexName,
       roadAddress: road,
       detailAddress: detail,
-      dong: detail.split(/\s+/)[0] || found.dong,
-      ho: detail.split(/\s+/)[1] || found.ho,
-      officialPriceSource: official?._source || found._source,
+      dong: official?.dong || unit.dong || base.dong,
+      ho: official?.ho || unit.ho || base.ho,
+      acquisitionYear: acquisitions[index].acquisitionYear,
+      acquisitionPrice: acquisitions[index].acquisitionPrice,
+      officialPriceSource: official?._source || base._source,
     };
   }));
   state.properties = properties;
@@ -391,6 +447,9 @@ function cacheOfficialPrice(propertyNode, official) {
   propertyNode.dataset.fetchedOfficialPrice = String(official.officialPrice);
   propertyNode.dataset.officialPriceYear = official.officialPriceYear || '';
   propertyNode.dataset.officialComplexName = official.complexName || '';
+  propertyNode.dataset.officialAreaM2 = official.areaM2 || '';
+  propertyNode.dataset.officialDong = official.dong || '';
+  propertyNode.dataset.officialHo = official.ho || '';
   propertyNode.dataset.priceConfirmed = 'true';
   delete propertyNode.dataset.officialPriceError;
 }
@@ -400,6 +459,9 @@ function clearOfficialPrice(propertyNode) {
   delete propertyNode.dataset.fetchedOfficialPrice;
   delete propertyNode.dataset.officialPriceYear;
   delete propertyNode.dataset.officialComplexName;
+  delete propertyNode.dataset.officialAreaM2;
+  delete propertyNode.dataset.officialDong;
+  delete propertyNode.dataset.officialHo;
   propertyNode.dataset.priceConfirmed = 'false';
 }
 
@@ -424,6 +486,12 @@ async function searchAddress(searchButton) {
   try {
     const selected = await openAddressSearch();
     if (!selected) return;
+    if (!/^(서울특별시|경기도)/.test(selected.roadAddress)) {
+      throw new Error('현재는 서울·경기 아파트 주소만 선택할 수 있어요.');
+    }
+    if (selected.apartment !== 'Y') {
+      throw new Error('아파트로 확인된 주소만 계산할 수 있어요.');
+    }
     roadInput.value = selected.roadAddress;
     propertyNode.dataset.pnu = selected.pnu;
     clearOfficialPrice(propertyNode);
@@ -431,7 +499,12 @@ async function searchAddress(searchButton) {
     searchButton.textContent = '조회 중…';
     try {
       setOfficialPriceLoading(propertyNode, true);
-      cacheOfficialPrice(propertyNode, await lookupOfficialPrice(selected.pnu));
+      const detailInput = propertyNode.querySelectorAll('input.input')[1];
+      const found = await lookupProperty(selected.roadAddress, detailInput?.value || '');
+      const unit = unitParts(detailInput?.value || '');
+      if (unit.dong && unit.ho) {
+        cacheOfficialPrice(propertyNode, await lookupOfficialPrice(selected.pnu, { ...unit, areaM2: found?.areaM2 }));
+      }
     } catch (error) {
       cacheOfficialPriceError(propertyNode, error);
       console.warn('[silver] 공시가격 자동 조회 실패', error);
@@ -454,10 +527,11 @@ function collectAnswers() {
   };
 }
 
-function collectSubject(property) {
+function collectSubject(properties) {
+  const property = properties[0];
   const father = ageBand('fa', '60~64세');
   const mother = ageBand('ma', '60~64세');
-  const acquired = acquisitionYear();
+  const acquired = property.acquisitionYear;
   const lived = residency();
   const wishRegion = document.querySelector('#wish-region')?.value || '서울 강남구';
   const incomeInput = document.querySelector('input[name="q-income"]:checked');
@@ -472,6 +546,11 @@ function collectSubject(property) {
     holdingYears: Math.max(0, new Date().getFullYear() - acquired),
     acquisitionYear: acquired,
     acquisitionPrice: property.acquisitionPrice,
+    acquisitions: properties.map((item) => ({
+      acquisitionYear: item.acquisitionYear,
+      acquisitionPrice: item.acquisitionPrice,
+      holdingYears: Math.max(0, new Date().getFullYear() - item.acquisitionYear),
+    })),
     isResiding: true,
     residencyYears: lived.years,
     residencyBand: lived.label,
@@ -503,23 +582,36 @@ function renderLookup(properties) {
     address.textContent = `주택 ${index + 1} · ${shell.getJointOwnership()[index] ? '공동명의' : '단독명의'} · ${property.roadAddress}`;
     const detail = document.createElement('div');
     detail.className = 'lookup-address';
-    detail.textContent = `${property.detailAddress} · 전용 ${property.areaM2}㎡ · ${property.pyeong}평형`;
-    const value = document.createElement('div');
-    value.className = 'lookup-value';
-    value.textContent = format(property.marketPrice);
+    detail.textContent = [property.detailAddress, property.areaM2 ? `전용 ${property.areaM2}㎡` : '', property.pyeong ? `${property.pyeong}평형` : '']
+      .filter(Boolean).join(' · ');
     item.append(address, detail);
-    if (property.officialPriceSource === 'data.go.kr') {
+    if (String(property.officialPriceSource || '').startsWith('data.go.kr')) {
       const official = document.createElement('div');
       official.className = 'lookup-address';
       official.textContent = `${property.officialPriceYear || '최신'}년 공시가격 · ${format(property.officialPrice)}`;
       item.append(official);
     }
-    item.append(value);
+    const marketField = document.createElement('label');
+    marketField.className = 'field';
+    const marketLabel = document.createElement('span');
+    marketLabel.className = 'label';
+    marketLabel.textContent = '현재 예상 매매가격을 입력해 주세요';
+    const marketInput = document.createElement('input');
+    marketInput.className = 'input';
+    marketInput.inputMode = 'numeric';
+    marketInput.dataset.marketPrice = String(index);
+    marketInput.placeholder = '예: 4,700,000,000';
+    marketInput.value = property.marketPrice > 0 ? Math.round(property.marketPrice).toLocaleString('ko-KR') : '';
+    const hint = document.createElement('span');
+    hint.className = 'hint';
+    hint.textContent = '공시가격과 다른 값입니다. 최근 시세나 실거래가를 참고해 수정할 수 있어요.';
+    marketField.append(marketLabel, marketInput, hint);
+    item.append(marketField);
     list.append(item);
   });
-  const total = properties.reduce((sum, property) => sum + property.marketPrice, 0);
-  text(document.querySelector('#total-assessed-value'), format(total));
-  text(document.querySelector('#summary-assessed-value'), format(total));
+  const total = properties.reduce((sum, property) => sum + (property.marketPrice || 0), 0);
+  text(document.querySelector('#total-assessed-value'), total > 0 ? format(total) : '직접 입력 필요');
+  text(document.querySelector('#summary-assessed-value'), total > 0 ? format(total) : '직접 입력 필요');
 }
 
 function renderLookupError(message) {
@@ -539,10 +631,12 @@ function renderLookupError(message) {
 
 function renderConfirm(subject, property) {
   const root = screen(8);
-  const total = state.properties.reduce((sum, item) => sum + item.marketPrice, 0);
+  const total = state.properties.reduce((sum, item) => sum + (item.marketPrice || 0), 0);
   text(rowValue(root, '부모님 연령대'), `아버지 ${subject.ageBands.father} · 어머니 ${subject.ageBands.mother}`);
   text(rowValue(root, '보유 부동산'), `${subject.houseCount}채`);
-  text(rowValue(root, '주택 정보'), `${property.complexName} ${property.pyeong}평형`);
+  text(rowValue(root, '주택 정보'), property.pyeong
+    ? `${property.complexName} ${property.pyeong}평형`
+    : `${property.complexName || '아파트'}${property.areaM2 ? ` 전용 ${property.areaM2}㎡` : ''}`);
   text(rowValue(root, '최근 실거래가'), format(total));
   text(rowValue(root, '장기 거주'), subject.residencyBand);
   text(rowValue(root, '희망 거주지'), subject.wishRegion);
@@ -567,15 +661,15 @@ async function fetchAdvice(payload) {
 }
 
 async function runAnalysis() {
-  const properties = await resolveProperties();
-  const subject = collectSubject(properties[0]);
+  const properties = await resolveProperties({ requireMarketPrice: true });
+  const subject = collectSubject(properties);
   const answers = collectAnswers();
   const refinements = collectRefinements(subject);
   state.subject = subject;
   state.answers = answers;
   state.refinements = refinements;
   renderConfirm(subject, properties[0]);
-  const advice = await fetchAdvice({ property: properties[0], subject, answers, refinements });
+  const advice = await fetchAdvice({ property: properties[0], properties, subject, answers, refinements });
   state.advice = advice;
   renderAdvice(advice, properties[0], subject);
   persist();
@@ -685,6 +779,7 @@ function renderRecommendation(advice) {
   const root = screen(14);
   const actions = advice.recommended.actionPlan || [];
   root.querySelectorAll('.final-action').forEach((row, index) => {
+    row.hidden = !actions[index];
     if (!actions[index]) return;
     text(row.querySelector('strong'), actions[index].title);
     text(row.querySelector('p'), actions[index].desc);
@@ -739,6 +834,79 @@ function renderChatIntro(advice) {
   if (intro) intro.textContent = `${advice.cashflow.summary}\n${advice.recommended.why}`;
 }
 
+function appendChatBubble(role, content) {
+  const messages = document.querySelector('[data-chat-messages]');
+  if (!messages) return null;
+  const bubble = element('div', `chat-bubble ${role === 'user' ? 'user' : 'ai'}`, content);
+  messages.append(bubble);
+  messages.scrollTop = messages.scrollHeight;
+  return bubble;
+}
+
+async function sendChat(message) {
+  if (!state.advice) throw new Error('먼저 부모님 분석을 완료해 주세요.');
+  const previous = state.chatHistory.slice(-8);
+  appendChatBubble('user', message);
+  state.chatHistory.push({ role: 'user', content: message });
+  const pending = appendChatBubble('assistant', '분석 결과와 세제 자료를 확인하고 있어요…');
+  const response = await fetch('./api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message, history: previous, session: state }),
+  });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(body.error || 'AI 답변을 불러오지 못했어요.');
+  pending.textContent = body.answer;
+  state.chatHistory.push({ role: 'assistant', content: body.answer });
+  persist();
+}
+
+const chatForm = document.querySelector('[data-chat-form]');
+chatForm?.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const input = event.currentTarget.elements.message;
+  const button = event.currentTarget.querySelector('.chat-send');
+  const message = input.value.trim();
+  if (!message || button.disabled) return;
+  input.value = '';
+  input.disabled = true;
+  button.disabled = true;
+  try {
+    await sendChat(message);
+  } catch (error) {
+    appendChatBubble('assistant', error.message || '답변을 불러오지 못했어요. 잠시 후 다시 질문해 주세요.');
+  } finally {
+    input.disabled = false;
+    button.disabled = false;
+    input.focus();
+  }
+});
+
+document.querySelector('#acquisition-fields')?.addEventListener('blur', (event) => {
+  const input = event.target.closest('[data-acquisition-price]');
+  if (!input) return;
+  const amount = Number(input.value.replace(/[^0-9]/g, ''));
+  if (amount > 0) input.value = amount.toLocaleString('ko-KR');
+}, true);
+
+document.querySelector('#lookup-items')?.addEventListener('blur', (event) => {
+  const input = event.target.closest('[data-market-price]');
+  if (!input) return;
+  const amount = Number(input.value.replace(/[^0-9]/g, ''));
+  if (amount > 0) input.value = amount.toLocaleString('ko-KR');
+}, true);
+
+document.querySelector('#lookup-items')?.addEventListener('input', (event) => {
+  const input = event.target.closest('[data-market-price]');
+  if (input) input.setCustomValidity('');
+});
+
+document.querySelector('#address-fields')?.addEventListener('input', (event) => {
+  const input = event.target.closest('[data-detail-input]');
+  const propertyNode = input?.closest('.property');
+  if (propertyNode) clearOfficialPrice(propertyNode);
+});
+
 function persist() {
   try { localStorage.setItem(SESSION_KEY, JSON.stringify(state)); }
   catch (error) { console.warn('[silver] 결과 저장 실패', error); }
@@ -759,17 +927,10 @@ function restore() {
 
 async function share() {
   if (!state.advice) throw new Error('먼저 분석 결과를 확인해 주세요.');
-  const response = await fetch('./api/share', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ session: state }),
+  return shareResult(state, {
+    title: '부모님 노후 준비 결과',
+    text: state.advice.familyNote || '부모님과 함께 노후 준비 결과를 확인해 보세요.',
   });
-  const body = await response.json().catch(() => ({}));
-  if (!response.ok || !body.token) throw new Error(body.error || '공유 링크를 만들지 못했어요.');
-  const url = new URL(location.origin + location.pathname);
-  url.searchParams.set('r', body.token);
-  url.hash = 'result';
-  if (navigator.share) await navigator.share({ title: '부모님 노후 준비 결과', url: url.toString() });
-  else await navigator.clipboard.writeText(url.toString());
 }
 
 async function restoreShared() {
@@ -798,6 +959,30 @@ document.addEventListener('click', (event) => {
       .finally(() => { next.disabled = false; next.textContent = original; });
     return;
   }
+  if (next && next.closest('[data-screen="4"]')) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const inputs = [...document.querySelectorAll('#lookup-items [data-market-price]')];
+    const missing = inputs.find((input) => !(Number(input.value.replace(/[^0-9]/g, '')) > 0));
+    if (missing) {
+      missing.setCustomValidity('현재 예상 매매가격을 입력해 주세요.');
+      missing.reportValidity();
+      missing.focus();
+      return;
+    }
+    inputs.forEach((input, index) => {
+      input.setCustomValidity('');
+      if (state.properties[index]) {
+        state.properties[index].marketPrice = Number(input.value.replace(/[^0-9]/g, ''));
+      }
+    });
+    state.property = state.properties[0];
+    const total = state.properties.reduce((sum, property) => sum + property.marketPrice, 0);
+    text(document.querySelector('#total-assessed-value'), format(total));
+    text(document.querySelector('#summary-assessed-value'), format(total));
+    shell.show(5);
+    return;
+  }
   if (next && next.closest('[data-screen="8"]')) {
     event.preventDefault();
     event.stopImmediatePropagation();
@@ -821,17 +1006,23 @@ document.addEventListener('click', (event) => {
 
   if (event.target.closest('[data-share]')) {
     event.preventDefault();
-    share().catch((error) => console.error('[silver] 공유 실패', error));
+    share()
+      .then((result) => document.dispatchEvent(new CustomEvent('silver:share-complete', { detail: result })))
+      .catch((error) => {
+        if (error?.name === 'AbortError') return;
+        console.error('[silver] 공유 실패', error);
+        document.dispatchEvent(new CustomEvent('silver:share-error', { detail: { message: error.message } }));
+      });
   }
   if (event.target.closest('[data-reset-result]')) {
     localStorage.removeItem(SESSION_KEY);
-    Object.assign(state, { property: null, properties: [], subject: null, answers: null, advice: null, refinements: {} });
+    Object.assign(state, { property: null, properties: [], subject: null, answers: null, advice: null, refinements: {}, chatHistory: [] });
   }
 }, true);
 
 document.addEventListener('change', () => {
   if (!state.property) return;
-  const subject = collectSubject(state.property);
+  const subject = collectSubject(state.properties.length ? state.properties : [state.property]);
   renderConfirm(subject, state.property);
 });
 

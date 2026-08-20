@@ -11,7 +11,7 @@ import {
   capitalGainsTax, acquisitionTax, brokerageFee, giftTaxTotal,
   housingPension, drawdownMonthly,
 } from './calc.js';
-import { holdingTaxByYear } from './holdingTax.js';
+import { holdingTaxByYear, holdingTaxPortfolioByYear } from './holdingTax.js';
 import { usableRefinements, refineAppliedNote } from '../../js/refine-fields.js';
 import { fmtKRW } from '../../js/format.js';
 
@@ -63,17 +63,20 @@ function drawdownYears(youngerAge) {
  * 전체 시나리오를 계산한다.
  * @returns {{ cashflow, taxes, options, giftReview, meta }}
  */
-export function buildScenarios({ property, subject }) {
-  const {
-    officialPrice, marketPrice, areaM2,
-  } = property;
+export function buildScenarios({ property, properties, subject }) {
+  const homes = Array.isArray(properties) && properties.length ? properties : [property];
+  const primaryHome = homes[0];
+  const officialPrice = homes.reduce((sum, home) => sum + home.officialPrice, 0);
+  const marketPrice = homes.reduce((sum, home) => sum + home.marketPrice, 0);
+  const { areaM2 } = primaryHome;
   const {
     age, spouseAge, holdingYears, ownership,
     monthlyIncome, targetExpense,
     wishRegionIsCapitalArea, residencyYears,
   } = subject;
 
-  const acquisitionPrice = subject.acquisitionPrice ?? property.acquisitionPrice;
+  const acquisitionPrice = homes.reduce((sum, home, index) =>
+    sum + (subject.acquisitions?.[index]?.acquisitionPrice ?? home.acquisitionPrice ?? 0), 0);
   if (!(acquisitionPrice > 0)) throw new Error('취득가액을 알 수 없어 양도소득세를 계산할 수 없습니다.');
 
   /* 화면에서 되물어 받은 추가 입력 — 답한 항목만 보유세 계산에 반영된다 */
@@ -86,10 +89,9 @@ export function buildScenarios({ property, subject }) {
   const expenses = RULES.capitalGains.assumedExpenses ?? 50_000_000;
 
   /* ---------------------------------------------------------- 보유세 */
-  const holding = holdingTaxByYear({
-    officialPrice, ownerCount, olderAge, holdingYears, refinements,
+  const holding = holdingTaxPortfolioByYear({
+    properties: homes, ownerCount, olderAge, holdingYears, refinements,
     isResiding: subject.isResiding !== false, residencyYears: lived,
-    region: property.region, previousOfficialPrice: property.previousOfficialPrice,
   });
 
   /* ------------------------------------------------------ 현금흐름 진단 */
@@ -108,26 +110,44 @@ export function buildScenarios({ property, subject }) {
   };
 
   /* ---------------------------------------------------------- 양도세 */
-  const cgArgs = {
-    salePrice: marketPrice, acquisitionPrice, expenses,
-    holdingYears, residencyYears: lived, ownerCount,
+  const saleForYear = (year, reduction = {}) => {
+    const results = homes.map((home, index) => capitalGainsTax({
+      salePrice: home.marketPrice,
+      acquisitionPrice: subject.acquisitions?.[index]?.acquisitionPrice ?? home.acquisitionPrice,
+      expenses: Math.round(expenses / homes.length),
+      holdingYears: subject.acquisitions?.[index]?.holdingYears ?? Math.max(0, holdingYears),
+      residencyYears: index === 0 ? lived : 0,
+      ownerCount,
+      year,
+      houseCount: subject.houseCount ?? homes.length,
+      ...reduction,
+    }));
+    return {
+      total: results.reduce((sum, result) => sum + result.total, 0),
+      steps: results.flatMap((result, index) => [
+        `${homes[index].complexName || `주택 ${index + 1}`} 양도세`,
+        ...result.steps.map((step) => `  ${step}`),
+      ]),
+      byHome: results.map((result, index) => ({ index, total: result.total })),
+    };
   };
-  const sale2026 = capitalGainsTax({ ...cgArgs, year: 2026, houseCount: subject.houseCount ?? 1 });
+  const sale2026 = saleForYear(2026);
   const special = RULES.downsizeSpecial2027;
   const houseCount = subject.houseCount ?? 1;
   const eligibleForSpecial = olderAge >= special.minAge
     && houseCount === 1
-    && property.isCapitalArea === true
+    && primaryHome.isCapitalArea === true
     && wishRegionIsCapitalArea === false;
-  const sale2027 = capitalGainsTax({
-    ...cgArgs,
-    year: 2027,
-    houseCount,
+  const sale2027 = saleForYear(2027, {
     reductionRate: eligibleForSpecial ? special.reduction : 0,
     reductionCap: special.reductionCap,
     reductionLabel: '고령 1주택자 비수도권 이전 감면',
   });
-  const broker = brokerageFee(marketPrice);
+  const brokerByHome = homes.map((home) => brokerageFee(home.marketPrice));
+  const broker = {
+    total: brokerByHome.reduce((sum, fee) => sum + fee.total, 0),
+    step: `주택별 부동산 수수료 합계 = ${brokerByHome.map((fee) => won(fee.total)).join(' + ')} = ${won(brokerByHome.reduce((sum, fee) => sum + fee.total, 0))}`,
+  };
 
   const taxes = {
     holding,
@@ -140,6 +160,7 @@ export function buildScenarios({ property, subject }) {
       brokerage: broker.total,
       capitalGainsWithLocal: sale2026.total,
       netProceeds: round(marketPrice - sale2026.total - broker.total),
+      byHome: sale2026.byHome,
       steps: [...sale2026.steps, broker.step],
       basis: [BASIS.capitalGains, BASIS.localIncome, BASIS.jointOwnership],
     },
@@ -155,15 +176,16 @@ export function buildScenarios({ property, subject }) {
       source: special.source,
       effectiveYear: special.effectiveYear,
       clawback: special.clawback,
+      byHome: sale2027.byHome,
       steps: eligibleForSpecial
         ? [...sale2027.steps, `아끼시는 세금 = ${won(sale2026.total)} - ${won(sale2027.total)} = ${won(sale2026.total - sale2027.total)}`]
-        : [`이 특례는 네 가지 조건을 모두 충족해야 해요 = 만 65세 이상 ${olderAge >= special.minAge ? '충족' : '미충족'}, 1세대 1주택 ${houseCount === 1 ? '충족' : '미충족'}, 수도권 주택 ${property.isCapitalArea === true ? '충족' : '미충족'}, 비수도권 이전 ${wishRegionIsCapitalArea === false ? '충족' : '미충족'}`],
+        : [`이 특례는 네 가지 조건을 모두 충족해야 해요 = 만 65세 이상 ${olderAge >= special.minAge ? '충족' : '미충족'}, 1세대 1주택 ${houseCount === 1 ? '충족' : '미충족'}, 수도권 주택 ${primaryHome.isCapitalArea === true ? '충족' : '미충족'}, 비수도권 이전 ${wishRegionIsCapitalArea === false ? '충족' : '미충족'}`],
       basis: BASIS.special2027,
     },
   };
 
   /* ---------------------------------------------------------- PENSION */
-  const pension = housingPension({ officialPrice, marketPrice, youngerAge });
+  const pension = housingPension({ officialPrice: primaryHome.officialPrice, marketPrice: primaryHome.marketPrice, youngerAge });
   const options = {
     PENSION: pension.eligible
       ? {
@@ -244,7 +266,7 @@ export function buildScenarios({ property, subject }) {
   const downDraw = drawdownMonthly(downLiving, years);
   const newHoldingTax = holdingTaxByYear({
     officialPrice: newHomePrice, ownerCount, olderAge, holdingYears: 0, isResiding: true,
-    region: property.region,
+    region: primaryHome.region,
     /* 옮기실 집은 다른 집이라, 지금 집에 딸린 조건(작년 고지세액·도시지역·지자체 세율)은 빼고 계산한다 */
     refinements: { householdHouseCount: refinements.householdHouseCount, ownershipRatio: refinements.ownershipRatio },
   })[0];
@@ -291,10 +313,19 @@ export function buildScenarios({ property, subject }) {
   };
 
   /* ------------------------------------------------------- 증여 검토 */
-  const gift = giftTaxTotal({
-    value: marketPrice, area: areaM2,
-    isAdjustedArea: true, isSingleHouseToLineal: true,
-  });
+  const gifts = homes.map((home) => giftTaxTotal({
+    value: home.marketPrice, area: home.areaM2,
+    isAdjustedArea: true, isSingleHouseToLineal: homes.length === 1,
+  }));
+  const gift = {
+    giftTax: gifts.reduce((sum, item) => sum + item.giftTax, 0),
+    acquisitionTax: gifts.reduce((sum, item) => sum + item.acquisitionTax, 0),
+    cashNeeded: gifts.reduce((sum, item) => sum + item.cashNeeded, 0),
+    steps: gifts.flatMap((item, index) => [
+      `${homes[index].complexName || `주택 ${index + 1}`} 증여 검토`,
+      ...item.steps.map((step) => `  ${step}`),
+    ]),
+  };
 
   /** LLM 이 문장에 인용할 금액. 원 단위 숫자를 그대로 쓰면 어르신이 읽기 어렵다. */
   const display = {
@@ -335,6 +366,12 @@ export function buildScenarios({ property, subject }) {
     meta: {
       ownerCount, youngerAge, olderAge, drawdownYears: years,
       specialApplicable: eligibleForSpecial,
+      portfolio: homes.map((home) => ({
+        complexName: home.complexName,
+        officialPrice: home.officialPrice,
+        marketPrice: home.marketPrice,
+        acquisitionPrice: home.acquisitionPrice,
+      })),
       assumptions: [
         `집 팔 때 드는 비용을 ${won(expenses)}으로 잡았어요`,
         `${holdingYears}년 갖고 계시고 ${lived}년 사신 걸로 계산했어요`,

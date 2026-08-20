@@ -15,7 +15,7 @@ test('AI를 사용하지 못해도 정적 목업이 아니라 현재 계산값�
   await handler({ method: 'POST', headers: {}, socket: { remoteAddress: 'api-test-1' }, body: sample }, res);
   assert.equal(res.code, 200);
   assert.equal(res.body._source, 'rules');
-  assert.equal(res.body.details.taxes.holding[0].total, 10_116_058);
+  assert.equal(res.body.details.taxes.holding[0].total, 6_279_902);
   assert.equal(res.body.details.taxes.sale2026.capitalGainsWithLocal, 176_139_720);
   assert.ok(res.body.recommended.id);
 });

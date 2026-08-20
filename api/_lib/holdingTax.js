@@ -118,13 +118,24 @@ function comprehensiveTax({
   officialPrice, ownerCount, olderAge, holdingYears, year,
   shares, houseCount = 1, jointSpecialFiled = null,
   isResiding = true, residencyYears = null, propertyTaxResult = null,
+  residentOfficialPrice = null, hasAdjustedAreaHome = false,
 }) {
   const jt = RULES.holdingTax.comprehensiveTax;
   const isSingleHouse = houseCount <= 1;
   /* 2028년부터 일부 다주택·조정대상지역 주택은 공정시장가액비율이 80% */
-  const ratio = (!isSingleHouse && jt.fairMarketRatioAdjusted?.[year])
+  const usesAdjustedRatio = !isSingleHouse && (houseCount >= 3 || hasAdjustedAreaHome);
+  const ratio = (usesAdjustedRatio && jt.fairMarketRatioAdjusted?.[year])
     || jt.fairMarketRatio[year] || jt.fairMarketRatio.default;
   const lived = residencyYears ?? holdingYears;
+  const yearBrackets = jt.bracketsByYear?.[year];
+  const brackets = yearBrackets
+    ? (houseCount >= 3 ? (yearBrackets.threeOrMore || yearBrackets.general) : yearBrackets.general)
+    : jt.brackets;
+  const residentShare = Math.max(0, Math.min(1,
+    (residentOfficialPrice ?? (isResiding ? officialPrice : 0)) / officialPrice));
+  const multiHouseDeduction = year >= 2027
+    ? 400_000_000 + 500_000_000 * residentShare
+    : jt.basicDeduction.general;
   const ownerShares = shares?.length === ownerCount
     ? shares
     : Array.from({ length: ownerCount }, () => 1 / ownerCount);
@@ -138,8 +149,9 @@ function comprehensiveTax({
   const creditRate = (() => {
     if (!isSingleHouse) return { senior: 0, holding: 0, residency: 0, period: 0, basis: '', total: 0 };
     const senior = [...jt.seniorCredit].reverse().find((c) => olderAge >= c.age)?.rate ?? 0;
+    const rawHolding = [...jt.longTermCredit].reverse().find((c) => holdingYears >= c.years)?.rate ?? 0;
     const byHolding = year < jt.residencyOnlyFrom
-      ? ([...jt.longTermCredit].reverse().find((c) => holdingYears >= c.years)?.rate ?? 0)
+      ? rawHolding * (year === 2027 ? jt.longTermCredit2027Multiplier : 1)
       : 0;
     const byResidency = year >= jt.residencyCreditFrom
       ? ([...jt.residencyCredit].reverse().find((c) => lived >= c.years)?.rate ?? 0)
@@ -173,8 +185,9 @@ function comprehensiveTax({
 
   /** (a) 지분별 과세 — 세액공제 없음 */
   const perOwner = ownerShares.map((share) => {
-    const base = Math.max(0, (officialPrice * share - jt.basicDeduction.general) * ratio);
-    const gross = progressive(base, jt.brackets).tax;
+    const individualDeduction = isSingleHouse ? jt.basicDeduction.general : multiHouseDeduction;
+    const base = Math.max(0, (officialPrice * share - individualDeduction) * ratio);
+    const gross = progressive(base, brackets).tax;
     const propertyCredit = duplicateDeduction({ jongbuBase: base, share });
     return { share, base, gross, propertyCredit, tax: Math.max(0, gross - propertyCredit) };
   });
@@ -184,9 +197,9 @@ function comprehensiveTax({
   /* 2027년부터 1주택 기본공제가 거주 14억 / 비거주 9억 으로 갈린다 */
   const singleTable = isResiding ? jt.basicDeduction.singleHouse : jt.basicDeduction.nonResident;
   const singleDeduction = singleTable[year] ?? singleTable.default;
-  const deductionB = isSingleHouse ? singleDeduction : jt.basicDeduction.general;
+  const deductionB = isSingleHouse ? singleDeduction : multiHouseDeduction;
   const baseB = Math.max(0, (officialPrice - deductionB) * ratio);
-  const { tax: taxB1 } = progressive(baseB, jt.brackets);
+  const { tax: taxB1 } = progressive(baseB, brackets);
   const propertyCreditB = duplicateDeduction({ jongbuBase: baseB });
   const afterPropertyCredit = Math.max(0, taxB1 - propertyCreditB);
   const rawCredit = afterPropertyCredit * creditRate.total;
@@ -211,12 +224,17 @@ function comprehensiveTax({
     steps.push(`${year}년부터는 살지 않는 집의 공제가 줄어요 — 공제 ${won(singleDeduction)} 적용 (사시는 경우 ${won(jt.basicDeduction.singleHouse[year] ?? jt.basicDeduction.singleHouse.default)})`);
   }
   if (!isSingleHouse) {
-    steps.push(`집이 ${houseCount}채라고 알려주셔서, 1주택에만 주는 공제(${won(singleDeduction)})와 연세·오래 보유 공제는 빼고 계산했어요`);
+    steps.push(`집이 ${houseCount}채라 1주택 공제와 연세·거주 공제는 빼요. ${year}년 기본공제는 거주주택 비중을 반영해 ${won(multiHouseDeduction)}으로 계산했어요`);
+    if (year >= 2028) {
+      steps.push(usesAdjustedRatio
+        ? `3주택 이상이거나 조정대상지역 주택을 보유해 공정시장가액비율 ${pct(ratio)}를 적용했어요`
+        : `2주택 이하이고 조정대상지역 주택 보유로 확인되지 않아 공정시장가액비율 ${pct(ratio)}를 적용했어요`);
+    }
   }
   if (ownerCount > 1) {
     const shareText = ownerShares.map((s) => pct(s)).join(' : ');
     steps.push(`방법 1. 두 분이 따로 내기 (지분 ${shareText}) — ${perOwner.map((o) =>
-      `기준 금액 (${won(officialPrice * o.share)} - 공제 ${won(jt.basicDeduction.general)}) × ${pct(ratio)} = ${won(o.base)}`).join(' / ')}`);
+      `기준 금액 (${won(officialPrice * o.share)} - 공제 ${won(isSingleHouse ? jt.basicDeduction.general : multiHouseDeduction)}) × ${pct(ratio)} = ${won(o.base)}`).join(' / ')}`);
     steps.push(`  재산세와 겹치는 금액을 빼요 = ${perOwner.map((o) => won(o.propertyCredit)).join(' + ')}`);
     steps.push(`  방법 1로 내면 = ${perOwner.map((o) => won(o.tax)).join(' + ')} + 농특세 ${pct(jt.farmTaxRate)} = ${won(totalA)}`);
     if (isSingleHouse) {
@@ -320,6 +338,7 @@ export function holdingTaxByYear({
       officialPrice: priceThisYear, ownerCount: owners, olderAge, holdingYears, year,
       shares, houseCount, jointSpecialFiled: given.jointSpecialFiled ?? null,
       isResiding: residing, residencyYears, propertyTaxResult: pt,
+      hasAdjustedAreaHome: given.hasAdjustedAreaHome === true,
     });
 
     const steps = [...pt.steps, ...jt.steps];
@@ -359,6 +378,121 @@ export function holdingTaxByYear({
       officialPrice: round(priceThisYear),
       priorEstimated: pt.priorEstimated,
       notes: [...notes],
+      steps,
+      note: RULES.holdingTax.yearNotes?.[year],
+      basis: RULES.holdingTax._source,
+    };
+  });
+}
+
+/**
+ * 여러 주택의 재산세는 호별로, 종부세는 공시가격을 합산해 계산한다.
+ * 주택별 공시가격을 첫 번째 주택 하나로 축약하지 않기 위한 포트폴리오 계산 경로다.
+ */
+export function holdingTaxPortfolioByYear({
+  properties, ownerCount = 1, olderAge = 65, holdingYears = 0, isResiding = true,
+  residencyYears = null, refinements = {},
+}) {
+  if (!Array.isArray(properties) || properties.length === 0) throw new TypeError('주택 목록이 필요합니다.');
+  if (properties.length === 1) {
+    const [property] = properties;
+    return holdingTaxByYear({
+      officialPrice: property.officialPrice, ownerCount, olderAge, holdingYears,
+      isResiding, residencyYears, region: property.region,
+      previousOfficialPrice: property.previousOfficialPrice, refinements,
+    });
+  }
+
+  const given = usableRefinements(refinements);
+  const answered = Object.keys(given);
+  const years = RULES.holdingTax.years;
+  const growth = (given.officialPriceForecast ?? 0) / 100;
+  const accuracy = accuracyWith(answered);
+  const houseCount = properties.length;
+  let previousTax = given.previousYearTax ? Number(given.previousYearTax) : null;
+  let priorPrices = properties.map((property) =>
+    Number(given.previousOfficialPrice) > 0 && properties.length === 1
+      ? Number(given.previousOfficialPrice)
+      : property.previousOfficialPrice);
+
+  return years.map((year) => {
+    const currentPrices = properties.map((property) =>
+      property.officialPrice * Math.pow(1 + growth, year - years[0]));
+    const propertyResults = properties.map((property, index) => propertyTax({
+      officialPrice: currentPrices[index],
+      previousOfficialPrice: priorPrices[index],
+      isSingleHouse: false,
+      region: property.region,
+      year,
+      isUrbanArea: given.isUrbanArea ?? true,
+      localTaxAdjustment: given.localTaxAdjustment ?? 0,
+    }));
+    priorPrices = currentPrices;
+
+    const aggregatePropertyTax = propertyResults.reduce((sum, result) => ({
+      total: sum.total + result.total,
+      principal: sum.principal + result.principal,
+      urban: sum.urban + result.urban,
+      eduTax: sum.eduTax + result.eduTax,
+      base: sum.base + result.base,
+      ratio: RULES.holdingTax.propertyTax.fairMarketRatio.general,
+    }), { total: 0, principal: 0, urban: 0, eduTax: 0, base: 0, ratio: RULES.holdingTax.propertyTax.fairMarketRatio.general });
+    const totalOfficialPrice = currentPrices.reduce((sum, price) => sum + price, 0);
+    const jt = comprehensiveTax({
+      officialPrice: totalOfficialPrice,
+      ownerCount,
+      olderAge,
+      holdingYears,
+      year,
+      houseCount,
+      jointSpecialFiled: given.jointSpecialFiled ?? null,
+      isResiding,
+      residencyYears,
+      propertyTaxResult: aggregatePropertyTax,
+      residentOfficialPrice: isResiding ? currentPrices[0] : 0,
+      hasAdjustedAreaHome: given.hasAdjustedAreaHome === true
+        || properties.some((property) => property.isAdjustedArea === true),
+    });
+
+    const steps = [
+      `주택 ${houseCount}채의 공시가격을 모두 더해요 = ${properties.map((property, index) => `${property.complexName || `주택 ${index + 1}`} ${won(currentPrices[index])}`).join(' + ')} = ${won(totalOfficialPrice)}`,
+      ...propertyResults.flatMap((result, index) => [
+        `주택 ${index + 1} 재산세 계산`,
+        ...result.steps.map((step) => `  ${step}`),
+      ]),
+      `주택별 재산세 합계 = ${propertyResults.map((result) => won(result.total)).join(' + ')} = ${won(aggregatePropertyTax.total)}`,
+      ...jt.steps,
+    ];
+    let total = aggregatePropertyTax.total + jt.total;
+    steps.push(`${year}년에 내실 세금 = 재산세 ${won(aggregatePropertyTax.total)} + 종합부동산세 ${won(jt.total)} = ${won(total)}`);
+
+    const cap = RULES.holdingTax.burdenCapRate[year] ?? RULES.holdingTax.burdenCapRate.default;
+    if (previousTax > 0) {
+      const ceiling = previousTax * cap;
+      if (total > ceiling) {
+        steps.push(`알려주신 전년도 세액 기준 세부담상한 ${pct(cap)} = ${won(ceiling)}`);
+        total = ceiling;
+      }
+      previousTax = total;
+    }
+
+    return {
+      year,
+      propertyTax: round(aggregatePropertyTax.total),
+      propertyTaxByHome: propertyResults.map((result, index) => ({
+        index, total: result.total, principal: result.principal,
+      })),
+      jongbuTax: jt.total,
+      total: round(total),
+      useSpecial: false,
+      creditBasis: jt.creditRate?.basis,
+      creditCapped: jt.creditCapped,
+      jongbuDeduction: jt.deduction,
+      officialPrice: round(totalOfficialPrice),
+      estimated: true,
+      accuracy,
+      priorEstimated: propertyResults.some((result) => result.priorEstimated),
+      notes: ['여러 주택의 재산세는 각 주택별로, 종합부동산세는 합산 공시가격으로 계산했어요.'],
       steps,
       note: RULES.holdingTax.yearNotes?.[year],
       basis: RULES.holdingTax._source,

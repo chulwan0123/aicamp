@@ -186,6 +186,60 @@ export const RULES_2026 = {
         { upTo: 9_400_000_000, rate: 0.020, progressive: 36_000_000 },
         { upTo: null, rate: 0.027, progressive: 101_800_000 },
       ],
+      bracketsByYear: {
+        2026: {
+          general: [
+            { upTo: 300_000_000, rate: 0.005, progressive: 0 },
+            { upTo: 600_000_000, rate: 0.007, progressive: 600_000 },
+            { upTo: 1_200_000_000, rate: 0.010, progressive: 2_400_000 },
+            { upTo: 2_500_000_000, rate: 0.013, progressive: 6_000_000 },
+            { upTo: 5_000_000_000, rate: 0.015, progressive: 11_000_000 },
+            { upTo: 9_400_000_000, rate: 0.020, progressive: 36_000_000 },
+            { upTo: null, rate: 0.027, progressive: 101_800_000 },
+          ],
+          threeOrMore: [
+            { upTo: 300_000_000, rate: 0.005, progressive: 0 },
+            { upTo: 600_000_000, rate: 0.007, progressive: 600_000 },
+            { upTo: 1_200_000_000, rate: 0.010, progressive: 2_400_000 },
+            { upTo: 2_500_000_000, rate: 0.020, progressive: 14_400_000 },
+            { upTo: 5_000_000_000, rate: 0.030, progressive: 39_400_000 },
+            { upTo: 9_400_000_000, rate: 0.040, progressive: 89_400_000 },
+            { upTo: null, rate: 0.050, progressive: 183_400_000 },
+          ],
+        },
+        2027: {
+          general: [
+            { upTo: 300_000_000, rate: 0.005, progressive: 0 },
+            { upTo: 600_000_000, rate: 0.007, progressive: 600_000 },
+            { upTo: 1_200_000_000, rate: 0.013, progressive: 4_200_000 },
+            { upTo: 2_500_000_000, rate: 0.015, progressive: 6_600_000 },
+            { upTo: 5_000_000_000, rate: 0.020, progressive: 19_100_000 },
+            { upTo: 9_400_000_000, rate: 0.027, progressive: 54_100_000 },
+            { upTo: null, rate: 0.035, progressive: 129_300_000 },
+          ],
+          threeOrMore: [
+            { upTo: 300_000_000, rate: 0.005, progressive: 0 },
+            { upTo: 600_000_000, rate: 0.007, progressive: 600_000 },
+            { upTo: 1_200_000_000, rate: 0.013, progressive: 4_200_000 },
+            { upTo: 2_500_000_000, rate: 0.020, progressive: 12_600_000 },
+            { upTo: 5_000_000_000, rate: 0.030, progressive: 37_600_000 },
+            { upTo: 9_400_000_000, rate: 0.040, progressive: 87_600_000 },
+            { upTo: null, rate: 0.050, progressive: 181_600_000 },
+          ],
+        },
+        2028: {
+          general: [
+            { upTo: 300_000_000, rate: 0.005, progressive: 0 },
+            { upTo: 600_000_000, rate: 0.007, progressive: 600_000 },
+            { upTo: 1_200_000_000, rate: 0.013, progressive: 4_200_000 },
+            { upTo: 2_500_000_000, rate: 0.020, progressive: 12_600_000 },
+            { upTo: 5_000_000_000, rate: 0.030, progressive: 37_600_000 },
+            { upTo: 9_400_000_000, rate: 0.040, progressive: 87_600_000 },
+            { upTo: null, rate: 0.050, progressive: 181_600_000 },
+          ],
+        },
+      },
+      bracketsByYearNote: '2026년 세제개편안 p.63. 2027년은 2주택 이하와 3주택 이상을 구분하고, 2028년부터 주택 수 기준 차등세율을 폐지한다.',
       // 연령에 따른 고령자 공제는 개편 후에도 유지된다.
       seniorCredit: [
         { age: 60, rate: 0.2 }, { age: 65, rate: 0.3 }, { age: 70, rate: 0.4 },
@@ -195,8 +249,9 @@ export const RULES_2026 = {
         { years: 5, rate: 0.2 }, { years: 10, rate: 0.4 }, { years: 15, rate: 0.5 },
       ],
       longTermCreditLastYear: 2027,
-      longTermCreditReducedNote: '2027년 보유공제는 축소된다고만 발표됐고 축소 후 공제율표는 아직 공개되지 않았다. 여기서는 현행 표를 그대로 쓰되, 2027년은 거주공제와 비교해 높은 쪽을 적용한다. 거주기간과 보유기간이 같으면 두 표가 동일해 결과가 달라지지 않는다.',
-      longTermCreditReducedVerified: false,
+      longTermCredit2027Multiplier: 0.5,
+      longTermCreditReducedNote: '2027년 보유기간 공제율은 현행 공제율의 50%로 축소하고, 신설 거주기간 공제율과 비교해 높은 쪽을 적용한다.',
+      longTermCreditReducedVerified: true,
       // 거주기간 공제 — 2027년 신설, 2028년부터는 이 표만 쓴다.
       residencyCredit: [
         { years: 5, rate: 0.2 }, { years: 10, rate: 0.4 }, { years: 15, rate: 0.5 },

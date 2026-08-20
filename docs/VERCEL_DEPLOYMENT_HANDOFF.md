@@ -1,6 +1,6 @@
 # Vercel 운영 배포 현황 및 인계
 
-확인일: 2026-08-20 (KST)
+확인일: 2026-08-21 (KST)
 
 ## 현재 결론
 
@@ -16,7 +16,7 @@
 최신 화면의 `index.html` SHA-256은 다음과 같다.
 
 ```text
-52f9d117651502e3f04f96cf6cd6f7fa043c1895cfe7a2ba00a2312cb00df4ae
+c9addda854e3d0f71911794ec6ae89741e851e45129e6a8c02be0cfd83adaa4f
 ```
 
 두 저장소는 커밋 해시와 과거 부모 이력이 서로 달라도 최종 추적 파일 트리는 같아야 한다. 동기화 여부는 커밋 해시가 아니라 트리 해시와 파일 diff로 판단한다.
@@ -27,7 +27,7 @@
 - Vercel 팀: `camp17`
 - 주 프로젝트: `aicamp-silver`
 - 공동 프로젝트: `hanwha-ai-camp-silver`
-- 두 프로젝트 모두 정적 루트와 `/api/advise`, `/api/health`, `/api/price`, `/api/share` Functions를 배포한다.
+- 두 프로젝트 모두 정적 루트와 `/api/advise`, `/api/chat`, `/api/client-config`, `/api/consultations`, `/api/health`, `/api/price`, `/api/share` Functions를 배포한다.
 
 확인 명령은 다음과 같다.
 
@@ -50,8 +50,17 @@ npx --yes vercel@latest inspect https://hanwha-ai-camp-silver.vercel.app --scope
 
 - `OPENAI_API_KEY`
 - `PUBLIC_DATA_API_KEY`
+- `CONSULTATION_WEBHOOK_URL`
+- `KAKAO_JAVASCRIPT_KEY`
 
-따라서 AI 원격 호출은 현재 계산값을 이용한 규칙 기반 응답으로 대체된다. `/api/price`는 서버 함수까지 배포되지만 공공데이터 키가 설정될 때까지 명시적인 설정 오류를 반환한다. 비밀값은 문서, GitHub, 클라이언트 코드에 기록하지 않는다.
+따라서 AI 원격 호출은 현재 계산값을 이용한 규칙 기반 응답으로 대체된다. `/api/price`는 서버 함수까지 배포되지만 공공데이터 키가 설정될 때까지 명시적인 설정 오류를 반환한다. 상담은 운영 웹훅 설정 전까지 실제 담당자에게 전달되지 않으며, 카카오톡 공유는 JavaScript 키 설정 전까지 기기 공유·클립보드 방식으로 대체된다. 비밀값은 문서, GitHub, 클라이언트 코드에 기록하지 않는다.
+
+### 카카오톡 공유 운영 설정
+
+1. 카카오디벨로퍼스 앱의 JavaScript 키를 두 Vercel 프로젝트 Production 환경의 `KAKAO_JAVASCRIPT_KEY`에 설정한다.
+2. `[앱] > [플랫폼 키] > [JavaScript 키] > [JavaScript SDK 도메인]`에 `https://aicamp-silver-weld.vercel.app`, `https://hanwha-ai-camp-silver.vercel.app`을 등록한다.
+3. `[앱] > [제품 링크 관리] > [웹 도메인]`에도 같은 두 주소를 등록한다.
+4. 운영 화면에서 결과 공유 버튼을 눌러 카카오톡 친구 선택 화면과 수신 메시지의 `분석 결과 확인하기` 링크를 확인한다.
 
 ## Git 자동배포 상태
 

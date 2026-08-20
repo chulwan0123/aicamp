@@ -28,6 +28,8 @@ test('다음 주소검색 선택 결과를 도로명주소와 PNU로 함께 반�
             zonecode: '06544',
             bcode: '1165010700',
             mountainYn: 'N',
+            buildingName: '반포자이',
+            apartment: 'Y',
           });
         },
       };
@@ -41,6 +43,8 @@ test('다음 주소검색 선택 결과를 도로명주소와 PNU로 함께 반�
       zonecode: '06544',
       bcode: '1165010700',
       mountainYn: 'N',
+      buildingName: '반포자이',
+      apartment: 'Y',
       pnu: '1165010700000200043',
     });
   } finally {

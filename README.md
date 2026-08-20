@@ -33,10 +33,11 @@ npm run dev
 - 모든 선택 필드의 하단 시트 UI와 심플 체크 상태
 - 5초 분석 화면과 결과 요약
 - 보유세, 양도소득세, 주택연금, 임차·금융운용, 다운사이징, 상속·증여 상세 화면
-- 결과 화면의 AI 컨설팅 CTA와 대화형 상담 UI
-- 결과 공유·상담 CTA
-- 자산관리 뉴스 배너와 콘텐츠 목록
-- 바로가기·추천·서비스 메뉴로 구성한 마이페이지
+- 현재 계산값만 답변에 허용하는 `/api/chat` 기반 AI 컨설팅
+- 카카오 JavaScript SDK를 우선 사용하고 일반 공유·클립보드로 대체 가능한 암호화 결과 공유와 부모님 초대
+- 검증된 연락처와 암호화 결과 링크를 운영 웹훅으로 전달하는 전문가 상담 접수
+- 상세 내용이 연결된 자산관리 뉴스 배너와 콘텐츠 목록
+- 공지·고객센터·분류별 바로가기가 연결된 마이페이지
 - 최신 세제개편안 안내 상세 화면
 - 계산 입력·결과의 브라우저 저장과 인증 암호화된 7일 만료 공유 링크
 - plushome 규칙 엔진 기반 재산세·종합부동산세·양도소득세·주택연금·다운사이징·금융운용·증여 계산
@@ -60,14 +61,16 @@ npm run dev
 - CSS3 및 PLUS 디자인 시스템 토큰·폰트
 - Vanilla JavaScript
 - Node.js 20 이상
-- Vercel Functions (`/api/advise`, `/api/share`, `/api/price`, `/api/health`)
+- Vercel Functions (`/api/advise`, `/api/chat`, `/api/client-config`, `/api/consultations`, `/api/share`, `/api/price`, `/api/health`)
 - Lottie 로컬 런타임과 MP4 미디어 에셋
 - Lucide Icons 로컬 SVG 에셋
 - Vercel
 
 ## 배포 방식
 
-루트 정적 파일과 `api/**` 서버리스 함수를 Vercel에 함께 배포합니다. 운영 환경에는 `OPENAI_API_KEY`, `OPENAI_MODEL`, `USE_MOCK=false`, `SHARE_SECRET`, `PUBLIC_DATA_API_KEY`를 설정합니다. 비밀값은 저장소와 클라이언트 코드에 넣지 않습니다.
+루트 정적 파일과 `api/**` 서버리스 함수를 Vercel에 함께 배포합니다. 운영 환경에는 `OPENAI_API_KEY`, `OPENAI_MODEL`, `OPENAI_CHAT_MODEL`, `USE_MOCK=false`, `SHARE_SECRET`, `PUBLIC_DATA_API_KEY`, `CONSULTATION_WEBHOOK_URL`, `KAKAO_JAVASCRIPT_KEY`를 설정합니다. 상담 채널이 서명 검증을 지원하면 `CONSULTATION_WEBHOOK_SECRET`도 설정합니다. 비밀값은 저장소와 클라이언트 코드에 넣지 않습니다. 카카오 JavaScript 키는 브라우저 SDK 초기화에 쓰이는 공개 식별자이므로 운영 도메인 제한을 반드시 함께 설정합니다.
+
+카카오디벨로퍼스 앱의 JavaScript 키에는 두 운영 주소를 `JavaScript SDK 도메인`으로 등록하고, 같은 주소를 `제품 링크 관리 > 웹 도메인`에도 등록해야 합니다. 키가 없거나 SDK 연결에 실패하면 기존 버튼은 기기 공유 화면을 열고, 그것도 지원하지 않는 환경에서는 암호화 링크를 클립보드에 복사합니다.
 
 배포 전 `npm run check`를 실행하고, 운영 배포 후 `/`, `/api/health`, 모바일 320·375·390px 화면과 주소 검색 → PNU → `/api/price` 흐름을 확인합니다.
 

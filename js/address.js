@@ -72,6 +72,8 @@ export async function openAddressSearch() {
             zonecode: data.zonecode,
             bcode: data.bcode,
             mountainYn: data.mountainYn,
+            buildingName: data.buildingName || '',
+            apartment: data.apartment || 'N',
             pnu,
           });
         } catch (error) {

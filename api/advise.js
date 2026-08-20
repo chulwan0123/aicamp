@@ -51,9 +51,15 @@ function validatePayload(payload) {
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new TypeError('요청 본문이 올바르지 않습니다.');
   const { property, subject, answers = {} } = payload;
   if (!property || !subject) throw new TypeError('부동산과 부모님 정보가 필요합니다.');
-  finitePositive(property.officialPrice, '공시가격');
-  finitePositive(property.marketPrice, '실거래가');
-  finitePositive(property.areaM2, '전용면적');
+  const properties = Array.isArray(payload.properties) && payload.properties.length ? payload.properties : [property];
+  if (properties.length < 1 || properties.length > 3) throw new TypeError('주택 목록은 1~3채여야 합니다.');
+  properties.forEach((home, index) => {
+    finitePositive(home.officialPrice, `주택 ${index + 1} 공시가격`);
+    finitePositive(home.marketPrice, `주택 ${index + 1} 매매가격`);
+    finitePositive(home.areaM2, `주택 ${index + 1} 전용면적`);
+    finitePositive(subject.acquisitions?.[index]?.acquisitionPrice || home.acquisitionPrice, `주택 ${index + 1} 취득가액`);
+    if (typeof home.isCapitalArea !== 'boolean') throw new TypeError(`주택 ${index + 1}의 수도권 여부가 필요합니다.`);
+  });
   finitePositive(subject.age, '아버지 연령');
   finitePositive(subject.spouseAge, '어머니 연령');
   finitePositive(subject.holdingYears, '보유기간', { allowZero: true });
@@ -61,12 +67,11 @@ function validatePayload(payload) {
   finitePositive(subject.monthlyIncome, '월 소득', { allowZero: true });
   finitePositive(subject.targetExpense, '필요 생활비');
   finitePositive(subject.acquisitionPrice || property.acquisitionPrice, '취득가액');
-  if (!Number.isInteger(subject.houseCount) || subject.houseCount < 1 || subject.houseCount > 3) throw new TypeError('주택 수는 1~3채여야 합니다.');
+  if (!Number.isInteger(subject.houseCount) || subject.houseCount !== properties.length) throw new TypeError('선택한 주택 수와 입력한 주택 목록이 일치하지 않습니다.');
   if (!['SINGLE', 'JOINT_50_50'].includes(subject.ownership)) throw new TypeError('명의 정보가 올바르지 않습니다.');
-  if (typeof property.isCapitalArea !== 'boolean') throw new TypeError('현재 주택의 수도권 여부가 필요합니다.');
   if (typeof subject.wishRegionIsCapitalArea !== 'boolean') throw new TypeError('희망 지역의 수도권 여부가 필요합니다.');
   if (!answers || typeof answers !== 'object' || Array.isArray(answers)) throw new TypeError('성향 응답이 올바르지 않습니다.');
-  return { property, subject, answers, refinements: payload.refinements || {} };
+  return { property, properties, subject, answers, refinements: payload.refinements || {} };
 }
 
 function fallbackAdvice({ computed, answers, property, subject, reason }) {
@@ -154,13 +159,13 @@ export default async function handler(req, res) {
     res.status(400).json({ error: String(error.message || error) });
     return;
   }
-  const { property, answers } = parsed;
+  const { property, properties, answers } = parsed;
   const subject = { ...parsed.subject, refinements: parsed.refinements || parsed.subject.refinements || {} };
 
   /* 1) 규칙 엔진 — LLM 을 쓰든 안 쓰든 항상 계산한다 */
   let computed;
   try {
-    computed = buildScenarios({ property, subject });
+    computed = buildScenarios({ property, properties, subject });
   } catch (error) {
     console.error('[advise] 시나리오 계산 실패', error);
     res.status(422).json({ error: String(error.message || error) });
@@ -176,7 +181,7 @@ export default async function handler(req, res) {
   /* 2) LLM — 판단과 문장만 */
   const messages = [
     { role: 'system', content: SYSTEM_PROMPT },
-    { role: 'user', content: JSON.stringify({ property, subject, answers, computed }) },
+    { role: 'user', content: JSON.stringify({ property, properties, subject, answers, computed }) },
   ];
 
   try {
