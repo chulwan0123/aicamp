@@ -75,6 +75,7 @@ function resetComplex(property) {
   delete property.dataset.pnu;
   delete property.dataset.complexName;
   delete property.dataset.areaM2;
+  delete property.dataset.selectedRoadAddress;
   nodes.road.value = '';
   nodes.area.disabled = true;
   nodes.areaValue.textContent = '단지를 먼저 선택해 주세요';
@@ -123,9 +124,14 @@ function priceRange(area) {
 
 function selectArea(property, area) {
   const nodes = propertyNodes(property);
+  const state = propertyState.get(property);
+  const roadAddress = String(state?.complex?.roadAddress || property.dataset.selectedRoadAddress || '').trim();
+  if (roadAddress) {
+    property.dataset.selectedRoadAddress = roadAddress;
+    nodes.road.value = roadAddress;
+  }
   property.dataset.areaM2 = String(area.areaM2);
   nodes.areaValue.textContent = `${area.areaM2}㎡ (약 ${Math.round(area.areaM2 * 0.3025)}평)`;
-  const state = propertyState.get(property);
   nodes.summary.textContent = `${state.complex.complexName} · ${nodes.areaValue.textContent}`;
   nodes.summary.dataset.visible = 'true';
   clearOfficialData(property);
@@ -158,17 +164,26 @@ function showAreas(property, trigger) {
 
 function selectComplex(property, complex, trigger) {
   const nodes = propertyNodes(property);
+  const roadAddress = String(complex.roadAddress || '').trim();
+  if (!roadAddress) {
+    status('이 단지의 도로명주소를 확인할 수 없어요. 다른 검색 결과를 선택해 주세요.');
+    return;
+  }
+  clearOfficialData(property);
   propertyState.set(property, { complex });
   property.dataset.pnu = complex.pnu;
   property.dataset.complexName = complex.complexName;
+  property.dataset.selectedRoadAddress = roadAddress;
   delete property.dataset.areaM2;
   nodes.query.value = complex.complexName;
-  nodes.road.value = complex.roadAddress;
+  nodes.road.value = roadAddress;
   nodes.area.disabled = false;
   nodes.areaValue.textContent = '전용면적을 선택해 주세요';
   nodes.summary.textContent = `${complex.complexName} · 면적 선택 전`;
   nodes.summary.dataset.visible = 'true';
-  clearOfficialData(property);
+  document.dispatchEvent(new CustomEvent('silver:property-selection-applied', {
+    detail: { property, pnu: complex.pnu, roadAddress },
+  }));
   showAreas(property, trigger);
 }
 

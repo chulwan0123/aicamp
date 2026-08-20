@@ -4,6 +4,7 @@ import fs from 'node:fs';
 
 const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const engine = fs.readFileSync(new URL('../js/silver-engine.js', import.meta.url), 'utf8');
+const propertySearch = fs.readFileSync(new URL('../js/property-search.js', import.meta.url), 'utf8');
 const ogImage = fs.readFileSync(new URL('../assets/og-silver-share.png', import.meta.url));
 
 test('본 화면은 plushome 계약대로 19개다', () => {
@@ -49,6 +50,13 @@ test('주택 입력은 시도·시군구·단지·전용면적 순서이며 도�
   assert.match(html, /data-address-input placeholder="단지를 선택하면 자동으로 입력돼요" readonly/);
   assert.doesNotMatch(html, /value="서울특별시 서초구 신반포로 270"/);
   assert.match(engine, /selectedAreaM2/);
+});
+
+test('선택한 도로명주소는 입력칸 값이 유실돼도 다음 단계에서 복원한다', () => {
+  assert.match(propertySearch, /property\.dataset\.selectedRoadAddress = roadAddress/);
+  assert.match(propertySearch, /nodes\.road\.value = roadAddress/);
+  assert.match(engine, /roadInput\?\.value\.trim\(\) \|\| selectedRoad/);
+  assert.match(engine, /roadInput\.value = selectedRoad/);
 });
 
 test('모바일 탭 화면은 페이지 가로 스크롤을 막고 내부 레일만 유지한다', () => {

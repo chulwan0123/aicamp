@@ -336,9 +336,12 @@ function addressRows() {
   return [...document.querySelectorAll('#address-fields .property')].map((propertyNode) => {
     const roadInput = propertyNode.querySelector('[data-address-input]');
     const detailInput = propertyNode.querySelector('[data-detail-input]');
+    const selectedRoad = String(propertyNode.dataset.selectedRoadAddress || '').trim();
+    const road = roadInput?.value.trim() || selectedRoad;
+    if (roadInput && !roadInput.value.trim() && selectedRoad) roadInput.value = selectedRoad;
     return {
       propertyNode,
-      road: roadInput?.value.trim() || '',
+      road,
       detail: detailInput?.value.trim() || '',
       pnu: propertyNode.dataset.pnu || '',
       selectedComplexName: propertyNode.dataset.complexName || null,
@@ -1105,7 +1108,11 @@ document.querySelector('#address-fields')?.addEventListener('input', (event) => 
   const input = event.target.closest('[data-detail-input], [data-address-input]');
   const propertyNode = input?.closest('.property');
   if (propertyNode) {
-    if (input.matches('[data-address-input]')) delete propertyNode.dataset.pnu;
+    if (input.matches('[data-address-input]')
+      && input.value.trim() !== String(propertyNode.dataset.selectedRoadAddress || '').trim()) {
+      delete propertyNode.dataset.pnu;
+      delete propertyNode.dataset.selectedRoadAddress;
+    }
     clearOfficialPrice(propertyNode);
   }
 });
