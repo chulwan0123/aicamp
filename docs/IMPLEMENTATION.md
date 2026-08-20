@@ -1,6 +1,6 @@
 # 구현 현황과 보완 과제
 
-> 운영 기준일: 2026-08-21. 운영 URL은 `https://aicamp-sigma.vercel.app`, 배포 기준 커밋은 `197fb528f5765beb98795a3e9524c74d308bd661`이다. 아래에서 `운영`과 `현재 미커밋 작업`을 구분한다.
+> 운영 기준일: 2026-08-21. 운영 URL은 `https://aicamp-sigma.vercel.app`이다.
 
 ## 제품 목표
 
@@ -61,13 +61,14 @@
 - 뉴스·콘텐츠·공지·고객센터와 마이 분류 메뉴는 기존 바텀시트·상세 화면 패턴으로 연결합니다.
 - API 비밀키와 공유 비밀키는 서버 환경변수에서만 읽고 저장소에 넣지 않습니다. 카카오 JavaScript 키는 `/api/client-config`로 필요한 값만 전달하고 등록 도메인으로 사용 범위를 제한합니다.
 
-### 현재 미커밋 단지 검색 작업
+### 서울·경기 단지 검색
 
 - 로컬에는 `시/도 → 시/군/구 → 단지명 → 전용면적 → 동·호` 순서의 검색 UI와 `GET /api/complexes`가 구현 중입니다.
 - 2025년 서울·경기 69개 시군구 gzip 조각과 192,195개 단지 색인을 사용합니다.
 - 이 작업은 반포자이 고정값이나 다른 단지 폴백을 사용하지 않습니다.
-- `index.html`의 3단계 문구·DOM·레이아웃을 변경합니다. 시각 QA 증거는 `design-qa.md`에 기록됐지만 아직 미커밋·미배포이므로 운영 구현으로 간주하지 않습니다.
-- 현재 미커밋 작업 포함 `npm run check`는 75개 테스트가 통과합니다.
+- `index.html`의 3단계 문구·DOM·레이아웃을 변경했으며 시각 QA 증거는 `design-qa.md`에 기록돼 있습니다.
+- 모바일 편집 필드는 iOS 포커스 확대를 막도록 최소 16px를 사용합니다.
+- 현재 `npm run check`는 77개 테스트가 통과합니다.
 
 ## 배포 구조
 
@@ -78,13 +79,11 @@
 - 검증: `npm run check`
 - 운영 저장소: `https://github.com/chulwan0123/aicamp`
 - 운영 배포: `https://aicamp-sigma.vercel.app`
-- 운영 배포 원본: `https://aicamp-4t9tvxm64-oxaz1234-gmailcoms-projects.vercel.app`
 - Vercel 프로젝트: `oxaz1234-gmailcoms-projects/aicamp`
-- 배포 ID: `dpl_CZpJ8mVZeuKon5D9GLpeNyx8YFCH`
-- 배포 브랜치·커밋: `codex/fix-my-shortcut-font-14-5` · `197fb528f5765beb98795a3e9524c74d308bd661`
+- 배포 브랜치: `codex/fix-my-shortcut-font-14-5`
 - Git 작성자 이메일: `Oxaz1234@gmail.com`
 
-현재 Production은 위 커밋의 깨끗한 작업 트리에서 Vercel CLI로 수동 배포했습니다. 로컬 미커밋 단지 검색 변경은 포함되지 않았습니다.
+Production의 불변 URL과 배포 ID는 `vercel inspect`로 확인합니다.
 
 ### 운영 환경변수 상태
 
@@ -129,7 +128,7 @@
 ## 다음 개발 우선순위
 
 1. 다주택 양도세 12억원 비과세 비율과 조정대상지역 전달 결함 수정·회귀 테스트
-2. 미커밋 단지 검색의 시각 QA 증거 검토와 운영 배포 판단
+2. 단지 검색 운영 모니터링과 새 기준연도 색인 갱신 자동화
 3. 과세연도별 규칙 버전과 세무 검증 사례 확장
 4. 가족 초대 권한·서버 저장
 5. 공식 주택연금 조회와 상담 예약

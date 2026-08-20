@@ -18,7 +18,7 @@
 | Git 작성자 이메일 | `Oxaz1234@gmail.com` |
 | 공식 저장소 | `https://github.com/chulwan0123/aicamp` |
 | 배포 기준 브랜치 | `codex/fix-my-shortcut-font-14-5` |
-| 배포 기준 커밋 | `197fb528f5765beb98795a3e9524c74d308bd661` |
+| 배포 기준 커밋 | 운영 별칭을 `vercel inspect`로 확인 |
 | 공식 remote | `origin` |
 
 ```bash
@@ -39,11 +39,10 @@ git log -1 --format='%an <%ae>%n%cn <%ce>'
 | 운영 프로젝트 | `aicamp` |
 | 프로젝트 ID | `prj_PyZ4DtcqJBFAKgRbN8My5VfvXAIX` |
 | 운영 URL | `https://aicamp-sigma.vercel.app` |
-| 불변 배포 URL | `https://aicamp-4t9tvxm64-oxaz1234-gmailcoms-projects.vercel.app` |
-| 배포 ID | `dpl_CZpJ8mVZeuKon5D9GLpeNyx8YFCH` |
-| 상태 | `Ready` |
+| 불변 배포 URL·ID | `vercel inspect` 결과 기준 |
+| 정상 상태 | `Ready` |
 
-현재 운영 별칭은 커밋 `197fb52`의 깨끗한 작업 트리에서 생성한 수동 Production 배포를 가리킨다. Git 자동배포 브랜치는 별도 확인 전까지 운영 절차로 가정하지 않는다.
+현재 운영 별칭은 깨끗한 커밋에서 생성한 Production 배포를 가리켜야 한다. Git 자동배포 브랜치는 별도 확인 전까지 운영 절차로 가정하지 않는다.
 
 ## 4. 운영 환경변수
 
@@ -67,17 +66,16 @@ Production에서 존재를 확인한 변수:
 - 공시가격 출처: 국토교통부 주택 공시가격 정보
 - 반포자이는 검증용 스모크 예시이며 운영 폴백이 아니다.
 
-## 6. 현재 미커밋 작업
-
-현재 로컬에는 운영 배포 이후의 단지 검색 작업이 있다.
+## 6. 단지 검색 출시 범위
 
 - `GET /api/complexes`
 - `시/도 → 시/군/구 → 단지 → 전용면적 → 동·호` 입력
 - 서울·경기 69개 시군구 gzip 조각, 192,195개 단지 색인
 - 공시가격 저장소·화면 3·엔진·테스트·Vercel 설정 변경
-- 현재 `npm run check`: 75개 통과
+- 모바일 편집 필드 16px 이상으로 iOS 포커스 확대 방지
+- 현재 `npm run check`: 77개 통과
 
-이 변경은 아직 커밋·푸시·배포되지 않았다. `index.html`의 문구·DOM·레이아웃을 바꾸며 시각 QA 증거는 `design-qa.md`에 기록돼 있다.
+`index.html`의 문구·DOM·레이아웃 변경과 시각 QA 증거는 `design-qa.md`에 기록돼 있다.
 
 ## 7. 수정 후 필수 절차
 
@@ -105,5 +103,5 @@ curl -fsS https://aicamp-sigma.vercel.app/api/health
 - 공식 GitHub 대상은 `origin`의 `chulwan0123/aicamp`다.
 - 운영 Vercel 대상은 `oxaz1234-gmailcoms-projects/aicamp`다.
 - 로컬 QA 결과물, 스크린샷, 임시 ZIP, `.vercel`, `.env*`는 커밋하지 않는다.
-- 미커밋 단지 검색을 운영 배포 완료 기능처럼 기록하지 않는다.
+- 단지 검색 데이터와 `/api/complexes`가 실제 배포 산출물에 포함됐는지 운영에서 확인한다.
 - 다주택 양도세의 1주택 비과세 적용과 조정대상지역 전달 결함을 수정·검증하기 전 출시 완료로 판정하지 않는다.

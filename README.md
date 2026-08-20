@@ -5,13 +5,12 @@
 ## 배포 주소
 
 - 현재 운영: <https://aicamp-sigma.vercel.app>
-- 현재 운영 배포 원본: <https://aicamp-4t9tvxm64-oxaz1234-gmailcoms-projects.vercel.app>
 - 현재 저장소: <https://github.com/chulwan0123/aicamp>
-- 배포 기준 브랜치·커밋: `codex/fix-my-shortcut-font-14-5` · `197fb528f5765beb98795a3e9524c74d308bd661`
+- 배포 브랜치: `codex/fix-my-shortcut-font-14-5`
 - Vercel 프로젝트: `oxaz1234-gmailcoms-projects/aicamp`
 - 운영 계정 이메일: `Oxaz1234@gmail.com`
 
-2026-08-21 현재 운영 별칭은 Vercel 배포 `dpl_CZpJ8mVZeuKon5D9GLpeNyx8YFCH`를 가리키며 상태는 `Ready`입니다. 이 배포는 위 커밋의 깨끗한 작업 트리에서 수동 생성했습니다. 로컬의 미커밋 단지 검색 변경은 아직 운영에 포함되지 않았습니다.
+2026-08-21 현재 운영 별칭은 Vercel Production을 가리킵니다. 실제 불변 배포 URL과 배포 ID는 `vercel inspect https://aicamp-sigma.vercel.app --scope oxaz1234-gmailcoms-projects`로 확인합니다.
 
 ## 실행 방법
 
@@ -80,9 +79,9 @@ npm run dev
 
 공시가격은 저장소의 2025년 서울·경기 전체 압축 조각을 조회하므로 API 키가 필요 없습니다. 매매·전월세 실거래만 서버의 `DATA_GO_KR_API_KEY`를 사용합니다. 반포자이는 테스트·스모크 예시일 뿐 운영 폴백이 아닙니다.
 
-## 현재 미커밋 개발 상태
+## 서울·경기 단지 검색
 
-2026-08-21 로컬 작업 트리에는 `시/도 → 시/군/구 → 단지 → 전용면적 → 동·호` 검색과 `/api/complexes`를 추가하는 별도 변경이 있습니다. 2025년 서울·경기 69개 시군구 조각, 192,195개 단지 색인을 사용하며 현재 `npm run check` 75개가 통과합니다. 시각 QA 증거는 `design-qa.md`에 추가됐지만 아직 미커밋·미배포 상태이므로 운영 기능으로 간주하지 않습니다.
+`시/도 → 시/군/구 → 단지 → 전용면적 → 동·호` 검색과 `/api/complexes`를 제공합니다. 2025년 서울·경기 69개 시군구 조각과 192,195개 단지 색인을 사용하며, 시각 QA 증거는 `design-qa.md`에 기록돼 있습니다. 모바일의 편집 가능 필드는 iOS 포커스 확대를 막기 위해 16px 이상을 사용합니다.
 
 ## 알려진 계산 출시 차단 항목
 

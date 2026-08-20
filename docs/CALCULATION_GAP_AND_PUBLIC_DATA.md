@@ -1,6 +1,6 @@
 # 외부 데모 계산 괴리와 공공데이터 적용 결과
 
-> 최신 상태(2026-08-21): 공공데이터 3종은 커밋 `197fb52`와 `https://aicamp-sigma.vercel.app`에 배포됐다. 로컬의 `/api/complexes`와 지역·단지·면적 선택 UI는 별도 미커밋·미배포 작업이다.
+> 최신 상태(2026-08-21): 공공데이터 3종과 `/api/complexes`, 지역·단지·면적 선택 UI를 `https://aicamp-sigma.vercel.app`의 출시 경로로 관리한다.
 
 ## 결론
 

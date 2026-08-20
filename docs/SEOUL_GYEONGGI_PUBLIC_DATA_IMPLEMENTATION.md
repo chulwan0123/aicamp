@@ -43,8 +43,8 @@ node scripts/build-public-price-shards.js "/path/to/국토교통부_주택 공�
 
 ## 검증 결과
 
-- 운영 배포 기준 커밋 `197fb528f5765beb98795a3e9524c74d308bd661`: 71개 테스트 통과
-- 현재 미커밋 단지 검색 작업 포함 `npm run check`: 75개 테스트 통과
+- 공공데이터 3종 출시 기준: 71개 테스트 통과
+- 단지 검색과 모바일 입력 확대 방지 포함 현재 `npm run check`: 77개 테스트 통과
 - 공시가격 서울 검증: 반포자이 101동 101호, 전용 84.943㎡, 2025년 2,462,000,000원
 - 공시가격 경기 검증: 샛별마을(라이프) 101동 101호, 전용 84.99㎡, 2025년 684,000,000원
 - 실제 키 스모크: 반포자이 동일 지번·면적 2026년 1~8월 매매 13건, 중앙값 4,740,000,000원
@@ -56,15 +56,13 @@ node scripts/build-public-price-shards.js "/path/to/국토교통부_주택 공�
 
 - Vercel 프로젝트 `aicamp` Production에 `DATA_GO_KR_API_KEY`를 민감 변수로 설정했다.
 - 운영 URL: `https://aicamp-sigma.vercel.app`
-- 불변 배포 URL: `https://aicamp-4t9tvxm64-oxaz1234-gmailcoms-projects.vercel.app`
-- 배포 ID: `dpl_CZpJ8mVZeuKon5D9GLpeNyx8YFCH`, 상태 `Ready`
 - 운영 배포에서 `/api/health`, `/api/price`, `/api/market` 실제 조회를 확인했다.
-- 운영 배포의 소스는 커밋 `197fb528f5765beb98795a3e9524c74d308bd661`이다.
+- 현재 불변 배포 URL과 배포 ID는 `vercel inspect`로 확인한다.
 
-## 현재 미커밋 확장 작업
+## 단지 검색 확장
 
 - `GET /api/complexes`와 `시/도 → 시/군/구 → 단지명 → 전용면적 → 동·호` 선택 흐름이 로컬에 구현 중이다.
 - 2025년 서울·경기 공시가격 원본에서 만든 69개 시군구 gzip 조각과 192,195개 단지 색인을 사용한다.
 - 반포자이 또는 다른 단지 고정 폴백은 사용하지 않는다.
-- 이 변경은 `index.html`의 3단계 문구·레이아웃을 바꾼다. 시각 QA 증거는 `design-qa.md`에 기록됐지만 아직 미커밋·미배포 상태다.
-- 이 미커밋 작업에는 공시가격 저장소 변경도 포함되며 운영 배포 `197fb52`에는 들어 있지 않다.
+- 이 변경은 `index.html`의 3단계 문구·레이아웃을 바꾸며 시각 QA 증거는 `design-qa.md`에 기록돼 있다.
+- 모바일 편집 필드는 iOS 자동 확대를 막도록 16px 이상을 사용한다.

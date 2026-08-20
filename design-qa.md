@@ -1,6 +1,6 @@
 # 결과 상세 디자인 QA
 
-> 상태 갱신(2026-08-21): 첫 번째 구역은 추천 상세의 역사적 QA이고, 아래 두 번째 구역은 로컬 미커밋 화면 3 검색 UI의 별도 QA다. 현재 운영 기준은 `https://aicamp-sigma.vercel.app`의 커밋 `197fb52`이며 화면 3 변경은 아직 운영에 배포되지 않았다.
+> 상태 갱신(2026-08-21): 첫 번째 구역은 추천 상세의 역사적 QA이고, 아래 두 번째 구역은 화면 3 검색 UI의 별도 QA다. 운영 기준은 `https://aicamp-sigma.vercel.app`이다.
 
 - source visual truth: `/Users/chulwan/Documents/Codex/2026-08-20/https-github-com-chulwan0123-aicamp-2/output/silver-demo-qa-2026-08-20/21-recommended-detail.png`
 - implementation screenshot: `/tmp/silver-recommendation-current-fixed.png`
@@ -52,7 +52,7 @@
 - 모바일 가로 넘침 검사
 - 브라우저 콘솔 오류·경고 검사
 
-final result: 추천 상세 기준 passed. 미커밋 화면 3 변경은 미검증.
+final result: 추천 상세 기준 passed.
 
 ---
 
@@ -83,6 +83,6 @@ final result: 추천 상세 기준 passed. 미커밋 화면 3 변경은 미검�
 - 서초구 `반포자이` 검색은 실제 PNU `1165010700000200043`, 도로명주소, 16개 전용면적을 반환했다.
 - 전용 84.943㎡와 101동 101호 선택 후 다음 단계에서 2025년 공시가격 2,462,000,000원이 자동 조회됐다.
 - 키보드 Enter 검색, Escape/배경/닫기 버튼으로 시트 닫기, 선택 후 동·호수 포커스 이동을 확인했다.
-- `npm run check`: 75개 테스트 통과.
+- `npm run check`: 모바일 입력 확대 방지 회귀 테스트를 포함해 77개 테스트 통과.
 
 final result: passed
