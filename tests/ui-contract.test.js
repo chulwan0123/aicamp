@@ -41,8 +41,8 @@ test('결과 공유와 상담 버튼 글자는 AI 컨설팅 버튼과 같은 크
   assert.match(html, /\.result-cta \.share-primary,\.result-cta \.share-secondary\{font-size:17px;font-weight:700\}/);
 });
 
-test('마이페이지의 다섯 바로가기 메뉴 글자는 2px 작게 표시한다', () => {
-  assert.match(html, /\.my-shortcuts \.my-shortcut\{font-size:10px\}/);
+test('마이페이지의 다섯 바로가기 메뉴 글자는 기존 16px보다 1.5px 작게 표시한다', () => {
+  assert.match(html, /\.my-shortcuts \.my-shortcut\{font-size:14\.5px\}/);
   for (const label of ['내 결과', '부모님 초대', '세제 안내', '공지사항', '고객센터']) assert.match(html, new RegExp(label));
 });
 
