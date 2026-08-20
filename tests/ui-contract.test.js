@@ -36,6 +36,24 @@ test('모바일 탭 화면은 페이지 가로 스크롤을 막고 내부 레일
   assert.match(html, /\.my-categories\{[^}]*overflow-x:auto/);
 });
 
+test('결과 공유와 상담 버튼 글자는 AI 컨설팅 버튼과 같은 크기와 굵기다', () => {
+  assert.match(html, /\.result-status \.ai-consult-button\{[^}]*font-size:17px/);
+  assert.match(html, /\.result-cta \.share-primary,\.result-cta \.share-secondary\{font-size:17px;font-weight:700\}/);
+});
+
+test('마이페이지의 다섯 바로가기 메뉴 글자는 2px 작게 표시한다', () => {
+  assert.match(html, /\.my-shortcuts \.my-shortcut\{font-size:10px\}/);
+  for (const label of ['내 결과', '부모님 초대', '세제 안내', '공지사항', '고객센터']) assert.match(html, new RegExp(label));
+});
+
+test('두 줄 모달 제목에서도 닫기 버튼은 첫 줄에 맞춘다', () => {
+  assert.match(html, /\.sheet-header\{align-items:flex-start\}\.sheet-close\{flex:0 0 44px;margin-top:-8px\}/);
+});
+
+test('홈 소개 문구는 부모님의 뒤에서 두 줄로 나눈다', () => {
+  assert.match(html, /부동산과 생활비를 바탕으로 부모님의<br>다음 계획을 살펴보세요\./);
+});
+
 test('ZIP 엔진의 전체 결과 계약이 요약과 상세 화면에 연결된다', () => {
   for (const token of [
     '부모님 성향 분석', '네 가지 선택지를 모두 비교했어요', '추천 판단을 자세히 볼까요?',
