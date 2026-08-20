@@ -44,9 +44,9 @@ python3 -m http.server 8789
 - HTML5
 - CSS3 및 PLUS 디자인 시스템 토큰·폰트
 - Vanilla JavaScript
+- Lucide Icons 로컬 SVG 에셋
 - GitHub Pages
 
 ## 배포 방식
 
 `main` 브랜치 루트 디렉터리를 GitHub Pages 게시 원본으로 사용합니다. 정적 파일이므로 별도 빌드 단계가 없습니다.
-
