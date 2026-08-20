@@ -50,7 +50,7 @@ npm run dev
 ## 문서
 
 - [구현 현황과 보완 과제](./docs/IMPLEMENTATION.md)
-- [Vercel 자동배포 장애 및 인계 문서](./docs/VERCEL_DEPLOYMENT_HANDOFF.md)
+- [Vercel 운영 배포 현황 및 인계 문서](./docs/VERCEL_DEPLOYMENT_HANDOFF.md)
 - [세금 기준과 추천 알고리즘](./docs/TAX_AND_ALGORITHM.md)
 - [반포자이 은퇴 부부 페르소나 및 자산관리 결론](./docs/반포자이_은퇴부부_페르소나_및_자산관리_결론.md)
 
@@ -71,4 +71,4 @@ npm run dev
 
 배포 전 `npm run check`를 실행하고, 운영 배포 후 `/`, `/api/health`, 모바일 320·375·390px 화면과 주소 검색 → PNU → `/api/price` 흐름을 확인합니다.
 
-2026-08-20 배포는 Vercel `chulwan-8137` 계정의 `camp17` 범위에서 두 저장소를 각각 독립 프로젝트로 운영합니다. 현재 `USE_MOCK=true`와 프로젝트별 `SHARE_SECRET`은 설정되어 규칙 기반 분석과 암호화 공유를 사용할 수 있습니다. `OPENAI_API_KEY`와 `PUBLIC_DATA_API_KEY`는 제공되지 않아 AI 원격 호출은 규칙 기반 응답으로 대체되고, 실제 공동주택 공시가격 호출은 키 설정 전까지 명시적 오류를 반환합니다.
+2026-08-20 기준 Vercel `chulwan-8137` 계정의 `camp17` 범위에서 두 저장소를 각각 독립 프로젝트로 운영합니다. 현재 `USE_MOCK=true`와 프로젝트별 `SHARE_SECRET`은 설정되어 규칙 기반 분석과 암호화 공유를 사용할 수 있습니다. `OPENAI_API_KEY`와 `PUBLIC_DATA_API_KEY`는 제공되지 않아 AI 원격 호출은 규칙 기반 응답으로 대체되고, 실제 공동주택 공시가격 호출은 키 설정 전까지 명시적 오류를 반환합니다. 두 `camp17` 프로젝트는 Vercel CLI 운영 배포가 가능하지만 GitHub Login Connection이 없어 Git 자동배포 연결은 별도 복구가 필요합니다.

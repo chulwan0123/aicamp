@@ -62,12 +62,21 @@
 
 두 저장소의 배포 대상 트리는 같은 SILVER 통합 결과로 유지합니다. 주소 검색·PNU·공시가격 API의 출처는 `hyeji0503/hanwhaAiCamp`, 화면·디자인 계약과 통합 계산 엔진의 기준은 `chulwan0123/aicamp`입니다.
 
+2026-08-20 최신 동기화에서 두 저장소 `main`의 추적 파일 트리가 동일함을 확인했고, 모바일 탭 화면의 가로 넘침 방지와 세부 타이포그래피·모달 정렬 보정을 포함한 `index.html` SHA-256은 `52f9d117651502e3f04f96cf6cd6f7fa043c1895cfe7a2ba00a2312cb00df4ae`입니다. 운영 배포는 Vercel `chulwan-8137` 계정의 `camp17` 범위에서 수행합니다.
+
 ### 운영 환경변수 상태
 
 - 설정됨: `USE_MOCK=true`, 프로젝트별 `SHARE_SECRET`
 - 미설정: `OPENAI_API_KEY`, `PUBLIC_DATA_API_KEY`
 - 영향: AI 설명은 현재 계산값을 이용한 규칙 기반 추천으로 동작합니다. `/api/price`는 공공데이터 키가 설정될 때까지 설정 오류를 반환합니다.
 - 저장 원칙: 비밀값은 GitHub와 클라이언트에 넣지 않고 Vercel 프로젝트 환경변수로만 관리합니다.
+
+### 자동배포 연결 상태
+
+- `camp17/aicamp-silver`와 `camp17/hanwha-ai-camp-silver`는 CLI로 Production 배포할 수 있습니다.
+- 현재 Vercel 계정에는 GitHub Login Connection이 없어 `vercel git connect`가 완료되지 않습니다.
+- 공동 저장소에 남아 있는 `SION` 팀 Vercel 실패 상태는 과거·별도 프로젝트 연결이며, `camp17/hanwha-ai-camp-silver`의 수동 운영 배포와는 별개입니다.
+- Git 자동배포를 복구하기 전까지는 두 저장소 `main` 동기화와 테스트 후 두 프로젝트에 각각 CLI Production 배포를 실행합니다.
 
 ## 아직 부족한 기능
 
