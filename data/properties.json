@@ -1,0 +1,63 @@
+{
+  "_notice": "국토교통부 공동주택 공시가격 데이터에서 데모에 필요한 단지만 추린 발췌본. marketPrice·tradeCount 는 공시가 데이터에 없는 값으로, 시나리오/실거래 참고값이다. 전체 데이터셋 확보 시 scripts/build-properties.js 로 재생성한다.",
+  "_source": "국토교통부_주택 공시가격 정보_20250626",
+  "items": [
+    {
+      "id": "banpo-xi",
+      "keywords": ["신반포로270", "신반포로 270", "반포자이", "서초구반포동", "반포동반포자이", "서초구신반포로"],
+      "address": "서울 서초구 반포동 반포자이 84.94㎡",
+      "complexName": "반포자이",
+      "dong": "120동",
+      "ho": "1002호",
+      "roadAddress": "서울특별시 서초구 신반포로 270",
+      "officialPrice": 3491000000,
+      "marketPrice": 4700000000,
+      "areaM2": 84.94,
+      "pyeong": 32,
+      "tradeCount": 12,
+      "confidence": "HIGH",
+      "region": "서울 서초구",
+      "isCapitalArea": true,
+      "acquisitionYear": 2008,
+      "acquisitionPrice": 1082470000
+    },
+    {
+      "id": "pangyo-wonmaeul",
+      "keywords": ["판교역로166", "판교역로 166", "판교원마을", "분당구판교동", "성남시분당구판교"],
+      "address": "경기 성남시 분당구 판교동 판교원마을 84.97㎡",
+      "complexName": "판교원마을",
+      "dong": "202동",
+      "ho": "804호",
+      "roadAddress": "경기도 성남시 분당구 판교역로 166",
+      "officialPrice": 1060000000,
+      "marketPrice": 1620000000,
+      "areaM2": 84.97,
+      "pyeong": 33,
+      "tradeCount": 8,
+      "confidence": "HIGH",
+      "region": "경기 성남시",
+      "isCapitalArea": true,
+      "acquisitionYear": 2016,
+      "acquisitionPrice": 760000000
+    },
+    {
+      "id": "mapo-sangam",
+      "keywords": ["월드컵북로396", "월드컵북로 396", "상암월드컵파크", "마포구상암동", "마포구월드컵북로"],
+      "address": "서울 마포구 상암동 상암월드컵파크 84.88㎡",
+      "complexName": "상암월드컵파크",
+      "dong": "301동",
+      "ho": "502호",
+      "roadAddress": "서울특별시 마포구 월드컵북로 396",
+      "officialPrice": 812000000,
+      "marketPrice": 1180000000,
+      "areaM2": 84.88,
+      "pyeong": 33,
+      "tradeCount": 6,
+      "confidence": "HIGH",
+      "region": "서울 마포구",
+      "isCapitalArea": true,
+      "acquisitionYear": 2012,
+      "acquisitionPrice": 490000000
+    }
+  ]
+}

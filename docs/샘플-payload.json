@@ -1,0 +1,41 @@
+{
+  "property": {
+    "address": "서울 서초구 반포동 반포자이 84.94㎡",
+    "officialPrice": 3491000000,
+    "marketPrice": 4700000000,
+    "confidence": "HIGH",
+    "tradeCount": 12,
+    "areaM2": 84.94,
+    "complexName": "반포자이",
+    "region": "서울 서초구",
+    "isCapitalArea": true,
+    "acquisitionYear": 2008,
+    "acquisitionPrice": 1082470000
+  },
+  "subject": {
+    "age": 70,
+    "spouseAge": 65,
+    "ageBands": {
+      "father": "70세 이상",
+      "mother": "65~69세"
+    },
+    "houseCount": 1,
+    "ownership": "JOINT_50_50",
+    "holdingYears": 18,
+    "acquisitionYear": 2008,
+    "acquisitionPrice": 1082470000,
+    "isResiding": true,
+    "residencyBand": "10년 이상",
+    "wishRegion": "강원 강릉시",
+    "wishRegionIsCapitalArea": false,
+    "monthlyIncome": 2000000,
+    "targetExpense": 3296000
+  },
+  "answers": {
+    "inheritance": "어느 정도 중요하다",
+    "residency": "가능하면 지금 집에 살고 싶지만 세금이 부담된다",
+    "urgency": "지금 당장 해결해야 한다",
+    "liquidityForm": "매달 나오는 돈이 더 필요하다",
+    "familyConsensus": "자녀와 상의 중이다"
+  }
+}
