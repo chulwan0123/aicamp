@@ -17,5 +17,8 @@ export default function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   if (req.method !== 'GET') return res.status(405).json({ error: 'GET 요청만 지원해요.' });
+  if (req.query?.mode === 'health') {
+    return res.status(200).json({ ok: true, service: 'silver', engine: 'plushome-v2' });
+  }
   return res.status(200).json(clientConfig());
 }

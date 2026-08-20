@@ -30,3 +30,10 @@ test('클라이언트 설정 API는 GET만 허용하고 캐시하지 않는다',
   handler({ method: 'POST' }, post);
   assert.equal(post.code, 405);
 });
+
+test('헬스 체크는 같은 함수에서 기존 응답 계약을 유지한다', () => {
+  const health = response();
+  handler({ method: 'GET', query: { mode: 'health' } }, health);
+  assert.deepEqual(health.body, { ok: true, service: 'silver', engine: 'plushome-v2' });
+  assert.equal(health.headers['Cache-Control'], 'no-store');
+});

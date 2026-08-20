@@ -2,6 +2,9 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": false,
   "trailingSlash": false,
+  "rewrites": [
+    { "source": "/api/health", "destination": "/api/client-config?mode=health" }
+  ],
   "functions": {
     "api/advise.js": { "maxDuration": 60 },
     "api/chat.js": { "maxDuration": 60 },

@@ -62,7 +62,8 @@ function wrapResponse(res) {
 }
 
 async function handleApi(req, res, route) {
-  const file = path.join(ROOT, 'api', `${route}.js`);
+  const fileRoute = route === 'health' ? 'client-config' : route;
+  const file = path.join(ROOT, 'api', `${fileRoute}.js`);
   if (!fs.existsSync(file)) {
     res.writeHead(404, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: `/api/${route} 없음` }));
@@ -75,7 +76,9 @@ async function handleApi(req, res, route) {
 
   // 매 요청마다 새로 import 해 코드 수정이 즉시 반영되게 한다.
   const module = await import(`${pathToFileURL(file).href}?t=${Date.now()}`);
-  const fakeReq = { method: req.method, body, query: Object.fromEntries(new URL(req.url, 'http://x').searchParams), headers: req.headers };
+  const query = Object.fromEntries(new URL(req.url, 'http://x').searchParams);
+  if (route === 'health') query.mode = 'health';
+  const fakeReq = { method: req.method, body, query, headers: req.headers };
   await module.default(fakeReq, wrapResponse(res));
 }
 

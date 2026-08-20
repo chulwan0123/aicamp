@@ -58,6 +58,10 @@ test('모바일 탭 화면은 페이지 가로 스크롤을 막고 내부 레일
   assert.match(html, /\.my-categories\{[^}]*overflow-x:auto/);
 });
 
+test('모바일 편집 필드는 iOS 포커스 확대를 막도록 16px 이상을 사용한다', () => {
+  assert.match(html, /@media\(max-width:500px\)\{input:not\(\[type="checkbox"\]\):not\(\[type="radio"\]\):not\(\[type="hidden"\]\):not\(\[readonly\]\),select,textarea\{font-size:16px\}\}/);
+});
+
 test('결과 공유와 상담 버튼 글자는 AI 컨설팅 버튼과 같은 크기와 굵기다', () => {
   assert.match(html, /\.result-status \.ai-consult-button\{[^}]*font-size:17px/);
   assert.match(html, /\.result-cta \.share-primary,\.result-cta \.share-secondary\{font-size:17px;font-weight:700\}/);
