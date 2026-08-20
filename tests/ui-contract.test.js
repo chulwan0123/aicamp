@@ -10,6 +10,12 @@ test('본 화면은 plushome 계약대로 19개다', () => {
   assert.deepEqual(screens, Array.from({ length: 19 }, (_, index) => index));
 });
 
+test('신규 콘텐츠 상세화면은 기존 카드와 디자인 토큰을 재사용한다', () => {
+  assert.match(html, /\.content-detail-visual\{[^}]*border-radius:var\(--radius-xl\);[^}]*background:var\(--color-blue-100\)/);
+  assert.match(html, /\.content-detail-card\{[^}]*padding:20px\}/);
+  assert.match(html, /\.content-detail-screen \.info\{margin-top:22px\}/);
+});
+
 test('입력 흐름은 1/8부터 8/8까지다', () => {
   for (let step = 1; step <= 8; step += 1) assert.match(html, new RegExp(`${step}/8`));
   assert.match(html, /name="q-inheritance"/);

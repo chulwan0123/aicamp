@@ -40,4 +40,26 @@ test('만료되거나 변조된 공유 링크 오류를 사용자에게 보여�
   assert.match(source, /silver:shared-restore-error/);
   assert.match(source, /공유 결과를 열 수 없어요/);
   assert.match(source, /새 링크를 요청해 주세요/);
+  assert.match(source, /window\.SILVER_SHARED_RESTORE_ERROR/);
+});
+
+test('홈의 일곱 콘텐츠는 각각 고유 상세 URL과 기존 에셋을 사용한다', () => {
+  for (const slug of [
+    'tax-change', 'home-pension-income', 'inheritance-family-check', 'jongbu-2027',
+    'home-pension-checklist', 'downsizing-timing', 'family-conversation',
+  ]) assert.match(source, new RegExp(`slug: '${slug}'`));
+  for (const asset of [
+    'news-tax-cash.png', 'news-home-pension.png', 'start-card-parents.png',
+    'content/calculator.png', 'content/house.png', 'content/moving-box.png', 'content/teacup.png',
+  ]) assert.match(source, new RegExp(asset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  assert.equal((source.match(/slug: '/g) || []).length, 7);
+  assert.match(source, /`#content\/\$\{article\.slug\}`/);
+});
+
+test('콘텐츠 상세화면은 19개 본 화면 밖에서 히스토리와 분석 결과를 보호한다', () => {
+  assert.match(source, /screen\.id = 'content-detail-screen'/);
+  assert.match(source, /window\.addEventListener\('popstate', syncContentRoute\)/);
+  assert.match(source, /window\.addEventListener\('hashchange', syncContentRoute\)/);
+  assert.match(source, /article\.action !== 18 && !requireResult\(\)/);
+  assert.doesNotMatch(source, /content-detail-screen[^\n]*data-screen/);
 });

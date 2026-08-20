@@ -350,7 +350,7 @@ function contentSlugFromUrl() {
 
 function renderArticle(article) {
   contentScreen.body.replaceChildren();
-  contentScreen.category.textContent = article.category;
+  contentScreen.category.textContent = '';
 
   const eyebrow = element('p', 'eyebrow', article.category);
   const title = element('h1', 'title', article.title);
@@ -404,7 +404,6 @@ function showContentDetail(articleOrIndex, updateUrl = true) {
   const nextHash = `#content/${article.slug}`;
   if (updateUrl && location.hash !== nextHash) history.pushState({ content: article.slug }, '', nextHash);
   window.scrollTo({ top: 0, behavior: 'instant' });
-  contentScreen.screen.querySelector('[data-content-back]')?.focus({ preventScroll: true });
   return true;
 }
 
@@ -599,8 +598,15 @@ function showSharedRestoreError(message) {
 }
 
 document.addEventListener('silver:shared-restore-error', (event) => {
+  window.SILVER_SHARED_RESTORE_ERROR = null;
   showSharedRestoreError(event.detail?.message);
 });
+
+if (window.SILVER_SHARED_RESTORE_ERROR) {
+  const pendingSharedError = window.SILVER_SHARED_RESTORE_ERROR;
+  window.SILVER_SHARED_RESTORE_ERROR = null;
+  showSharedRestoreError(pendingSharedError);
+}
 
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape' && !sheet.overlay.hidden) return closeSheet();
