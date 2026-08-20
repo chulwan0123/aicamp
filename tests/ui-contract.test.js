@@ -29,6 +29,13 @@ test('도로명주소는 다음 주소검색으로만 변경해 PNU와 어긋나
   assert.match(html, /pnu:"1165010700000200043"/);
 });
 
+test('모바일 탭 화면은 페이지 가로 스크롤을 막고 내부 레일만 유지한다', () => {
+  assert.match(html, /\.tab-screen\{[^}]*overflow-x:hidden;[^}]*overflow-y:auto;[^}]*overscroll-behavior-x:none/);
+  assert.match(html, /\.content-item\{[^}]*width:100%;[^}]*min-width:0/);
+  assert.match(html, /\.news-rail\{[^}]*overflow-x:auto/);
+  assert.match(html, /\.my-categories\{[^}]*overflow-x:auto/);
+});
+
 test('ZIP 엔진의 전체 결과 계약이 요약과 상세 화면에 연결된다', () => {
   for (const token of [
     '부모님 성향 분석', '네 가지 선택지를 모두 비교했어요', '추천 판단을 자세히 볼까요?',
