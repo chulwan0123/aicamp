@@ -4,7 +4,8 @@
 
 ## 배포 주소
 
-- Vercel: <https://aicamp-silver.vercel.app>
+- `chulwan0123/aicamp` Vercel: <https://aicamp-silver-weld.vercel.app>
+- `hyeji0503/hanwhaAiCamp` Vercel: <https://hanwha-ai-camp-silver.vercel.app>
 - 주 저장소: <https://github.com/chulwan0123/aicamp>
 - 공동 작업 저장소: <https://github.com/hyeji0503/hanwhaAiCamp>
 
@@ -68,3 +69,5 @@ npm run dev
 루트 정적 파일과 `api/**` 서버리스 함수를 Vercel에 함께 배포합니다. 운영 환경에는 `OPENAI_API_KEY`, `OPENAI_MODEL`, `USE_MOCK=false`, `SHARE_SECRET`, `PUBLIC_DATA_API_KEY`를 설정합니다. 비밀값은 저장소와 클라이언트 코드에 넣지 않습니다.
 
 배포 전 `npm run check`를 실행하고, 운영 배포 후 `/`, `/api/health`, 모바일 320·375·390px 화면과 주소 검색 → PNU → `/api/price` 흐름을 확인합니다.
+
+2026-08-20 배포는 Vercel `chulwan-8137` 계정의 `camp17` 범위에서 두 저장소를 각각 독립 프로젝트로 운영합니다. 현재 `USE_MOCK=true`와 프로젝트별 `SHARE_SECRET`은 설정되어 규칙 기반 분석과 암호화 공유를 사용할 수 있습니다. `OPENAI_API_KEY`와 `PUBLIC_DATA_API_KEY`는 제공되지 않아 AI 원격 호출은 규칙 기반 응답으로 대체되고, 실제 공동주택 공시가격 호출은 키 설정 전까지 명시적 오류를 반환합니다.

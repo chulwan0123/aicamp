@@ -57,8 +57,17 @@
 - 검증: `npm run check`
 - 주 저장소: `https://github.com/chulwan0123/aicamp`
 - 공동 작업 저장소: `https://github.com/hyeji0503/hanwhaAiCamp`
+- 주 저장소 운영 배포: `https://aicamp-silver-weld.vercel.app`
+- 공동 작업 저장소 운영 배포: `https://hanwha-ai-camp-silver.vercel.app`
 
 두 저장소의 배포 대상 트리는 같은 SILVER 통합 결과로 유지합니다. 주소 검색·PNU·공시가격 API의 출처는 `hyeji0503/hanwhaAiCamp`, 화면·디자인 계약과 통합 계산 엔진의 기준은 `chulwan0123/aicamp`입니다.
+
+### 운영 환경변수 상태
+
+- 설정됨: `USE_MOCK=true`, 프로젝트별 `SHARE_SECRET`
+- 미설정: `OPENAI_API_KEY`, `PUBLIC_DATA_API_KEY`
+- 영향: AI 설명은 현재 계산값을 이용한 규칙 기반 추천으로 동작합니다. `/api/price`는 공공데이터 키가 설정될 때까지 설정 오류를 반환합니다.
+- 저장 원칙: 비밀값은 GitHub와 클라이언트에 넣지 않고 Vercel 프로젝트 환경변수로만 관리합니다.
 
 ## 아직 부족한 기능
 
