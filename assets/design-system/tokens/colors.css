@@ -1,0 +1,111 @@
+/* ============================================================
+   Hanwha Life Plus — Color tokens
+   Extracted verbatim from plus-app-webview @theme (globals.css).
+   Base ramps + semantic aliases. Orange is the brand hue.
+   ============================================================ */
+:root {
+  /* ---- Gray (custom ramp, overrides Tailwind defaults) ---- */
+  --color-gray-100: #f2f2f3;
+  --color-gray-200: #dddddf;
+  --color-gray-300: #bebec1;
+  --color-gray-400: #a2a2a5;
+  --color-gray-500: #8a8a8f;
+  --color-gray-600: #707075;
+  --color-gray-700: #555558;
+  --color-gray-800: #39393c;
+  --color-gray-900: #141415;
+
+  /* ---- Red (error / sell) ---- */
+  --color-red-100: #ffe6e6;
+  --color-red-200: #ffd9d9;
+  --color-red-300: #ffb0b0;
+  --color-red-400: #ff0000;
+
+  /* ---- Blue (info / buy) ---- */
+  --color-blue-100: #e9f3fd;
+  --color-blue-200: #deedfc;
+  --color-blue-300: #bbdaf9;
+  --color-blue-400: #2588eb;
+
+  /* ---- Orange (brand) ---- */
+  --color-orange-100: #fff2e5;
+  --color-orange-200: #ffe4cc;
+  --color-orange-300: #ffcea6;
+  --color-orange-400: #ffb379;
+  --color-orange-500: #f7924a;
+  --color-orange-600: #f37521; /* brand primary */
+  --color-orange-700: #e5640e;
+
+  /* ---- Neutral tonal families (content taxonomy / editorial) ---- */
+  --color-neutral-green-100: #f2f1e6;
+  --color-neutral-green-200: #e5e4d8;
+  --color-neutral-green-300: #d9d7c9;
+  --color-neutral-green-400: #cccabd;
+  --color-neutral-brown-100: #faf3f0;
+  --color-neutral-brown-200: #f5e5dc;
+  --color-neutral-brown-300: #e5cbbc;
+  --color-neutral-brown-400: #dcbba8;
+  --color-neutral-blue-100: #edf3f7;
+  --color-neutral-blue-200: #dde5ed;
+  --color-neutral-blue-300: #c6ced6;
+  --color-neutral-blue-400: #b7bec6;
+  --color-neutral-bold-blue: #7d8d9d;
+  --color-neutral-bold-brown: #c6a488;
+  --color-neutral-bold-green: #818e74;
+  --color-neutral-bold-rose: #c19386;
+
+  /* ---- Accent (charts / badges) ---- */
+  --color-mint-green: #bddf5e;
+  --color-yellow-green: #6ac3e2;
+  --color-golden-yellow: #8e90ef;
+  --color-orange-yellow: #feda64;
+  --color-coral-red: #f9575a;
+
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* ---- Semantic — background ---- */
+  --color-bg-primary: var(--color-white);
+  --color-bg-secondary: var(--color-gray-100);
+  --color-bg-tertiary: var(--color-gray-200);
+
+  /* ---- Semantic — text ---- */
+  --color-text-primary: var(--color-gray-900);
+  --color-text-secondary: var(--color-gray-700);
+  --color-text-tertiary: var(--color-gray-500);
+  --color-text-disabled: var(--color-gray-400);
+  --color-text-inverse: var(--color-white);
+
+  /* ---- Semantic — border ---- */
+  --color-border-default: var(--color-gray-200);
+  --color-border-strong: var(--color-gray-300);
+  --color-border-focus: var(--color-blue-400);
+
+  /* ---- Semantic — brand ---- */
+  --color-brand-primary: var(--color-orange-600);
+  --color-brand-primary-light: var(--color-orange-100);
+  --color-brand-primary-dark: var(--color-orange-700);
+
+  /* ---- Semantic — status ---- */
+  --color-status-error: var(--color-red-400);
+  --color-status-error-light: var(--color-red-100);
+  --color-status-info: var(--color-blue-400);
+  --color-status-info-light: var(--color-blue-100);
+
+  /* ---- Button tokens ---- */
+  --color-button-txt-primary: #141415;
+  --color-button-txt-disable: #a2a2a5;
+  --color-button-fill-activate: #141415;
+  --color-button-fill-secondary: #f2f2f3;
+  --color-button-fill-disable: #dddddf;
+  --color-button-fill-red: #ff0000;
+  --color-button-fill-blue: #2588eb;
+  --color-button-stroke-primary: #a2a2a5;
+  --color-button-stroke-secondary: #dddddf;
+  --color-button-stroke-brand: #f37521;
+
+  /* ---- Component — icon fills ---- */
+  --color-component-icon-fill-disable: #bebec1;
+  --color-component-icon-fill-brand: #f37521;
+  --color-component-icon-fill-secondary: #707075;
+}

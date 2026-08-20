@@ -1,0 +1,44 @@
+/* ============================================================
+   Hanwha Life Plus — Spacing, radius, shadow & motion tokens
+   Base spacing unit is 0.25rem (4px); Tailwind numeric steps
+   (px-5 = 20px, py-3.5 = 14px …) build off it.
+   ============================================================ */
+:root {
+  /* ---- Spacing base unit ---- */
+  --spacing: 0.25rem; /* 4px — multiply by the Tailwind step */
+
+  /* Common page rhythm (mobile webview, single 20px gutter) */
+  --space-gutter: 20px;   /* px-5  — screen side padding */
+  --space-section: 52px;  /* gap between content sections */
+  --space-header-pb: 30px;/* section header bottom padding */
+
+  /* ---- Border radius ---- */
+  --radius-xs: 0.125rem;  /* 2px */
+  --radius-sm: 0.25rem;   /* 4px — inputs, select */
+  --radius-md: 0.375rem;  /* 6px */
+  --radius-lg: 0.5rem;    /* 8px — thumbnails, list media */
+  --radius-xl: 0.75rem;   /* 12px — cards, large buttons */
+  --radius-2xl: 1rem;     /* 16px — popups */
+  --radius-3xl: 1.5rem;   /* 24px */
+  --radius-pill: 300px;   /* toast, tags */
+
+  /* ---- Elevation ----
+     The Plus app is near-flat: elevation is carried by fill + hairline
+     borders, not drop shadows. Popups/modals use a dimmed overlay
+     (black @ 45%) rather than a shadow. */
+  --overlay-scrim: rgba(0, 0, 0, 0.45);
+  --shadow-none: none;
+  --shadow-card: 0 1px 2px rgba(20, 20, 21, 0.04);
+
+  /* ---- Motion ---- */
+  --ease-out: cubic-bezier(0, 0, 0.2, 1) /* @kind other */;
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1) /* @kind other */;
+  --duration-fast: 0.15s /* @kind other */;
+  --duration-base: 0.2s /* @kind other */;
+  --duration-slow: 0.3s /* @kind other */;
+
+  /* ---- Layout ---- */
+  --top-navigation-height: 48px;
+  --large-button-height: 56px;
+  --tap-target-min: 44px;
+}

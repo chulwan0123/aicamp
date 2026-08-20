@@ -1,0 +1,38 @@
+/* Hanwha Life Plus — webfonts.
+   Lifeplus = brand display face (Bold / Medium).
+   Pretendard = system/body face (Regular / Medium / Bold), subset to KR+Latin. */
+@font-face {
+  font-family: "Lifeplus";
+  src: url("./lifeplus-medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Lifeplus";
+  src: url("./lifeplus-bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pretendard";
+  src: url("./pretendard-regular.subset.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pretendard";
+  src: url("./pretendard-medium.subset.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pretendard";
+  src: url("./pretendard-bold.subset.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}

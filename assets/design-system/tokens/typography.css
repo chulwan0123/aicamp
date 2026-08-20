@@ -1,0 +1,49 @@
+/* ============================================================
+   Hanwha Life Plus — Typography tokens
+   Two families: Lifeplus (brand display) + Pretendard (body/UI).
+   Type + line-height scales verbatim from plus-app-webview.
+   ============================================================ */
+:root {
+  /* ---- Font families ---- */
+  --font-lifeplus: "Lifeplus", "Pretendard", -apple-system, sans-serif;
+  --font-pretendard: "Pretendard", -apple-system, "Segoe UI", sans-serif;
+
+  /* ---- Font weights ---- */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+
+  /* ---- Font size scale ---- */
+  --text-title-1: 2rem;          /* 32px */
+  --text-title-2: 1.625rem;      /* 26px */
+  --text-subtitle-1: 1.5rem;     /* 24px */
+  --text-subtitle-2: 1.375rem;   /* 22px */
+  --text-body-1: 1.25rem;        /* 20px */
+  --text-body-2: 1.125rem;       /* 18px */
+  --text-body-3: 1rem;           /* 16px */
+  --text-body-4: 0.9375rem;      /* 15px */
+  --text-label-1: 0.875rem;      /* 14px */
+  --text-label-2-normal: 0.8125rem; /* 13px */
+  --text-caption-1-normal: 0.75rem; /* 12px */
+  --text-caption-2: 0.6875rem;   /* 11px */
+  --text-caption-3: 0.625rem;    /* 10px */
+
+  /* ---- Line-height scale ---- */
+  --leading-title-1: 2.5rem;
+  --leading-title-2: 2.125rem;
+  --leading-subtitle-1: 2rem;
+  --leading-subtitle-2: 1.875rem;
+  --leading-body-1: 1.75rem;
+  --leading-body-2: 1.625rem;
+  --leading-body-3: 1.5rem;
+  --leading-body-4: 1.375rem;
+  --leading-label-1: 1.25rem;
+  --leading-label-2-normal: 1.125rem;
+  --leading-caption-1-normal: 1rem;
+  --leading-caption-2: 0.875rem;
+
+  /* ---- Letter-spacing (Korean-tuned, negative) ---- */
+  --tracking-bold: -0.01em;
+  --tracking-medium: -0.02em;
+  --tracking-regular: -0.02em;
+}
