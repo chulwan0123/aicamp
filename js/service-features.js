@@ -526,6 +526,7 @@ function renderCategory(label) {
     if (item.action === 'logout') button.dataset.logout = '';
     list.append(button);
   });
+  document.dispatchEvent(new CustomEvent('silver:service-list-rendered'));
 }
 
 function initializeContentCards() {
@@ -590,6 +591,16 @@ document.addEventListener('silver:share-complete', (event) => {
 
 document.addEventListener('silver:share-error', (event) => {
   openSheet('공유할 수 없어요', (root) => root.append(info(event.detail?.message || '공유 링크를 만들지 못했어요.')));
+});
+
+document.addEventListener('silver:auth-error', (event) => {
+  const messages = {
+    cancelled: '카카오 로그인을 취소했어요. 로그인 없이도 서비스를 둘러볼 수 있어요.',
+    config: '카카오 로그인 설정을 확인하고 있어요. 잠시 후 다시 시도해 주세요.',
+    state: '로그인 요청이 만료되었어요. 카카오톡으로 시작하기를 다시 눌러 주세요.',
+    failed: '카카오 로그인을 완료하지 못했어요. 잠시 후 다시 시도해 주세요.',
+  };
+  openSheet('카카오 로그인', (root) => root.append(info(messages[event.detail?.code] || messages.failed)));
 });
 
 function showSharedRestoreError(message) {

@@ -184,7 +184,7 @@ export function giftTaxTotal({ value, area = 0, isAdjustedArea = false, isSingle
  * 자격은 공시가격으로, 금액은 시세(12억 상한)로 판정한다 — 공사 규정이 두 기준을 다르게 쓴다.
  * 공사 표는 5세 단위로만 공개되고 연령별 증가폭이 비단조여서 보간하지 않는다.
  */
-export function housingPension({ officialPrice, marketPrice, youngerAge }) {
+export function housingPension({ officialPrice, marketPrice, youngerAge, olderAge = youngerAge }) {
   const hp = RULES.housingPension;
   const table = hp.monthlyTable;
   const { minAge, maxOfficialPrice } = hp.eligibility;
@@ -215,8 +215,21 @@ export function housingPension({ officialPrice, marketPrice, youngerAge }) {
     return { amount: row[row.length - 1], method: `${coef.linearMaxEok}억원을 넘으면 더 늘지 않아 상한 금액 적용` };
   };
 
-  if (youngerAge < minAge) {
-    return { eligible: false, reason: `아직 가입하실 나이가 아니에요 (두 분 중 젊은 분 ${youngerAge}세, 기준 ${minAge}세)`, basis: table._source, steps: [`가입 나이 = 두 분 중 젊은 분 ${youngerAge}세 < 기준 ${minAge}세`] };
+  if (olderAge < minAge) {
+    return { eligible: false, reason: `아직 가입하실 나이가 아니에요 (부부 중 연장자 ${olderAge}세, 기준 ${minAge}세)`, basis: table._source, steps: [`가입 나이 = 부부 중 연장자 ${olderAge}세 < 기준 ${minAge}세`] };
+  }
+  if (youngerAge < ages[0]) {
+    return {
+      eligible: true,
+      monthly: null,
+      needsOfficialQuote: true,
+      reason: `가입 연령 요건은 충족하지만 연소자 ${youngerAge}세의 공개 지급표가 없어 공식 조회가 필요해요`,
+      steps: [
+        `가입 나이 = 부부 중 연장자 ${olderAge}세 ≥ 기준 ${minAge}세`,
+        `월지급금은 연소자 ${youngerAge}세 기준 공식 조회가 필요해요`,
+      ],
+      basis: table._source,
+    };
   }
 
   const priced = Math.min(marketPrice ?? officialPrice, maxOfficialPrice);
@@ -245,7 +258,7 @@ export function housingPension({ officialPrice, marketPrice, youngerAge }) {
     monthly: result.amount,
     approximate,
     steps: [
-      `주택연금에 가입하실 수 있어요 = 공시가격 ${won(officialPrice)} ≤ ${won(maxOfficialPrice)}, 두 분 중 젊은 분 ${youngerAge}세 ≥ ${minAge}세`,
+      `주택연금에 가입하실 수 있어요 = 공시가격 ${won(officialPrice)} ≤ ${won(maxOfficialPrice)}, 부부 중 연장자 ${olderAge}세 ≥ ${minAge}세`,
       `매달 받으실 돈 = 시세 ${won(priced)} · ${tableAge}세 · ${result.method} = ${won(result.amount)}`,
       ...(approximate ? [`${youngerAge}세 표가 공개돼 있지 않아 ${tableAge}세 기준으로 낮춰 잡은 예상치예요`] : []),
     ],

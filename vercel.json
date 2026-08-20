@@ -6,15 +6,39 @@
     "api/advise.js": { "maxDuration": 60 },
     "api/chat.js": { "maxDuration": 60 },
     "api/client-config.js": { "maxDuration": 10 },
+    "api/auth/kakao/start.js": { "maxDuration": 10 },
+    "api/auth/kakao/callback.js": { "maxDuration": 15 },
+    "api/auth/session.js": { "maxDuration": 10 },
+    "api/auth/logout.js": { "maxDuration": 10 },
     "api/consultations.js": { "maxDuration": 15 },
     "api/share.js": { "maxDuration": 10 },
-    "api/price.js": { "maxDuration": 15 }
+    "api/price.js": { "maxDuration": 15 },
+    "api/market.js": { "maxDuration": 30 }
   },
   "headers": [
     {
       "source": "/api/(.*)",
       "headers": [
         { "key": "Cache-Control", "value": "no-store" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" }
+      ]
+    },
+    {
+      "source": "/api/price",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, s-maxage=86400, stale-while-revalidate=604800" }
+      ]
+    },
+    {
+      "source": "/api/market",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, s-maxage=21600, stale-while-revalidate=86400" }
+      ]
+    },
+    {
+      "source": "/data/public-price/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" },
         { "key": "X-Content-Type-Options", "value": "nosniff" }
       ]
     }

@@ -30,8 +30,9 @@ test('신규 콘텐츠 상세화면은 기존 카드와 디자인 토큰을 재�
 test('입력 흐름은 1/8부터 8/8까지다', () => {
   for (let step = 1; step <= 8; step += 1) assert.match(html, new RegExp(`${step}/8`));
   assert.match(html, /name="q-inheritance"/);
-  assert.match(html, /name="q-income"/);
-  assert.match(html, /id="residency-years"/);
+  assert.match(html, /id="monthly-income"/);
+  assert.match(html, /id="target-expense"/);
+  assert.match(html, /data-residency-years/);
 });
 
 test('스플래시는 본 화면 번호와 분리되고 엔진 모듈이 연결된다', () => {
@@ -40,10 +41,11 @@ test('스플래시는 본 화면 번호와 분리되고 엔진 모듈이 연결�
   assert.match(html, /src="\.\/js\/silver-engine\.js"/);
 });
 
-test('도로명주소는 다음 주소검색으로만 변경해 PNU와 어긋나지 않는다', () => {
-  assert.match(html, /data-address-input readonly/);
+test('도로명주소는 검색과 직접 입력을 모두 지원하고 검색 선택 시 PNU를 함께 저장한다', () => {
+  assert.match(html, /data-address-input placeholder="도로명주소를 입력하거나 검색해 주세요"/);
   assert.match(html, /aria-haspopup="dialog">주소 검색/);
-  assert.match(html, /pnu:"1165010700000200043"/);
+  assert.doesNotMatch(html, /value="서울특별시 서초구 신반포로 270"/);
+  assert.match(engine, /propertyNode\.dataset\.pnu = selected\.pnu/);
 });
 
 test('모바일 탭 화면은 페이지 가로 스크롤을 막고 내부 레일만 유지한다', () => {
@@ -75,7 +77,9 @@ test('ZIP 엔진의 전체 결과 계약이 요약과 상세 화면에 연결된
   for (const token of [
     '부모님 성향 분석', '네 가지 선택지를 모두 비교했어요', '추천 판단을 자세히 볼까요?',
     '계산 근거와 산식', '2027년 매도 특례 비교',
-    '매도·임차 계산 전체 내역', '다운사이징 계산 전체 내역', '추천 근거와 다른 선택지',
+    '매도·임차 계산 전체 내역', '다운사이징 계산 전체 내역', '왜 이 방법일까요?',
+    '대신 이런 점은 감수하셔야 해요', '이건 꼭 확인해 주세요', '매달 이렇게 들어와요',
+    '다른 방법은 어떨까요?', '이 순서로 준비하시면 돼요',
     '주택연금 계산 전체 내역', '증여 시 필요한 세금과 현금',
   ]) assert.match(engine, new RegExp(token));
   for (const field of ['profile', 'alternatives', 'excluded', 'evidence', 'refine', 'familyNote']) {

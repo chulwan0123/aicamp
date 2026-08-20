@@ -61,13 +61,15 @@ export function createFallbackDraft({ computed, answers = {} }) {
     '매도나 증여 전에는 최신 법령과 부모님의 실제 서류를 세무 전문가와 확인해 주세요.',
   ];
   if (id === 'DOWNSIZE' && computed.taxes.sale2027Special.applicable) {
-    cautions.push('2027년 특례는 개편안이 확정되고 모든 시행 요건을 충족해야 적용돼요.');
+    cautions.push('2027년 특례는 발표된 개편안이에요. 현재 추천 금액에는 적용하지 않았어요.');
     cautions.push('매도 후 5년 안에 수도권 주택을 다시 사면 감면세액이 추징될 수 있어요.');
   }
 
   return {
     profile,
-    cashflowSummary: `집은 ${computed.display.marketPrice}이지만, 매달 ${shortage}이 부족해요.`,
+    cashflowSummary: computed.cashflow.monthlyShortage > 0
+      ? `집은 ${computed.display.marketPrice}이지만, 매달 ${shortage}이 부족해요.`
+      : `집은 ${computed.display.marketPrice}이고, 현재 소득으로 필요한 생활비를 채울 수 있어요.`,
     recommendedId: id,
     label,
     headline: `${label}로 월 ${monthly}을 마련해요`,
@@ -79,7 +81,9 @@ export function createFallbackDraft({ computed, answers = {} }) {
     actionPlan: [
       { title: '서류 확인', desc: '등기와 취득가액, 실제 거주기간을 먼저 확인해요.' },
       { title: '세금 재계산', desc: '실행할 연도의 확정 법령으로 세금을 다시 계산해요.' },
+      { title: '주거비 비교', desc: '새 집이나 임차 보증금의 실제 계약 조건을 비교해요.' },
       { title: '가족 상의', desc: '부모님의 거주와 생활비 우선순위를 함께 정해요.' },
+      { title: '전문가 확인', desc: '매도나 증여 전에 세무 전문가에게 최종 확인해요.' },
     ],
     alternatives: ranked.slice(1).map(({ id: alternativeId }) => ({
       id: alternativeId,

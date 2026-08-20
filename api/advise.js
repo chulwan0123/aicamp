@@ -58,6 +58,11 @@ function validatePayload(payload) {
     finitePositive(home.marketPrice, `주택 ${index + 1} 매매가격`);
     finitePositive(home.areaM2, `주택 ${index + 1} 전용면적`);
     finitePositive(subject.acquisitions?.[index]?.acquisitionPrice || home.acquisitionPrice, `주택 ${index + 1} 취득가액`);
+    if (subject.acquisitions?.[index]) {
+      finitePositive(subject.acquisitions[index].residencyYears, `주택 ${index + 1} 거주기간`, { allowZero: true });
+      finitePositive(subject.acquisitions[index].ownershipRatio, `주택 ${index + 1} 지분율`);
+      if (subject.acquisitions[index].ownershipRatio > 100) throw new TypeError(`주택 ${index + 1} 지분율은 100% 이하여야 합니다.`);
+    }
     if (typeof home.isCapitalArea !== 'boolean') throw new TypeError(`주택 ${index + 1}의 수도권 여부가 필요합니다.`);
   });
   finitePositive(subject.age, '아버지 연령');
@@ -66,6 +71,11 @@ function validatePayload(payload) {
   if (subject.residencyYears !== undefined && subject.residencyYears !== null) finitePositive(subject.residencyYears, '거주기간', { allowZero: true });
   finitePositive(subject.monthlyIncome, '월 소득', { allowZero: true });
   finitePositive(subject.targetExpense, '필요 생활비');
+  finitePositive(subject.rentalDeposit, '임차 보증금', { allowZero: true });
+  finitePositive(subject.medicalReserve, '의료·간병 예비자금', { allowZero: true });
+  if (subject.newHomeMarketPrice != null) finitePositive(subject.newHomeMarketPrice, '옮길 집 예상 매매가격');
+  if (subject.newHomeOfficialPrice != null) finitePositive(subject.newHomeOfficialPrice, '옮길 집 예상 공시가격');
+  if (subject.partialMonthlyRent != null) finitePositive(subject.partialMonthlyRent, '예상 월 임대수입', { allowZero: true });
   finitePositive(subject.acquisitionPrice || property.acquisitionPrice, '취득가액');
   if (!Number.isInteger(subject.houseCount) || subject.houseCount !== properties.length) throw new TypeError('선택한 주택 수와 입력한 주택 목록이 일치하지 않습니다.');
   if (!['SINGLE', 'JOINT_50_50'].includes(subject.ownership)) throw new TypeError('명의 정보가 올바르지 않습니다.');

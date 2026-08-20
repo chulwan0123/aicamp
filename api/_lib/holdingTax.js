@@ -449,7 +449,8 @@ export function holdingTaxPortfolioByYear({
       isResiding,
       residencyYears,
       propertyTaxResult: aggregatePropertyTax,
-      residentOfficialPrice: isResiding ? currentPrices[0] : 0,
+      residentOfficialPrice: properties.reduce((sum, property, index) =>
+        sum + (property.isResiding === true ? currentPrices[index] : 0), 0) || (isResiding ? currentPrices[0] : 0),
       hasAdjustedAreaHome: given.hasAdjustedAreaHome === true
         || properties.some((property) => property.isAdjustedArea === true),
     });

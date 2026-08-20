@@ -60,12 +60,18 @@ export async function openAddressSearch() {
   await loadPostcodeScript();
   return new Promise((resolve, reject) => {
     let settled = false;
+    const timeout = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      resolve(null);
+    }, 20_000);
     const postcode = new globalThis.daum.Postcode({
       oncomplete(data) {
         try {
           const roadAddress = data.roadAddress || data.jibunAddress || data.address;
           const pnu = buildPnu(data.bcode, data.mountainYn, data.jibunAddress);
           settled = true;
+          clearTimeout(timeout);
           resolve({
             roadAddress,
             jibunAddress: data.jibunAddress,
@@ -78,17 +84,23 @@ export async function openAddressSearch() {
           });
         } catch (error) {
           settled = true;
+          clearTimeout(timeout);
           reject(error);
         }
       },
       onclose() {
-        if (!settled) resolve(null);
+        if (!settled) {
+          settled = true;
+          clearTimeout(timeout);
+          resolve(null);
+        }
       },
     });
 
     try {
       postcode.open({ popupTitle: '주소 검색' });
     } catch (error) {
+      clearTimeout(timeout);
       reject(error);
     }
   });

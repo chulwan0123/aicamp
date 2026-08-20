@@ -82,20 +82,27 @@ export function buildScenarios({ property, properties, subject }) {
   /* 화면에서 되물어 받은 추가 입력 — 답한 항목만 보유세 계산에 반영된다 */
   const refinements = usableRefinements(subject.refinements);
 
-  const ownerCount = ownership === 'JOINT_50_50' ? 2 : 1;
+  const ownerCount = homes.some((home, index) =>
+    home.ownership === 'JOINT'
+    || (subject.acquisitions?.[index]?.ownershipRatio > 0 && subject.acquisitions[index].ownershipRatio < 100)
+    || (index === 0 && ownership === 'JOINT_50_50')) ? 2 : 1;
   const youngerAge = Math.min(age, spouseAge ?? age);
   const olderAge = Math.max(age, spouseAge ?? age);
   const lived = residencyYears ?? holdingYears;
   const expenses = RULES.capitalGains.assumedExpenses ?? 50_000_000;
+  const portfolioResidencyYears = Math.max(0, ...homes.map((home, index) =>
+    subject.acquisitions?.[index]?.residencyYears ?? home.residencyYears ?? 0));
+  const hasResidentHome = homes.some((home, index) =>
+    subject.acquisitions?.[index]?.isResiding === true || home.isResiding === true);
 
   /* ---------------------------------------------------------- 보유세 */
   const holding = holdingTaxPortfolioByYear({
     properties: homes, ownerCount, olderAge, holdingYears, refinements,
-    isResiding: subject.isResiding !== false, residencyYears: lived,
+    isResiding: hasResidentHome || subject.isResiding === true, residencyYears: portfolioResidencyYears || lived,
   });
 
   /* ------------------------------------------------------ 현금흐름 진단 */
-  const monthlyShortage = targetExpense - monthlyIncome;
+  const monthlyShortage = Math.max(0, targetExpense - monthlyIncome);
   const annualHoldingTax = holding[0]?.total ?? 0;
   const cashflow = {
     monthlyIncome, targetExpense,
@@ -116,8 +123,8 @@ export function buildScenarios({ property, properties, subject }) {
       acquisitionPrice: subject.acquisitions?.[index]?.acquisitionPrice ?? home.acquisitionPrice,
       expenses: Math.round(expenses / homes.length),
       holdingYears: subject.acquisitions?.[index]?.holdingYears ?? Math.max(0, holdingYears),
-      residencyYears: index === 0 ? lived : 0,
-      ownerCount,
+      residencyYears: subject.acquisitions?.[index]?.residencyYears ?? (index === 0 ? lived : 0),
+      ownerCount: subject.acquisitions?.[index]?.ownershipRatio > 0 && subject.acquisitions[index].ownershipRatio < 100 ? 2 : (index === 0 ? ownerCount : 1),
       year,
       houseCount: subject.houseCount ?? homes.length,
       ...reduction,
@@ -166,6 +173,7 @@ export function buildScenarios({ property, properties, subject }) {
     },
     sale2027Special: {
       applicable: eligibleForSpecial,
+      legalStatus: 'ANNOUNCED_PROPOSAL',
       capitalGainsWithLocal: sale2027.total,
       netProceeds: round(marketPrice - sale2027.total - broker.total),
       savings: round(sale2026.total - sale2027.total),
@@ -185,11 +193,12 @@ export function buildScenarios({ property, properties, subject }) {
   };
 
   /* ---------------------------------------------------------- PENSION */
-  const pension = housingPension({ officialPrice: primaryHome.officialPrice, marketPrice: primaryHome.marketPrice, youngerAge });
+  const pension = housingPension({ officialPrice, marketPrice: primaryHome.marketPrice, youngerAge, olderAge });
   const options = {
-    PENSION: pension.eligible
+    PENSION: pension.eligible && pension.monthly != null
       ? {
           eligible: true,
+          monthlyPayout: round(pension.monthly),
           monthlyNet: round(pension.monthly + monthlyIncome),
           monthlyFlow: [
             { label: '지금 받으시는 연금', amount: monthlyIncome },
@@ -201,6 +210,7 @@ export function buildScenarios({ property, properties, subject }) {
       : {
           eligible: false,
           reason: pension.reason,
+          qualification: pension.eligible ? 'POSSIBLE_OFFICIAL_QUOTE_REQUIRED' : 'INELIGIBLE',
           monthlyIfEligibleLater: pension.monthlyIfEligibleLater ?? null,
           laterCondition: pension.laterCondition ?? null,
           steps: [`가입 여부 = ${pension.reason}`],
@@ -209,23 +219,37 @@ export function buildScenarios({ property, properties, subject }) {
   };
 
   /* ---------------------------------------------------------- PARTIAL */
-  const partialPossible = areaM2 >= (RULES.partialLiquidity?.minAreaM2 ?? 115);
+  const partialPossible = subject.partialSpacePossible === true && subject.partialMonthlyRent > 0;
   options.PARTIAL = partialPossible
-    ? { eligible: true, monthlyNet: null, reason: '집을 둘로 나눠 세를 놓을 수 있어요', steps: [], basis: '' }
+    ? {
+        eligible: true,
+        monthlyNet: round(monthlyIncome + subject.partialMonthlyRent - annualHoldingTax / 12),
+        monthlyFlow: [
+          { label: '지금 받으시는 연금', amount: monthlyIncome },
+          { label: '집 일부 임대수입', amount: subject.partialMonthlyRent },
+          { label: '현재 집 보유세', amount: -round(annualHoldingTax / 12) },
+        ],
+        reason: '독립 임대가 가능한 구조와 예상 임대수입을 직접 입력하셨어요.',
+        steps: [`월 사용 가능 금액 = 소득 ${won(monthlyIncome)} + 임대수입 ${won(subject.partialMonthlyRent)} - 보유세 월평균 ${won(annualHoldingTax / 12)}`],
+        basis: '실제 임대 가능 여부는 건축물대장, 관리규약과 현장 구조를 확인해야 해요.',
+      }
     : {
         eligible: false,
-        reason: `전용 ${areaM2}㎡ 한 세대짜리 구조라 일부만 세를 놓기 어려워요. 집을 그대로 두시면 세금 한 해 ${won(annualHoldingTax)}은 계속 나가요.`,
-        steps: [`집을 둘로 나누기 어려워요 = 전용 ${areaM2}㎡ < 기준 ${RULES.partialLiquidity?.minAreaM2 ?? 115}㎡`],
+        reason: `독립 임대가 가능한 구조와 예상 월 임대수입을 확인해야 해요. 집을 그대로 두시면 세금 한 해 ${won(annualHoldingTax)}은 계속 나가요.`,
+        steps: ['별도 출입문·주방·욕실과 실제 예상 월 임대수입이 모두 필요해요.'],
         basis: '집 일부를 따로 세놓으려면 출입문·부엌·욕실이 따로 있어야 해요. — 건축법 시행령 제3조의5',
       };
 
   /* ------------------------------------------------------------- SELL */
   const years = drawdownYears(youngerAge);
-  const deposit = RULES.rentalDeposit?.seoulCouple ?? 1_500_000_000;
-  const medical = 300_000_000;
+  const deposit = subject.rentalDeposit;
+  const medical = subject.medicalReserve;
+  if (!(deposit >= 0) || !(medical >= 0)) {
+    throw new Error('임차 보증금과 의료·간병 예비자금을 실제 값으로 입력해 주세요.');
+  }
   const sellProceeds = taxes.sale2026.netProceeds;
   const sellInvestable = sellProceeds - deposit - medical;
-  const sellLiving = Math.min(sellInvestable, targetExpense * 12 * years);
+  const sellLiving = Math.max(0, Math.min(sellInvestable, monthlyShortage * 12 * years));
   const sellDraw = drawdownMonthly(sellLiving, years);
 
   options.SELL = {
@@ -256,32 +280,44 @@ export function buildScenarios({ property, properties, subject }) {
   };
 
   /* --------------------------------------------------------- DOWNSIZE */
-  const newHomePrice = RULES.housingPension.eligibility.maxOfficialPrice;
-  const newAcq = acquisitionTax(newHomePrice);
-  const newBroker = brokerageFee(newHomePrice);
-  const newHomeCost = newHomePrice + newAcq.total + newBroker.total;
-  const downProceeds = eligibleForSpecial ? taxes.sale2027Special.netProceeds : taxes.sale2026.netProceeds;
-  const downRemaining = downProceeds - newHomeCost;
-  const downLiving = Math.min(downRemaining, targetExpense * 12 * years);
-  const downDraw = drawdownMonthly(downLiving, years);
-  const newHoldingTax = holdingTaxByYear({
-    officialPrice: newHomePrice, ownerCount, olderAge, holdingYears: 0, isResiding: true,
-    region: primaryHome.region,
-    /* 옮기실 집은 다른 집이라, 지금 집에 딸린 조건(작년 고지세액·도시지역·지자체 세율)은 빼고 계산한다 */
-    refinements: { householdHouseCount: refinements.householdHouseCount, ownershipRatio: refinements.ownershipRatio },
-  })[0];
-  const newHoldingMonthly = -round(newHoldingTax.total / 12);
+  const newHomePrice = Number(subject.newHomeMarketPrice) || 0;
+  const newHomeOfficialPrice = Number(subject.newHomeOfficialPrice) || 0;
+  if (!(newHomePrice > 0)) {
+    options.DOWNSIZE = {
+      eligible: false,
+      reason: '옮길 집의 예상 매매가격을 입력하면 다운사이징을 비교할 수 있어요.',
+      steps: ['옮길 집의 예상 매매가격이 입력되지 않았어요.'],
+      basis: [BASIS.acquisition, BASIS.brokerage],
+    };
+  } else {
+    const newAcq = acquisitionTax(newHomePrice);
+    const newBroker = brokerageFee(newHomePrice);
+    const newHomeCost = newHomePrice + newAcq.total + newBroker.total;
+    /* 발표 단계인 2027 특례는 현재 결과에 적용하지 않고 별도 what-if 로만 보여준다. */
+    const downProceeds = taxes.sale2026.netProceeds;
+    const downRemaining = downProceeds - newHomeCost;
+    const newHoldingTax = newHomeOfficialPrice > 0 ? holdingTaxByYear({
+      officialPrice: newHomeOfficialPrice, ownerCount, olderAge, holdingYears: 0, isResiding: true,
+      region: subject.wishRegion || primaryHome.region,
+      refinements: { householdHouseCount: 1, ownershipRatio: refinements.ownershipRatio },
+    })[0] : null;
+    const newHoldingMonthly = newHoldingTax ? -round(newHoldingTax.total / 12) : 0;
+    const requiredMonthlyDraw = Math.max(0, targetExpense - monthlyIncome - newHoldingMonthly);
+    const downLiving = Math.max(0, Math.min(downRemaining, requiredMonthlyDraw * 12 * years));
+    const downDraw = drawdownMonthly(downLiving, years);
 
-  options.DOWNSIZE = {
-    eligible: true,
-    monthlyNet: round(monthlyIncome + downDraw.monthly + newHoldingMonthly),
-    usesSpecial: eligibleForSpecial,
+    options.DOWNSIZE = {
+    eligible: downRemaining > 0,
+    reason: downRemaining > 0 ? null : '현재 입력한 새 집 예산이 매도 후 수령액보다 커요.',
+    monthlyNet: downRemaining > 0 ? round(monthlyIncome + downDraw.monthly + newHoldingMonthly) : null,
+    usesSpecial: false,
+    specialWhatIfAvailable: eligibleForSpecial,
     proceeds: [
       { label: '집 판 돈', amount: marketPrice },
       {
-        label: eligibleForSpecial ? '팔 때 내는 세금 (특례로 절반만)' : '팔 때 내는 세금',
-        amount: -(eligibleForSpecial ? sale2027.total : sale2026.total),
-        formula: eligibleForSpecial ? taxes.sale2027Special.condition : '특례 없이',
+        label: '팔 때 내는 세금 (현행 기준)',
+        amount: -sale2026.total,
+        formula: '발표된 특례는 확정 전이라 현재 계산에 적용하지 않았어요.',
       },
       { label: '부동산 수수료', amount: -broker.total },
       { label: '세금 내고 손에 쥐는 돈', amount: downProceeds, subtotal: true },
@@ -291,7 +327,7 @@ export function buildScenarios({ property, properties, subject }) {
     monthlyFlow: [
       { label: '지금 받으시는 연금', amount: monthlyIncome },
       { label: `모아둔 돈에서 꺼내 쓰기 (${won(downLiving)}을 ${years}년에 나눠서)`, amount: downDraw.monthly },
-      { label: '새 집 세금', amount: newHoldingMonthly },
+      { label: '새 집 세금', amount: newHoldingMonthly, formula: newHoldingTax ? '입력한 새 집 공시가격 기준' : '공시가격 미입력으로 제외' },
     ],
     allocation: allocate(downRemaining, { livingYears: years, livingAccount: downLiving, medicalReserve: medical }),
     remainingAssets: {
@@ -299,23 +335,23 @@ export function buildScenarios({ property, properties, subject }) {
       deposit: 0,
       financial: round(downRemaining),
       total: round(newHomePrice + downRemaining),
-      note: '새 집과 현금이 함께 남아 자녀에게 물려주실 수 있어요.',
+      note: '현재 시점의 새 집과 금융자산 합계예요. 매달 인출하면 금융자산은 줄어들어요.',
     },
     steps: [
-      ...(eligibleForSpecial ? taxes.sale2027Special.steps : taxes.sale2026.steps),
+      ...taxes.sale2026.steps,
       newAcq.step, newBroker.step,
       `새 집 사고 남는 돈 = ${won(downProceeds)} - ${won(newHomeCost)} = ${won(downRemaining)}`,
       downDraw.step,
-      `새 집 세금 (한 달치) = 한 해 ${won(newHoldingTax.total)} ÷ 12개월 = ${won(-newHoldingMonthly)}`,
+      ...(newHoldingTax ? [`새 집 세금 (한 달치) = 한 해 ${won(newHoldingTax.total)} ÷ 12개월 = ${won(-newHoldingMonthly)}`] : ['새 집 공시가격을 입력하지 않아 새 집 보유세는 월 현금흐름에서 제외했어요.']),
     ],
-    basis: [BASIS.capitalGains, BASIS.acquisition, BASIS.brokerage, BASIS.drawdown]
-      .concat(eligibleForSpecial ? [BASIS.special2027] : []),
-  };
+    basis: [BASIS.capitalGains, BASIS.acquisition, BASIS.brokerage, BASIS.drawdown],
+    };
+  }
 
   /* ------------------------------------------------------- 증여 검토 */
   const gifts = homes.map((home) => giftTaxTotal({
     value: home.marketPrice, area: home.areaM2,
-    isAdjustedArea: true, isSingleHouseToLineal: homes.length === 1,
+    isAdjustedArea: home.isAdjustedArea === true, isSingleHouseToLineal: homes.length === 1,
   }));
   const gift = {
     giftTax: gifts.reduce((sum, item) => sum + item.giftTax, 0),
@@ -368,15 +404,24 @@ export function buildScenarios({ property, properties, subject }) {
       specialApplicable: eligibleForSpecial,
       portfolio: homes.map((home) => ({
         complexName: home.complexName,
+        roadAddress: home.roadAddress || home.address,
+        detailAddress: home.detailAddress || [home.dong, home.ho].filter(Boolean).join(' '),
         officialPrice: home.officialPrice,
         marketPrice: home.marketPrice,
         acquisitionPrice: home.acquisitionPrice,
+        officialPriceSource: home.officialPriceSource || home._source,
+        areaM2: home.areaM2,
+        ownership: home.ownership || 'SINGLE',
+        ownershipRatio: home.ownershipRatio || 100,
+        residencyYears: home.residencyYears ?? 0,
+        isResiding: home.isResiding === true,
       })),
       assumptions: [
         `집 팔 때 드는 비용을 ${won(expenses)}으로 잡았어요`,
         `${holdingYears}년 갖고 계시고 ${lived}년 사신 걸로 계산했어요`,
         `앞으로 ${years}년 동안 나눠 쓰시는 걸로 잡았어요 (통계청 기대수명 기준)`,
-        `옮기실 새 집을 ${won(newHomePrice)}으로 잡았어요 (주택연금 가입 가능한 최대 금액)`,
+        ...(newHomePrice > 0 ? [`옮기실 새 집 매매가격은 입력하신 ${won(newHomePrice)}을 썼어요`] : ['옮길 집 가격을 입력하지 않아 다운사이징은 비교에서 제외했어요']),
+        ...(newHomeOfficialPrice > 0 ? [`옮기실 새 집 공시가격은 입력하신 ${won(newHomeOfficialPrice)}을 썼어요`] : ['옮길 집 공시가격이 없어 새 집 보유세는 계산하지 않았어요']),
       ],
       refinements,
       refinementNotes: Object.entries(refinements).map(([field, value]) => refineAppliedNote(field, value)),

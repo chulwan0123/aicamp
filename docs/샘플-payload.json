@@ -30,6 +30,10 @@
     "residencyBand": "10년 이상",
     "wishRegion": "강원 강릉시",
     "wishRegionIsCapitalArea": false,
+    "newHomeMarketPrice": 1200000000,
+    "newHomeOfficialPrice": 900000000,
+    "rentalDeposit": 1500000000,
+    "medicalReserve": 300000000,
     "monthlyIncome": 2000000,
     "targetExpense": 3296000
   },

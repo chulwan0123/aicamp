@@ -34,6 +34,21 @@ export function assemble({ computed, draft, property, subject }) {
   ].filter((block) => block.steps?.length);
 
   return {
+    meta: {
+      calculatedAt: subject.calculatedAt || null,
+      engineVersion: '2026.08.21',
+      lawBaseDate: '2026-08-21',
+      houseCount: computed.meta.portfolio.length,
+      assumptions: computed.meta.assumptions,
+    },
+
+    portfolio: {
+      totalOfficialPrice: computed.meta.portfolio.reduce((sum, item) => sum + item.officialPrice, 0),
+      totalMarketPrice: computed.meta.portfolio.reduce((sum, item) => sum + item.marketPrice, 0),
+      totalAcquisitionPrice: computed.meta.portfolio.reduce((sum, item) => sum + item.acquisitionPrice, 0),
+      properties: computed.meta.portfolio,
+    },
+
     profile: draft.profile,
 
     cashflow: {
@@ -56,6 +71,9 @@ export function assemble({ computed, draft, property, subject }) {
       net: monthlyNet,
       coverage: target ? Math.min(1, monthlyNet / target) : 0,
       ratioToTarget: target ? monthlyNet / target : 0,
+      monthlyShortageAfter: Math.max(0, target - monthlyNet),
+      remainingAssets: chosen.remainingAssets || null,
+      monthlyFlow: chosen.monthlyFlow || [],
       trace: chosen.steps || [],
       basis: chosen.basis,
       why: draft.why,
@@ -65,7 +83,7 @@ export function assemble({ computed, draft, property, subject }) {
     },
 
     alternatives: (draft.alternatives || [])
-      .filter((a) => computed.options[a.id]?.eligible)
+      .filter((a) => computed.options[a.id]?.eligible && computed.options[a.id]?.monthlyNet > 0)
       .map((a) => ({
         id: a.id,
         label: OPTION_LABEL[a.id],

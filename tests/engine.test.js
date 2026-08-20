@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { buildScenarios } from '../api/_lib/scenarios.js';
 import { comprehensiveTax } from '../api/_lib/holdingTax.js';
+import { housingPension } from '../api/_lib/calc.js';
 
 const sample = JSON.parse(fs.readFileSync(new URL('../docs/샘플-payload.json', import.meta.url), 'utf8'));
 
@@ -38,6 +39,29 @@ test('주택연금과 부분 임대 적격성은 규칙 엔진 값으로 판정�
   assert.equal(computed.options.PARTIAL.eligible, false);
   assert.equal(computed.options.SELL.eligible, true);
   assert.equal(computed.options.DOWNSIZE.eligible, true);
+});
+
+test('금융자산 인출은 기존 소득을 뺀 생활비 부족액만 채운다', () => {
+  const computed = compute();
+  assert.equal(computed.options.SELL.monthlyNet, sample.subject.targetExpense);
+  assert.match(computed.options.SELL.monthlyFlow[1].label, /모아둔 돈에서 꺼내 쓰기/);
+});
+
+test('다운사이징은 입력한 새 집 매매가격과 공시가격을 따로 쓴다', () => {
+  const computed = compute({ subject: { newHomeMarketPrice: 800_000_000, newHomeOfficialPrice: 500_000_000 } });
+  assert.equal(computed.options.DOWNSIZE.remainingAssets.home, 800_000_000);
+  assert.match(computed.options.DOWNSIZE.proceeds.find((row) => row.label === '새 집 사는 데 드는 돈').formula, /집값 8억원/);
+  assert.equal(computed.options.DOWNSIZE.usesSpecial, false);
+  assert.equal(computed.options.DOWNSIZE.specialWhatIfAvailable, true);
+});
+
+test('주택연금 가입 연령은 부부 중 연장자, 지급표는 연소자를 사용한다', () => {
+  const pension = housingPension({ officialPrice: 800_000_000, marketPrice: 1_000_000_000, olderAge: 56, youngerAge: 50 });
+  assert.equal(pension.eligible, true);
+  assert.equal(pension.monthly, null);
+  assert.equal(pension.needsOfficialQuote, true);
+  assert.match(pension.steps.join('\n'), /연장자 56세/);
+  assert.match(pension.steps.join('\n'), /연소자 50세 기준 공식 조회/);
 });
 
 test('여러 주택은 첫 집만 보지 않고 공시가격과 재산세를 모두 합산한다', () => {

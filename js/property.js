@@ -3,6 +3,7 @@
  * 공시가격은 주소 검색에서 만든 PNU로 서버 API를 조회해 덮어쓸 수 있다.
  */
 let cache = null;
+const marketCache = new Map();
 
 const normalize = (text) => String(text || '').replace(/[\s,·\-()]/g, '');
 
@@ -48,9 +49,17 @@ function toProperty(item, confidence) {
 export async function lookupProperty(roadAddress, detailAddress = '') {
   const items = await loadDataset();
   const query = normalize(`${roadAddress}${detailAddress}`);
+  const normalizedDetail = normalize(detailAddress);
 
-  const hit = items.find((item) =>
-    (item.keywords || []).some((keyword) => query.includes(normalize(keyword))));
+  const hit = items.find((item) => {
+    const addressMatch = (item.keywords || []).some((keyword) => query.includes(normalize(keyword)));
+    if (!addressMatch) return false;
+    if (!normalizedDetail) return true;
+    const itemDong = normalize(item.dong);
+    const itemHo = normalize(item.ho);
+    return (!itemDong || normalizedDetail.includes(itemDong))
+      && (!itemHo || normalizedDetail.includes(itemHo));
+  });
 
   if (hit) return toProperty(hit);
   return null;
@@ -84,6 +93,36 @@ export async function lookupOfficialPrice(pnu, { dong, ho, areaM2 } = {}) {
     sourceName: body.sourceName || null,
     sourceUrl: body.sourceUrl || null,
   };
+}
+
+/** PNU·단지명·전용면적으로 최근 매매와 전월세 실거래를 함께 조회한다. */
+export async function lookupApartmentMarket(pnu, { complexName, areaM2, months = 6 } = {}) {
+  const normalized = String(pnu || '');
+  if (!/^(11|41)\d{17}$/.test(normalized)) throw new Error('서울·경기 PNU 19자리가 필요해요.');
+  if (!String(complexName || '').trim()) throw new Error('정확한 실거래 조회를 위해 단지명이 필요해요.');
+
+  const key = [normalized, complexName, Number(areaM2) || '', months].join('|');
+  if (marketCache.has(key)) return marketCache.get(key);
+  const pending = (async () => {
+    const params = new URLSearchParams({
+      pnu: normalized,
+      complexName: String(complexName),
+      months: String(months),
+      mode: 'all',
+    });
+    if (Number(areaM2) > 0) params.set('areaM2', String(areaM2));
+    const response = await fetch(`./api/market?${params}`, { headers: { Accept: 'application/json' } });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(body.error || '실거래 정보를 불러오지 못했어요.');
+    return body;
+  })();
+  marketCache.set(key, pending);
+  try {
+    return await pending;
+  } catch (error) {
+    marketCache.delete(key);
+    throw error;
+  }
 }
 
 export const CONFIDENCE_LABEL = { HIGH: '높음', MEDIUM: '보통', LOW: '참고용' };

@@ -5,6 +5,13 @@
  */
 const OPTION_IDS = ['SELL', 'DOWNSIZE', 'PARTIAL', 'PENSION'];
 
+function stringValues(value, output = []) {
+  if (typeof value === 'string') output.push(value);
+  else if (Array.isArray(value)) value.forEach((item) => stringValues(item, output));
+  else if (value && typeof value === 'object') Object.values(value).forEach((item) => stringValues(item, output));
+  return output;
+}
+
 export function verify(draft, computed) {
   const errors = [];
   if (!draft) return ['응답이 비어 있음'];
@@ -58,7 +65,7 @@ export function verify(draft, computed) {
   }
   if (String(draft.headline || '').length > 40) errors.push('headline 이 40자를 넘는다');
   if (!Array.isArray(draft.cautions) || draft.cautions.length < 1) errors.push('cautions 가 비어 있다');
-  if (!Array.isArray(draft.actionPlan) || draft.actionPlan.length < 3) errors.push('actionPlan 이 3단계 미만');
+  if (!Array.isArray(draft.actionPlan) || draft.actionPlan.length < 4) errors.push('actionPlan 이 4단계 미만');
 
   /* --- 미확정 제도·근사값 고지 --- */
   const cautionText = (draft.cautions || []).join(' ');
@@ -84,7 +91,14 @@ export function verify(draft, computed) {
   // 7자리 이상 숫자(콤마 포함)는 원 단위를 그대로 쓴 것이다 — 어르신이 읽기 어렵다.
   const rawAmounts = prose.match(/\d{1,3}(?:,\d{3}){2,}|\d{7,}/g);
   if (rawAmounts?.length) {
-    errors.push(`금액을 원 단위로 썼다: ${[...new Set(rawAmounts)].slice(0, 4).join(', ')}. 억·만원 단위 한글(예: 47억원, 130만원)로 다시 써라.`);
+    errors.push(`금액을 원 단위로 썼다: ${[...new Set(rawAmounts)].slice(0, 4).join(', ')}. 억·만원 단위 한글(예: 4억원, 130만원)로 다시 써라.`);
+  }
+  const amountPattern = /\d[\d,]*(?:억(?:\s*\d[\d,]*만)?|만)?원/g;
+  const allowedAmounts = new Set(stringValues(computed?.display).flatMap((value) => value.match(amountPattern) || []));
+  const spokenAmounts = prose.match(amountPattern) || [];
+  const invented = [...new Set(spokenAmounts.filter((amount) => !allowedAmounts.has(amount)))];
+  if (invented.length) {
+    errors.push(`computed.display 에 없는 금액을 문장에 썼다: ${invented.slice(0, 4).join(', ')}`);
   }
 
   return errors;
