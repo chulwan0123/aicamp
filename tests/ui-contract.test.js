@@ -41,11 +41,14 @@ test('스플래시는 본 화면 번호와 분리되고 엔진 모듈이 연결�
   assert.match(html, /src="\.\/js\/silver-engine\.js"/);
 });
 
-test('도로명주소는 검색과 직접 입력을 모두 지원하고 검색 선택 시 PNU를 함께 저장한다', () => {
-  assert.match(html, /data-address-input placeholder="도로명주소를 입력하거나 검색해 주세요"/);
-  assert.match(html, /aria-haspopup="dialog">주소 검색/);
+test('주택 입력은 시도·시군구·단지·전용면적 순서이며 도로명주소는 보조 정보로 유지한다', () => {
+  assert.match(html, /data-property-sido/);
+  assert.match(html, /data-property-sigungu disabled/);
+  assert.match(html, /data-complex-query placeholder="단지명을 입력해 주세요"/);
+  assert.match(html, /data-area-select disabled/);
+  assert.match(html, /data-address-input placeholder="단지를 선택하면 자동으로 입력돼요" readonly/);
   assert.doesNotMatch(html, /value="서울특별시 서초구 신반포로 270"/);
-  assert.match(engine, /propertyNode\.dataset\.pnu = selected\.pnu/);
+  assert.match(engine, /selectedAreaM2/);
 });
 
 test('모바일 탭 화면은 페이지 가로 스크롤을 막고 내부 레일만 유지한다', () => {

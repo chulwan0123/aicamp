@@ -1,5 +1,7 @@
 # 결과 상세 디자인 QA
 
+> 상태 갱신(2026-08-21): 첫 번째 구역은 추천 상세의 역사적 QA이고, 아래 두 번째 구역은 로컬 미커밋 화면 3 검색 UI의 별도 QA다. 현재 운영 기준은 `https://aicamp-sigma.vercel.app`의 커밋 `197fb52`이며 화면 3 변경은 아직 운영에 배포되지 않았다.
+
 - source visual truth: `/Users/chulwan/Documents/Codex/2026-08-20/https-github-com-chulwan0123-aicamp-2/output/silver-demo-qa-2026-08-20/21-recommended-detail.png`
 - implementation screenshot: `/tmp/silver-recommendation-current-fixed.png`
 - normalized app crop: `/tmp/silver-recommendation-app-fixed.png`
@@ -49,5 +51,38 @@
 - 저장된 결과 복원 후 상세 딥링크 재진입
 - 모바일 가로 넘침 검사
 - 브라우저 콘솔 오류·경고 검사
+
+final result: 추천 상세 기준 passed. 미커밋 화면 3 변경은 미검증.
+
+---
+
+# 2026-08-21 주택 검색 UI 디자인 QA
+
+- source visual truth: `/tmp/codex-remote-attachments/01a01d40-ee5b-7f52-a92e-cb410ce494e2/3FE70AD3-C862-4215-87E4-635F155DBBA2/2-사진-2.jpg`
+- implementation screenshots: `output/property-search-qa-2026-08-21/updated-390.jpg`, `output/property-search-qa-2026-08-21/area-sheet-390.jpg`
+- combined comparison: `output/property-search-qa-2026-08-21/comparison.jpg`
+- state: `3/8 주택 입력 → 서울특별시 → 서초구 → 반포자이 → 전용 84.943㎡`
+
+## Findings
+
+- P0/P1/P2 잔여 항목 없음.
+- 참고 화면의 `닫기` 텍스트는 서비스의 기존 바텀시트 계약인 Lucide `x` 아이콘으로 유지했다. 닫기 기능과 44px 터치 영역은 같다.
+- 참고 화면에는 2026 예상 공시가격이 표시되지만, 구현은 실제 보유세 과세표준에 사용하는 2025년 국토교통부 호별 공시가격의 최소·최대 범위를 표시한다. 데이터 의미를 보존하기 위한 의도적인 차이다.
+
+## Comparison evidence
+
+- 입력 순서는 참고 화면과 같은 `시/도 → 시/군/구 → 단지명 검색 → 전용면적 선택`이다.
+- 전용면적 바텀시트는 상단 핸들, 제목, 단지명·면적 개수, 둥근 면적 카드, 세대수, 가격 범위의 위계를 맞췄다.
+- 도로명주소는 13px 라벨·44px 읽기 전용 필드로 축소해 주 입력 흐름 아래 보조 정보로 배치했다.
+- 검색 아이콘과 화살표·닫기 아이콘은 기존 `assets/icons/lucide/**` 자산을 사용했다. CSS 도형이나 새 인라인 SVG는 없다.
+
+## Responsive and behavior verification
+
+- 320·375·390·500px 요청 너비에서 브라우저 뷰포트 검증과 스크린샷을 수행했다. 인앱 브라우저의 화면 배율이 적용된 상태에서도 각 검사에서 `scrollWidth === clientWidth`였다.
+- 시/도 변경 시 시/군/구가 실제 서울·경기 목록으로 갱신되고, 하위 단지·면적·PNU 선택은 초기화된다.
+- 서초구 `반포자이` 검색은 실제 PNU `1165010700000200043`, 도로명주소, 16개 전용면적을 반환했다.
+- 전용 84.943㎡와 101동 101호 선택 후 다음 단계에서 2025년 공시가격 2,462,000,000원이 자동 조회됐다.
+- 키보드 Enter 검색, Escape/배경/닫기 버튼으로 시트 닫기, 선택 후 동·호수 포커스 이동을 확인했다.
+- `npm run check`: 75개 테스트 통과.
 
 final result: passed

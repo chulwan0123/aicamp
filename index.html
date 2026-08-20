@@ -37,6 +37,7 @@
     .choices{display:grid;width:100%;min-width:0;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.choices.three{grid-template-columns:repeat(3,minmax(0,1fr))}.choices.four{grid-template-columns:repeat(4,minmax(0,1fr))}.choice{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:52px;padding:12px 7px;border:1px solid var(--color-border-default);border-radius:var(--radius-xl);color:var(--color-text-secondary);font-size:14px;font-weight:500;text-align:center;cursor:pointer}.choice input{position:absolute;width:1px;height:1px;opacity:0}.choice:has(input:checked){border:2px solid var(--blue);background:var(--color-blue-100);color:var(--blue)}
     .input-row{display:grid;width:100%;min-width:0;grid-template-columns:minmax(0,1fr) 104px;gap:8px}.input,.select{width:100%;min-width:0;height:52px;padding:0 14px;border:1px solid var(--color-border-default);border-radius:var(--radius-xl);outline:0;background:#fff;color:var(--color-text-primary);font-size:15px}.input:focus,.select:focus{border-color:var(--color-border-focus);box-shadow:0 0 0 1px var(--color-border-focus)}.small{width:104px;min-width:0;height:52px;padding:0 12px;border:1px solid var(--color-button-stroke-primary);border-radius:var(--radius-xl);background:#fff;font-size:14px;font-weight:600}.small img{width:18px;height:18px}
     .card{border:1px solid var(--color-border-subtle);border-radius:var(--radius-xl);background:#fff}.property{display:grid;width:100%;min-width:0;gap:20px;padding:0}.property>.field+.field{margin-top:10px}.property+.property{padding-top:28px;border-top:1px solid var(--color-border-subtle)}#ownership-fields,#address-fields{width:100%;min-width:0}#ownership-fields{gap:38px}.row{display:flex;align-items:center;justify-content:space-between;gap:16px}.card-title{margin:0;font-size:17px;font-weight:700;line-height:24px}.badge{display:inline-flex;padding:3px 10px;border-radius:999px;background:var(--color-blue-100);color:var(--blue);font-size:12px;font-weight:600}
+    #address-fields{gap:34px}#address-fields .property{gap:26px}#address-fields .property>.field+.field{margin-top:0}.property-region-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:26px}.property-complex-row{display:grid;grid-template-columns:minmax(0,1fr) 88px;gap:8px}.complex-search-input{padding-left:42px;background:#fff url("./assets/icons/lucide/search.svg") 14px center/19px no-repeat}.complex-search-button{display:flex;align-items:center;justify-content:center;width:100%;height:52px;padding:0 12px;border:1px solid var(--color-button-stroke-primary);border-radius:var(--radius-xl);background:#fff;color:var(--color-text-primary);font-size:14px;font-weight:700;cursor:pointer}.complex-search-button:disabled{color:var(--color-text-tertiary);cursor:not-allowed}.area-select-trigger{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:56px;padding:0 16px;border:1px solid var(--color-border-default);border-radius:var(--radius-xl);background:#fff;color:var(--color-text-primary);font-size:15px;font-weight:500;text-align:left;cursor:pointer}.area-select-trigger img{width:24px;height:24px}.area-select-trigger:disabled{background:var(--color-gray-100);color:var(--color-text-tertiary);cursor:not-allowed}.property-selection-summary{display:none;margin-top:-14px;color:var(--color-text-secondary);font-size:13px;line-height:20px}.property-selection-summary[data-visible="true"]{display:block}.road-address-field{gap:8px!important;padding-top:2px}.road-address-field .label{color:var(--color-text-secondary);font-size:13px;font-weight:500;line-height:20px}.road-address-field .input{height:44px;background:var(--color-gray-100);color:var(--color-text-secondary);font-size:13px}.road-address-field .input:read-only:focus{border-color:var(--color-border-default);box-shadow:none}.property-picker-subtitle{margin:-4px 20px 14px;color:var(--color-text-tertiary);font-size:13px;line-height:20px}.property-picker-status{padding:28px 4px;color:var(--color-text-secondary);font-size:14px;line-height:22px;text-align:center}.property-picker-option{display:block;width:100%;padding:16px 4px;border:0;border-bottom:1px solid var(--color-border-subtle);background:#fff;color:var(--color-text-primary);text-align:left;cursor:pointer}.property-picker-option strong{display:block;font-size:16px;line-height:24px}.property-picker-option span{display:block;margin-top:4px;color:var(--color-text-secondary);font-size:13px;line-height:20px}.property-area-option{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;margin-bottom:10px;padding:16px;border:1px solid var(--color-border-default);border-radius:var(--radius-xl)}.property-area-option:last-child{margin-bottom:0}.property-area-option strong{font-size:17px}.property-area-option .area-units{margin:1px 0 0;color:var(--color-text-tertiary);text-align:right}.property-area-option .area-price{grid-column:1/-1;margin-top:2px;color:var(--color-text-secondary)}
     .summary{padding:4px 18px}.summary-row,.money-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 0;border-bottom:1px solid var(--color-border-subtle)}.summary-row:last-child,.money-row:last-child{border-bottom:0}.summary-label,.money-label,.lookup-address{color:var(--color-text-secondary);font-size:14px;line-height:21px}.summary-value,.money-value{font-size:15px;font-weight:600;line-height:22px;text-align:right}
     .lookup{padding:0 18px}.lookup-item{padding:18px 0;border-bottom:1px solid var(--color-border-subtle)}.lookup-item:last-child{border:0}.lookup-value{margin-top:7px;font-size:24px;font-weight:700;line-height:32px}.info{padding:16px;border-radius:var(--radius-lg);background:var(--color-blue-100);color:var(--color-text-secondary);font-size:13px;line-height:20px}.info strong{color:var(--blue)}
     .cta{position:fixed;z-index:30;right:50%;bottom:0;width:min(100%,500px);padding:42px var(--page-gutter) max(24px,env(safe-area-inset-bottom));transform:translateX(50%);background:linear-gradient(to bottom,rgba(255,255,255,0),#fff 34%);pointer-events:none}.primary{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:56px;padding:0 20px;border:0;border-radius:var(--radius-xl);background:var(--blue);color:#fff;font-size:17px;font-weight:700;cursor:pointer;pointer-events:auto}.primary:active{opacity:.84}.primary:focus-visible,.back:focus-visible{outline:3px solid var(--color-blue-300);outline-offset:2px}
@@ -143,7 +144,7 @@
 
   <section class="screen" data-screen="3" hidden>
     <header class="topbar"><button class="back" data-back aria-label="뒤로가기"><img src="./assets/icons/lucide/arrow-left.svg" alt=""></button><div class="step">3/8</div></header>
-    <div class="content"><h2 class="title">보유 중인 부동산의<br>주소를 입력해 주세요</h2><p class="desc">선택한 주택 수만큼 주소 필드가 표시돼요.</p><div id="address-fields" class="stack"></div></div><div class="cta"><button class="primary" data-next>공시가격 조회하기</button></div>
+    <div class="content"><h2 class="title">보유 중인 아파트를<br>찾아주세요</h2><p class="desc">지역과 단지, 전용면적을 선택하면 공시가격을 조회해요.</p><div id="address-fields" class="stack"></div></div><div class="cta"><button class="primary" data-next>공시가격 조회하기</button></div>
   </section>
 
   <section class="screen" data-screen="4" hidden>
@@ -313,6 +314,14 @@
     <div id="sheet-options" class="sheet-options"></div>
   </section>
 </div>
+<div id="property-picker-sheet" class="sheet-overlay" hidden>
+  <section class="bottom-sheet" role="dialog" aria-modal="true" aria-labelledby="property-picker-title">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <header class="sheet-header"><h2 id="property-picker-title" class="sheet-title">단지 선택</h2><button id="property-picker-close" class="sheet-close" type="button" aria-label="닫기"><img src="./assets/icons/lucide/x.svg" alt=""></button></header>
+    <p id="property-picker-subtitle" class="property-picker-subtitle"></p>
+    <div id="property-picker-options" class="sheet-options"></div>
+  </section>
+</div>
 <script>
   const screens=[...document.querySelectorAll("[data-screen]")];let current=0;
   const routes=["home","parents-age","property-count","ownership","address","property-value","acquisition","preferences","retirement-region","analyzing","result","tax","cashflow","downsizing","recommendation","home-pension","inheritance","my","tax-reform"];
@@ -447,10 +456,16 @@
     ).join("");
 
     addresses.innerHTML=Array.from({length:propertyCount},(_,index)=>
-      '<section class="property"><div class="row"><h3 class="card-title">주택 '+(index+1)+'</h3><span class="badge">'+(jointOwnership[index]?'공동명의':'단독명의')+'</span></div>'+
-      '<label class="field"><span class="label">주택의 도로명주소</span><span class="input-row"><input class="input" data-address-input placeholder="도로명주소를 입력하거나 검색해 주세요"><button class="small" type="button" aria-haspopup="dialog">주소 검색</button></span><span class="hint">검색이 열리지 않으면 주소를 직접 입력할 수 있어요.</span></label>'+
+      '<section class="property" data-property-index="'+index+'"><div class="row"><h3 class="card-title">주택 '+(index+1)+'</h3><span class="badge">'+(jointOwnership[index]?'공동명의':'단독명의')+'</span></div>'+
+      '<div class="property-region-grid">'+
+      '<label class="field"><span class="label">시/도</span><select class="select" data-property-sido><option value="">시/도 선택</option><option value="서울특별시">서울특별시</option><option value="경기도">경기도</option></select></label>'+
+      '<label class="field"><span class="label">시/군/구</span><select class="select" data-property-sigungu disabled><option value="">시/군/구 선택</option></select></label></div>'+
+      '<label class="field"><span class="label">단지명 검색</span><span class="property-complex-row"><input class="input complex-search-input" type="search" data-complex-query placeholder="단지명을 입력해 주세요" autocomplete="off"><button class="complex-search-button" type="button" data-complex-search disabled>검색</button></span><span class="hint">시/군/구를 선택한 뒤 단지명을 검색해 주세요.</span></label>'+
+      '<label class="field"><span class="label">전용면적 선택</span><button class="area-select-trigger" type="button" data-area-select disabled><span data-area-value>단지를 먼저 선택해 주세요</span><img src="'+chevronUrl+'" alt=""></button></label>'+
+      '<p class="property-selection-summary" data-property-selection-summary></p>'+
+      '<label class="field road-address-field"><span class="label">도로명주소</span><input class="input" data-address-input placeholder="단지를 선택하면 자동으로 입력돼요" readonly></label>'+
       '<label class="field"><span class="label">동·호수</span><input class="input" data-detail-input placeholder="예: 120동 1002호"></label>'+
-      '<div class="info"><strong>정확한 동·호수를 입력해 주세요.</strong><br>없는 주소나 다른 단지의 값으로 바꾸지 않아요.</div></section>'
+      '<div class="info"><strong>전용면적과 정확한 동·호수를 선택해 주세요.</strong><br>공공데이터에서 해당 세대의 공시가격을 찾아요.</div></section>'
     ).join("");
 
     lookups.innerHTML='<div class="lookup-item"><div class="lookup-address">주소와 동·호수를 입력한 뒤 공시가격을 조회해 주세요.</div></div>';
@@ -469,7 +484,9 @@
     document.querySelector("#summary-property-count").textContent=propertyCount+"채";
     document.querySelector("#summary-assessed-value").textContent="입력 전";
     upgradeSelectionFields(ownership);
+    upgradeSelectionFields(addresses);
     upgradeSelectionFields(acquisitions);
+    document.dispatchEvent(new CustomEvent("silver:property-fields-rendered"));
   }
 
   function syncOwnershipField(index){
@@ -624,6 +641,7 @@
   restoreFromUrl();
 </script>
 <script type="module" src="./js/silver-engine.js"></script>
+<script type="module" src="./js/property-search.js"></script>
 <script type="module" src="./js/service-features.js"></script>
 <script type="module" src="./js/kakao-login.js"></script>
 </body>

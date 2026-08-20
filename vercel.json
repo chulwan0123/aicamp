@@ -13,6 +13,7 @@
     "api/consultations.js": { "maxDuration": 15 },
     "api/share.js": { "maxDuration": 10 },
     "api/price.js": { "maxDuration": 15 },
+    "api/complexes.js": { "maxDuration": 15 },
     "api/market.js": { "maxDuration": 30 }
   },
   "headers": [
@@ -30,6 +31,12 @@
       ]
     },
     {
+      "source": "/api/complexes",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, s-maxage=86400, stale-while-revalidate=604800" }
+      ]
+    },
+    {
       "source": "/api/market",
       "headers": [
         { "key": "Cache-Control", "value": "public, s-maxage=21600, stale-while-revalidate=86400" }
@@ -37,6 +44,13 @@
     },
     {
       "source": "/data/public-price/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" }
+      ]
+    },
+    {
+      "source": "/data/property-search/(.*)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" },
         { "key": "X-Content-Type-Options", "value": "nosniff" }

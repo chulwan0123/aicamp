@@ -334,13 +334,15 @@ function unitParts(detail) {
 
 function addressRows() {
   return [...document.querySelectorAll('#address-fields .property')].map((propertyNode) => {
-    const inputs = propertyNode.querySelectorAll('input.input');
-    const roadInput = propertyNode.querySelector('[data-address-input]') || inputs[0];
+    const roadInput = propertyNode.querySelector('[data-address-input]');
+    const detailInput = propertyNode.querySelector('[data-detail-input]');
     return {
       propertyNode,
       road: roadInput?.value.trim() || '',
-      detail: inputs[1]?.value.trim() || '',
+      detail: detailInput?.value.trim() || '',
       pnu: propertyNode.dataset.pnu || '',
+      selectedComplexName: propertyNode.dataset.complexName || null,
+      selectedAreaM2: Number(propertyNode.dataset.areaM2) || null,
       officialPrice: Number(propertyNode.dataset.officialPrice) || null,
       officialPriceYear: propertyNode.dataset.officialPriceYear || null,
       officialComplexName: propertyNode.dataset.officialComplexName || null,
@@ -399,7 +401,7 @@ async function resolveProperties({ requireMarketPrice = false, requireOfficialPr
     if (pnu && !official) {
       try {
         setOfficialPriceLoading(propertyNode, true);
-        official = await lookupOfficialPrice(pnu, { ...unit, areaM2: found?.areaM2 });
+        official = await lookupOfficialPrice(pnu, { ...unit, areaM2: row.selectedAreaM2 || found?.areaM2 });
         cacheOfficialPrice(propertyNode, official);
       } catch (error) {
         cacheOfficialPriceError(propertyNode, error);
@@ -414,8 +416,8 @@ async function resolveProperties({ requireMarketPrice = false, requireOfficialPr
       official = {
         officialPrice: manualOfficialPrice,
         officialPriceYear: new Date().getFullYear(),
-        complexName: found?.complexName || null,
-        areaM2: enteredAreas[index] || found?.areaM2 || null,
+        complexName: row.selectedComplexName || found?.complexName || null,
+        areaM2: enteredAreas[index] || row.selectedAreaM2 || found?.areaM2 || null,
         dong: unit.dong,
         ho: unit.ho,
         pnu,
@@ -431,8 +433,8 @@ async function resolveProperties({ requireMarketPrice = false, requireOfficialPr
       marketPrice: null,
       confidence: 'HIGH',
       tradeCount: null,
-      areaM2: official?.areaM2,
-      complexName: official?.complexName,
+      areaM2: official?.areaM2 || row.selectedAreaM2,
+      complexName: official?.complexName || row.selectedComplexName,
       region: regionFromAddress(road),
       isCapitalArea: true,
       _source: 'data.go.kr',
@@ -459,12 +461,12 @@ async function resolveProperties({ requireMarketPrice = false, requireOfficialPr
       ...(official || {}),
       officialPrice: official?.officialPrice || null,
       marketPrice,
-      complexName: official?.complexName || base.complexName,
+      complexName: official?.complexName || row.selectedComplexName || base.complexName,
       roadAddress: road,
       detailAddress: detail,
       dong: official?.dong || unit.dong || base.dong,
       ho: official?.ho || unit.ho || base.ho,
-      areaM2: official?.areaM2 || enteredAreas[index] || base.areaM2,
+      areaM2: official?.areaM2 || enteredAreas[index] || row.selectedAreaM2 || base.areaM2,
       acquisitionYear: acquisitions[index]?.acquisitionYear || null,
       acquisitionPrice: acquisitions[index]?.acquisitionPrice || null,
       residencyYears: acquisitions[index]?.residencyYears ?? null,
@@ -546,7 +548,7 @@ async function searchAddress(searchButton) {
     searchButton.textContent = '조회 중…';
     try {
       setOfficialPriceLoading(propertyNode, true);
-      const detailInput = propertyNode.querySelectorAll('input.input')[1];
+      const detailInput = propertyNode.querySelector('[data-detail-input]');
       const found = await lookupProperty(selected.roadAddress, detailInput?.value || '');
       const unit = unitParts(detailInput?.value || '');
       if (unit.dong && unit.ho) {

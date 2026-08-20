@@ -1,5 +1,7 @@
 # 구현 현황과 보완 과제
 
+> 운영 기준일: 2026-08-21. 운영 URL은 `https://aicamp-sigma.vercel.app`, 배포 기준 커밋은 `197fb528f5765beb98795a3e9524c74d308bd661`이다. 아래에서 `운영`과 `현재 미커밋 작업`을 구분한다.
+
 ## 제품 목표
 
 주택 자산 비중이 높고 현금흐름이 부족한 시니어와 부모님의 노후를 준비하는 자녀가 주소 입력을 시작점으로 세금과 자산 유동화 대안을 비교하도록 돕습니다.
@@ -20,7 +22,7 @@
 ### 데이터 수집
 
 - 나이, 소득, 생활비, 시세, 취득가, 거주기간, 새 집 예산과 임차보증금은 구간 대표값이 아니라 사용자가 입력한 실제 값을 사용합니다.
-- 주소 검색은 `hyeji0503/hanwhaAiCamp`의 구현을 기준으로 다음 주소검색을 사용합니다. 도로명주소 입력은 검색 선택으로만 변경되며, 검색 결과의 법정동코드·산 여부·지번으로 19자리 PNU를 생성합니다.
+- 운영 배포는 다음 주소검색 결과의 법정동코드·산 여부·지번으로 19자리 PNU를 생성합니다.
 - 공시가격은 국토교통부 2025년 주택 공시가격 파일에서 서울 2,755,045세대·경기 4,383,843세대, 합계 7,138,888세대를 PNU 앞 7자리별 압축 조각으로 생성해 `/api/price`에서 조회합니다. PNU·동·호·전용면적이 일치하지 않으면 다른 세대 가격으로 대체하지 않으며 공시가격 조회에는 API 키가 필요 없습니다.
 - `/api/market`은 `DATA_GO_KR_API_KEY`로 국토교통부 아파트 매매·전월세 실거래 상세 자료를 조회합니다. PNU의 시군구·지번, 단지명, 전용면적이 모두 같은 거래만 사용하고 취소 매매를 제외합니다. 매매 중앙값은 수정 가능한 현재 예상 매매가격으로 제시하고 전세·월세 통계는 참고 근거로만 표시합니다.
 - 실거래 원본은 시군구·월별로 6시간 서버 캐시하고, 조회 결과는 Vercel CDN에서 재검증 가능하게 캐시합니다. 공공데이터 키는 클라이언트에 전달하지 않습니다.
@@ -59,39 +61,48 @@
 - 뉴스·콘텐츠·공지·고객센터와 마이 분류 메뉴는 기존 바텀시트·상세 화면 패턴으로 연결합니다.
 - API 비밀키와 공유 비밀키는 서버 환경변수에서만 읽고 저장소에 넣지 않습니다. 카카오 JavaScript 키는 `/api/client-config`로 필요한 값만 전달하고 등록 도메인으로 사용 범위를 제한합니다.
 
+### 현재 미커밋 단지 검색 작업
+
+- 로컬에는 `시/도 → 시/군/구 → 단지명 → 전용면적 → 동·호` 순서의 검색 UI와 `GET /api/complexes`가 구현 중입니다.
+- 2025년 서울·경기 69개 시군구 gzip 조각과 192,195개 단지 색인을 사용합니다.
+- 이 작업은 반포자이 고정값이나 다른 단지 폴백을 사용하지 않습니다.
+- `index.html`의 3단계 문구·DOM·레이아웃을 변경합니다. 시각 QA 증거는 `design-qa.md`에 기록됐지만 아직 미커밋·미배포이므로 운영 구현으로 간주하지 않습니다.
+- 현재 미커밋 작업 포함 `npm run check`는 75개 테스트가 통과합니다.
+
 ## 배포 구조
 
 - 정적 화면: `index.html`, `assets/**`, `js/**`, `data/**`
-- 서버리스 API: `/api/advise`, `/api/chat`, `/api/client-config`, `/api/consultations`, `/api/share`, `/api/price`, `/api/market`, `/api/health`
+- 서버리스 API: `/api/advise`, `/api/chat`, `/api/client-config`, `/api/consultations`, `/api/share`, `/api/price`, `/api/market`, `/api/auth/**`, `/api/health`
 - 운영 환경: Vercel
 - 로컬 실행: `npm run dev`
 - 검증: `npm run check`
-- 운영 저장소: `https://github.com/wani3000/aicamp-silver`
+- 운영 저장소: `https://github.com/chulwan0123/aicamp`
 - 운영 배포: `https://aicamp-sigma.vercel.app`
+- 운영 배포 원본: `https://aicamp-4t9tvxm64-oxaz1234-gmailcoms-projects.vercel.app`
 - Vercel 프로젝트: `oxaz1234-gmailcoms-projects/aicamp`
-- 예비 배포: `https://aicamp-silver.vercel.app`
+- 배포 ID: `dpl_CZpJ8mVZeuKon5D9GLpeNyx8YFCH`
+- 배포 브랜치·커밋: `codex/fix-my-shortcut-font-14-5` · `197fb528f5765beb98795a3e9524c74d308bd661`
+- Git 작성자 이메일: `Oxaz1234@gmail.com`
 
-기존 두 저장소의 통합 결과를 `wani3000/aicamp-silver`의 `main`에서 운영하며 Vercel Git 자동배포로 연결합니다.
-
-운영 배포는 Vercel `oxaz1234-2461` 계정에서 수행합니다.
+현재 Production은 위 커밋의 깨끗한 작업 트리에서 Vercel CLI로 수동 배포했습니다. 로컬 미커밋 단지 검색 변경은 포함되지 않았습니다.
 
 ### 운영 환경변수 상태
 
-- 설정됨: `OPENAI_API_KEY`, `OPENAI_MODEL=gpt-5.6-terra`, `USE_MOCK=false`, `SHARE_SECRET`
-- 추가 필요: `DATA_GO_KR_API_KEY`, `CONSULTATION_WEBHOOK_URL`, `KAKAO_JAVASCRIPT_KEY`
-- 영향: 실제 AI 분석·채팅과 서울·경기 전체 공시가격 조회는 동작합니다. 매매·전월세 자동 조회에는 `DATA_GO_KR_API_KEY`가 필요하며, 키가 없거나 일치 거래가 없으면 사용자가 현재 예상 매매가격을 직접 입력합니다.
+- 설정 확인: `OPENAI_API_KEY`, `OPENAI_MODEL`, `USE_MOCK`, `SHARE_SECRET`, `DATA_GO_KR_API_KEY`, `AUTH_SESSION_SECRET`, `KAKAO_JAVASCRIPT_KEY`, `KAKAO_REST_API_KEY`, `KAKAO_CLIENT_SECRET`, `KAKAO_REDIRECT_URI`
+- 추가 운영 연동: 전문가 상담을 외부 채널로 전달하려면 `CONSULTATION_WEBHOOK_URL`이 필요합니다.
+- 영향: 실제 AI 분석·채팅, 암호화 공유, 카카오 로그인 설정, 매매·전월세 자동 조회가 서버 환경변수를 사용합니다. 서울·경기 공시가격은 저장소의 압축 원본 조각을 읽으므로 API 키가 필요 없습니다.
 - 저장 원칙: 비밀값은 GitHub와 클라이언트에 넣지 않고 Vercel 프로젝트 환경변수로만 관리합니다.
 
-### 자동배포 연결 상태
+### 배포 연결 상태
 
-- `wani3000/aicamp-silver`와 Vercel `aicamp` 프로젝트가 연결되어 `main` 푸시 시 Production 자동배포가 실행됩니다.
-- CLI 수동 배포도 현재 Vercel 계정에서 가능합니다.
+- 현재 검증된 Production은 Vercel `oxaz1234-2461` 계정에서 만든 수동 배포입니다.
+- Git 연결의 자동배포 브랜치는 별도 확인 전까지 운영 절차로 단정하지 않습니다.
 
 ## 아직 부족한 기능
 
 ### 외부 데이터·인증
 
-- 카카오 OAuth 로그인, 실제 가족 관계와 권한 관리
+- 실제 가족 관계와 권한 관리
 - 입력·결과의 서버 데이터베이스 저장과 기기 간 동기화
 - 공시가격 원본의 새 기준연도 파일을 자동 수집·검증·교체하는 배치
 - 실거래 API 장애·할당량 소진에 대비한 영속 캐시와 운영 모니터링
@@ -117,8 +128,16 @@
 
 ## 다음 개발 우선순위
 
-1. 운영 환경의 `DATA_GO_KR_API_KEY` 설정과 실제 주소 회귀 QA
-2. 과세연도별 규칙 버전과 세무 검증 사례 확장
-3. 카카오 로그인·가족 초대·서버 저장
-4. 공식 주택연금 조회와 상담 예약
-5. 계산 근거·기준일·출처가 포함된 가족 공유 리포트
+1. 다주택 양도세 12억원 비과세 비율과 조정대상지역 전달 결함 수정·회귀 테스트
+2. 미커밋 단지 검색의 시각 QA 증거 검토와 운영 배포 판단
+3. 과세연도별 규칙 버전과 세무 검증 사례 확장
+4. 가족 초대 권한·서버 저장
+5. 공식 주택연금 조회와 상담 예약
+6. 계산 근거·기준일·출처가 포함된 가족 공유 리포트
+
+## 확인된 출시 차단 계산 결함
+
+- `capitalGainsTax()`의 12억원 초과분 과세비율이 `houseCount`와 무관하게 적용돼 다주택에도 1주택 산식이 들어갑니다.
+- `saleForYear()`가 각 주택의 `isAdjustedArea`를 양도세 함수에 전달하지 않아 조정대상지역 다주택 중과가 빠질 수 있습니다.
+
+이는 다주택 보유세 합산 경로와 별개의 양도세 문제입니다. 수정·테스트·세무 검증 전에는 다주택 양도세를 출시 완료로 판정하지 않습니다.

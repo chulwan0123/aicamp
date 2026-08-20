@@ -22,7 +22,7 @@ function requestOrigin(req) {
   if (configured) return configured;
   const host = req?.headers?.['x-forwarded-host'] || req?.headers?.host;
   if (!host) return '';
-  const protocol = req?.headers?.['x-forwarded-proto'] || (String(host).includes('localhost') ? 'http' : 'https');
+  const protocol = req?.headers?.['x-forwarded-proto'] || (/^(localhost|127\.0\.0\.1|\[::1\])(?::|$)/.test(String(host)) ? 'http' : 'https');
   return `${protocol}://${host}/data/public-price`;
 }
 
