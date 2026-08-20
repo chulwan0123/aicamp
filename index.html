@@ -127,10 +127,10 @@ html,body{background:var(--gray-100);font-family:"Pretendard",-apple-system,"Seg
 .cover{background:#0987d5 url("./plus-silver-assets/frame-20.png") center/cover no-repeat}
 .cover .logo,.cover .photo{display:none!important}
 .cover .cover-title{left:7.5%;top:5.5%;width:56%;color:#fff;font-size:48px;line-height:1.35;text-align:left;word-break:keep-all}
-.cover .cover-sub{left:7.5%;top:calc(5.5% + 75px);width:48%;color:#fff;font-family:"Pretendard",-apple-system,"Segoe UI",sans-serif;font-size:25px;font-weight:500;line-height:1.65;letter-spacing:-.02em;text-align:left;word-break:keep-all}
+.cover .cover-sub{left:7.5%;top:calc(5.5% + 75px);width:70%;color:#fff;font-family:"Pretendard",-apple-system,"Segoe UI",sans-serif;font-size:25px;font-weight:500;line-height:1.65;letter-spacing:-.02em;text-align:left;white-space:nowrap;word-break:keep-all}
 .cover .rule,.cover .desc,.cover .camp{display:none!important}
 .cover *{text-align:left}
-.cover .cover-brand{position:absolute;top:5.5%;right:4.5%;width:25.6%;height:auto;object-fit:contain}
+.cover .cover-brand{position:absolute;left:7.5%;right:auto;bottom:5.5%;width:25.6%;height:auto;object-fit:contain}
 .p2 .stat-num{font-family:"Lifeplus","Pretendard",sans-serif;font-weight:700;color:var(--navy);letter-spacing:-.03em}
 .p2 .sep{background:var(--gray-200)}
 .p2 .problem{--accent:var(--gray-300)}
@@ -141,36 +141,101 @@ html,body{background:var(--gray-100);font-family:"Pretendard",-apple-system,"Seg
 .p2 .problem li,.p2 .target-lines li{position:relative;margin:0 0 18px;padding-left:34px;color:var(--gray-700)}
 .p2 .problem li::before,.p2 .target-lines li::before{position:absolute;top:0;left:0;color:var(--navy);font-family:"Pretendard",sans-serif;font-size:25px;font-weight:700;content:"✓"}
 .p2 .target-lines{position:absolute}
+.p2 .problem,.p2 .target{display:flex;flex-direction:column;justify-content:center;padding:0}
+.p2 .problem .card-title,.p2 .target .card-title{flex:0 0 auto;margin:0 0 20px;font-size:32.5px}
+.p2 .problem ul,.p2 .target-lines{position:static!important;display:flex;width:100%;height:360px;flex-direction:column;justify-content:center;flex:0 0 360px}
+.p2 .problem li:last-child,.p2 .target-lines li:last-child{margin-bottom:0}
 .p2 .stat-num{top:39%}
 .p2 .stat-label{top:51.5%;color:var(--ink);font-size:29px}
-.p2 .stat-note{top:56.5%;color:var(--ink);font-size:26px}
+.p2 .stat-note{top:56.5%;color:var(--navy);font-size:26px}
+.p2 .stat-label{width:31%;font-weight:700;line-height:1.35;word-break:keep-all}
+.p2 .stat-note{width:31%;font-size:29px;font-weight:700;line-height:1.35;word-break:keep-all}
 .p2 .sep{top:62%}
-.p2 .statement{left:5.5%;right:5.5%;top:52%;bottom:8.5%;width:auto;height:auto;display:flex;align-items:flex-end;font-family:"Lifeplus","Pretendard",sans-serif;font-size:32px;line-height:1.45;letter-spacing:-.02em;white-space:nowrap}
+.p2 .sep{display:none!important}
+.p2 .statement{left:5.5%;right:5.5%;top:auto;bottom:8.5%;width:auto;height:auto;display:block;font-family:"Lifeplus","Pretendard",sans-serif;font-size:32px;line-height:1.45;letter-spacing:-.02em;white-space:nowrap}
 .p2::before,.p2::after{position:absolute;top:22%;bottom:19%;width:1px;background:var(--gray-200);content:""}
 .p2::before{left:38%}
 .p2::after{left:65%}
 .p3 .flow-card{--accent:var(--navy)}
 .p3 .flow-card{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 20px;text-align:center}
 .p3 .flow-card h3,.p3 .flow-card p{width:100%;text-align:center}
+.p3 .flow-card h3{font-size:36px;line-height:1.35}
+.p3 .flow-card p{font-size:27px;line-height:1.45}
+.p3 .flow-number{display:flex;width:58px;height:58px;margin-bottom:20px;border-radius:50%;align-items:center;justify-content:center;background:var(--navy);color:#fff;font-family:"Lifeplus","Pretendard",sans-serif;font-size:28px;font-weight:700;line-height:1}
+.p3 .flow-card{top:23%;height:37%;padding:24px 20px}
+.p3 .flow-card h3{font-size:30px;line-height:1.3}
+.p3 .flow-card p{font-size:21px;line-height:1.4}
+.p3 .flow-number{width:50px;height:50px;margin-bottom:16px;font-size:24px}
+.p3 .logic-panel{top:65%;width:43%;height:17%;display:flex;flex-direction:column;justify-content:center;padding:24px 28px;border-radius:16px}
+.p3 .logic-panel strong{margin-bottom:8px;color:var(--navy);font-family:"Pretendard",sans-serif;font-size:17px;font-weight:700;letter-spacing:.04em}
+.p3 .logic-panel h4{position:static;margin:0 0 8px;font-family:"Lifeplus","Pretendard",sans-serif;font-size:25px;line-height:1.3}
+.p3 .logic-panel p{position:static;margin:0;color:var(--gray-700);font-size:18px;line-height:1.45}
+.p3 .engine{left:5.5%;background:var(--orange-100);border:1px solid var(--orange-200)}
+.p3 .ai-role{left:51.5%;background:var(--gray-100);border:1px solid var(--gray-200)}
+.p3 .process-label,.p3 .option-label{left:5.5%;font-family:"Pretendard",sans-serif;font-size:17px;font-weight:700;letter-spacing:.02em}
+.p3 .process-label{top:20%;color:var(--gray-700)}
+.p3 .option-label{top:51%;color:var(--navy)}
+.p3 .flow-card{top:24%;height:24%;padding:18px 18px}
+.p3 .flow-card h3{font-size:27px;line-height:1.3}
+.p3 .flow-card p{font-size:19px;line-height:1.4}
+.p3 .flow-number{width:42px;height:42px;margin-bottom:12px;font-size:21px}
+.p3 .arrow{top:31.5%;font-size:54px;line-height:1}
+.p3 .option-card{top:55%;width:19.2%;height:19%;display:flex;flex-direction:column;justify-content:center;padding:20px 22px;border:1px solid var(--gray-200);border-radius:12px;background:#fff;box-shadow:0 1px 2px rgba(20,20,21,.04)}
+.p3 .oc1{left:5.5%}.p3 .oc2{left:28.8%}.p3 .oc3{left:52.1%;background:var(--orange-100);border-color:var(--orange-200)}.p3 .oc4{left:75.4%}
+.p3 .option-card .option-tag{position:static;margin-bottom:8px;color:var(--navy);font-size:15px;font-weight:700}
+.p3 .option-card h4{position:static;margin:0 0 8px;font-family:"Lifeplus","Pretendard",sans-serif;font-size:25px;line-height:1.3}
+.p3 .option-card p{position:static;margin:0;color:var(--gray-700);font-size:18px;line-height:1.4;white-space:pre-line}
 .p3 .c3{--accent:var(--navy);background:var(--orange-100);border-color:var(--orange-200)}
 .p3 .arrow{color:var(--orange-400)}
 .p3 .arrow{font-family:Arial,sans-serif;font-size:64px;line-height:72px}
 .p3 .result{border-radius:12px;background:var(--navy);font-family:"Pretendard",sans-serif}
-.p3 .result{left:5.5%;width:89%;font-family:"Lifeplus","Pretendard",sans-serif;font-size:32px;font-weight:700;line-height:1.45;letter-spacing:-.02em;white-space:nowrap}
-.p4 .step-line{background:var(--gray-200)}
-.p4 .step-title{font-family:"Lifeplus","Pretendard",sans-serif;font-size:27px;font-weight:700;line-height:1.35;letter-spacing:-.02em}
-.p4 .step{background:var(--navy);font-family:"Lifeplus","Pretendard",sans-serif;font-weight:700}
+.p3 .result{left:5.5%;right:5.5%;top:auto;bottom:8.5%;width:auto;height:auto;border-radius:0;background:transparent;color:var(--ink);display:block;font-family:"Lifeplus","Pretendard",sans-serif;font-size:32px;font-weight:700;line-height:1.45;letter-spacing:-.02em;text-align:left;white-space:nowrap}
+.p3 .process-label{left:5.5%;top:20.5%}
+.p3 .option-label{left:53%;top:20.5%}
+.p3 .flow-card{width:20%;height:20%;padding:16px 14px}
+.p3 .c1{left:5.5%;top:24%}.p3 .c2{left:28%;top:24%}.p3 .c3{left:5.5%;top:47%}.p3 .c4{left:28%;top:47%}
+.p3 .flow-card h3{margin-bottom:8px;font-size:25px}
+.p3 .flow-card p{font-size:18px;line-height:1.4}
+.p3 .flow-number{width:38px;height:38px;margin-bottom:8px;font-size:19px}
+.p3 .arrow{z-index:2;font-size:48px;line-height:1}
+.p3 .a1{left:25.9%;top:31%}.p3 .a2{left:37.2%;top:43.5%;transform:rotate(90deg)}.p3 .a3{left:25.9%;top:54%}
+.p3 .option-card{width:19.5%;height:20%;padding:18px 20px}
+.p3 .oc1{left:53%;top:24%}.p3 .oc2{left:75%;top:24%}.p3 .oc3{left:53%;top:47%}.p3 .oc4{left:75%;top:47%}
+.p3 .option-card .option-tag{margin-bottom:6px;font-size:14px}
+.p3 .option-card h4{margin-bottom:6px;font-size:23px}
+.p3 .option-card p{font-size:16px;line-height:1.35}
+.p3::before{position:absolute;left:50.5%;top:24%;bottom:24%;width:1px;background:var(--gray-200);content:""}
+.p4 .step-line{display:none}
+.p4 .step-title{top:27%}
+.p4 .step-desc{top:39%}
+.p4 .step-title{font-family:"Lifeplus","Pretendard",sans-serif;font-size:32px;font-weight:700;line-height:1.35;letter-spacing:-.02em}
+.p4 .step{background:var(--navy);font-family:"Lifeplus","Pretendard",sans-serif;font-size:29px;font-weight:700}
+.p4 .step-desc{font-size:22px;line-height:1.45}
+.p4 .flow-arrow{top:26.2%;width:3%;transform:translateX(-50%);color:var(--navy);font-family:Arial,sans-serif;font-size:48px;font-weight:700;line-height:1;text-align:center}
+.p4 .fa1{left:22.5%}.p4 .fa2{left:41.5%}.p4 .fa3{left:60.5%}.p4 .fa4{left:79.5%}
+.p4 .flow-box{top:24%;width:17.2%;height:42%;display:flex;flex-direction:column;justify-content:center;padding:24px 22px;border:0;border-radius:0;background:transparent;box-shadow:none;overflow:visible}
+.p4 .fb1{left:4.6%}.p4 .fb2{left:23.7%}.p4 .fb3{left:42.8%;background:transparent}.p4 .fb4{left:61.9%;background:transparent}.p4 .fb5{left:81%;width:14.3%}
+.p4 .flow-box h3{position:static;margin:0 0 16px;font-family:"Lifeplus","Pretendard",sans-serif;font-size:25px;line-height:1.3}
+.p4 .flow-box p{position:static;margin:0;color:var(--gray-700);font-size:19px;line-height:1.5;white-space:pre-line}
+.p4 .flow-arrow{top:34.5%;z-index:3}
+.p4 .flow-icon{position:static;width:50px;height:50px;margin:0 0 18px;padding:12px;border-radius:14px;background:var(--orange-100);object-fit:contain}
 .p4 .s5{background:var(--ink)}
 .p4 .example{border-color:var(--orange-200);border-radius:12px;background:var(--orange-100)}
 .p4 .example>*{position:absolute}
+.p4 .example-label{font-size:23px}
+.p4 .example-main{font-size:34px}
+.p4 .example-sub{font-size:23px;line-height:1.45}
 .p4 .example-label{color:var(--navy)}
-.p5 .phone{border-color:var(--ink);border-radius:54px}
+.p4 .example{left:5.5%;right:5.5%;top:auto;bottom:8.5%;width:auto;height:auto;border:0;border-radius:0;background:transparent;box-shadow:none}
+.p4 .example .example-main{position:static;font-family:"Lifeplus","Pretendard",sans-serif;font-size:32px;font-weight:700;line-height:1.45;letter-spacing:-.02em;text-align:left;white-space:nowrap}
+.p4 .example-sub{display:none}
+.p5 .phone{border:0;border-radius:0}
 .p5 .phone-inner{position:absolute}
 .p5 .phone-inner>*{position:absolute}
 .p5 .app-name{font-family:"Lifeplus","Pretendard",sans-serif;color:var(--navy)}
 .p5 .question{font-family:"Lifeplus","Pretendard",sans-serif;letter-spacing:-.02em}
 .p5 .choice{border-radius:12px}
-.p5 .ch1{background:var(--navy)}.p5 .ch2{background:var(--orange-400);color:var(--ink)}.p5 .ch3{background:var(--gray-100);color:var(--gray-700);border:1px solid var(--gray-200)}
+.p5 .ch1{top:36%;background:var(--navy)}.p5 .ch2{top:47%;background:var(--orange-400);color:var(--ink)}.p5 .ch3{top:58%;background:var(--gray-100);color:var(--gray-700);border:1px solid var(--gray-200)}.p5 .ch4{top:69%;background:var(--gray-100);color:var(--gray-700);border:1px solid var(--gray-200)}
 .p5 .next,.p5 .why{color:var(--navy)}
 .p5 .report{border-color:var(--gray-200);border-radius:24px;box-shadow:0 1px 2px rgba(20,20,21,.04)}
 .p5 .report>*{position:absolute}
@@ -184,16 +249,34 @@ html,body{background:var(--gray-100);font-family:"Pretendard",-apple-system,"Seg
 .p5 .scenario{border-color:var(--gray-200);border-radius:12px;background:#fff}
 .p5 .sc2{border-color:var(--orange-200);background:var(--orange-100)}
 .p5 .scenario .money,.p5 .sc2 .money{color:var(--navy)}
+.p5 .scenario{height:11.5%}
+.p5 .sc1{top:28%}.p5 .sc2{top:42.5%}.p5 .sc3{top:57%}.p5 .sc4{top:71.5%;border-color:var(--orange-200);background:var(--orange-100)}
+.p5 .scenario .name{top:28%;width:25%}
+.p5 .scenario .money{left:27%;top:27%;width:27%;font-size:20px}
+.p5 .scenario .reason{left:54%;top:25%;width:41%;font-size:15px}
+.p5 .why{bottom:4%}
+.p5 .report{border:0;border-radius:0;background:transparent;box-shadow:none}
+.p5 .report h2{width:58%;font-size:30px;line-height:1.3;white-space:nowrap}
+.p5 .recommend{font-size:18px;padding:12px 20px}
+.p5 .report-sub{top:16.5%;width:90%;font-size:20px;line-height:1.45}
+.p5 .scenario,.p5 .sc2,.p5 .sc4{border:0;border-top:1px solid var(--gray-200);border-radius:0;background:transparent}
+.p5 .scenario{height:12%;display:grid;grid-template-columns:18% 29% minmax(0,1fr);column-gap:18px;align-items:center;padding:0 3%}
+.p5 .sc1{top:29%}.p5 .sc2{top:43.5%}.p5 .sc3{top:58%}.p5 .sc4{top:72.5%}
+.p5 .scenario>*{position:static!important;left:auto!important;top:auto!important;width:auto!important;min-width:0}
+.p5 .scenario .name{font-size:20px;line-height:1.3;word-break:keep-all}
+.p5 .scenario .money{font-size:19px;line-height:1.3;white-space:normal;word-break:keep-all}
+.p5 .scenario .reason{font-size:17px;line-height:1.35;word-break:keep-all}
+.p5 .why{font-size:20px}
 .p6 .market{border-radius:24px;background:var(--navy)}
 .p6 .market>*{position:absolute}
 .p6 .market{left:5.5%;top:20.5%;width:89%;height:27%;border-radius:24px}
-.p6 .market h3{left:3.5%;top:13%;margin:0}
-.p6 .market .big{left:3.5%;top:32%;font-size:58px;line-height:1.1;white-space:nowrap}
-.p6 .market .copy{left:38%;right:4%;top:25%;bottom:auto;font-size:20px;line-height:1.55;white-space:pre-line}
+.p6 .market h3{left:3.5%;top:22%;margin:0;font-size:24px;line-height:1.3}
+.p6 .market .big{left:3.5%;top:58%;transform:translateY(-50%);font-size:50px;line-height:1.08;white-space:normal}
+.p6 .market .copy{left:38%;right:4%;top:50%;bottom:auto;transform:translateY(-50%);font-family:"Pretendard",sans-serif;font-size:30px;font-weight:500;line-height:1.55;white-space:normal}
 .p6 .biz,.p6 .subbiz{top:55%;width:16.5%;height:30%;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
 .p6 .b1{left:5.5%}.p6 .b2{left:23.8%}.p6 .b3{left:42.1%}.p6 .sub1{left:60.4%}.p6 .sub2{left:78.7%}
 .p6 .biz h3,.p6 .subbiz h3{margin:0 0 14px;font-size:23px;line-height:1.35}
-.p6 .biz p,.p6 .subbiz p{font-size:17px;line-height:1.5}
+.p6 .biz p,.p6 .subbiz p{font-size:19px;line-height:1.5;word-break:keep-all}
 .p6 .feature-icon{display:block;width:48px;height:48px;margin:0 0 20px;padding:11px;border-radius:14px;background:var(--orange-100);object-fit:contain}
 .p6 .b1{--accent:var(--navy)}.p6 .b2{--accent:var(--orange-400)}.p6 .b3{--accent:var(--ink)}
 .p6 .sub1{--accent:var(--navy)}.p6 .sub2{--accent:var(--ink)}
@@ -204,7 +287,7 @@ html,body{background:var(--gray-100);font-family:"Pretendard",-apple-system,"Seg
 <section class="slide cover" id="slide-1">
   <img class="logo" alt="PLUS logo" src="data:image/png;base64,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fllly9lsthEjRpjyLGEQKYwWr9f77rvvbt++nc+U2wJFUWw2m9FTREthYWG0P9i12+2jR4828Z8TUhhFtbW1K1euDPlND7QCRVESExONniIq/H5/UVFRtB/F7XaHvI69XSOFUaTr+rVr13784x+b9VKs9sWsRzRHjhy5du1aU3/KYrE4HA6XyxXmwXJKSopZ/5YEmfadf/jcbvf3v//9tLS0kFtevnx53759Fy9eDP9iXa/X+84775w8ebJ3794tGxO4vb1794Z58ZbT6czKyho7duyQIUNycnKCC4sEAgGfz3fkyJHdu3cfO3asvLy8trb2yzvs1atX+12tIxykUGJjY2fOnJmbmxtyy0AgUF1dffr06V/84hdFRUV1dXXhnAesqanZsGHD+vXrzXpUAmMVFhaGfB1aLJZevXr96le/ys3Ndbvd/7WIjq7rd9111/jx42/evHnjxo3i4uLf/OY3J0+erKmpudXEnj17mvsFTAr//51CmBeOut3u9PT03r17FxcXz58//7PPPgt5+YLX633jjTeWLl1q7lMtaH3BdQQ+/vjjkCns0qXL7t27s7Ozb/t2WFGU4CI0iYmJmZmZubm5o0ePPnv27Jtvvvn666+XlZV5vd4uXbpE50m0FaSwyaxWa1paWn5+fkFBwfe+972TJ082vhqgrus1NTXFxcWk0EBmPaKpqKiorq4Oudn48ePvuOOOcL4PGsxiWlpaSkpKnz59pk2bVlhYuH379jvvvDMS87ZdfGzSTKqq9ujRY+vWrZ06dQr5a+b1enft2tU6g+G2zPoJcm1tbThnafr27dvU78VbLJa4uLi8vLzp06fv2rXrvvvua+6M7QMpbL7g+ZeFCxe6XK7Gt/T7/e+//37IpaQRVXa73egRIi+cDiqKkpKS0uyHcDgc6enp8fHxzd5Du0AKW0RV1enTp/fv37/xP7nBBeD4Hh4iLikpKeQHu7quf/LJJ1zR1ThS2FLx8fHTpk0LeWAYCASuX7/eOiOhgwguN92zZ8+QW7700kv79u2rqanhu0//CymMgLvvvjvkmy9N06K3ZAg6svvvvz/k2err168/9thjL7744vHjx6uqqjhC/DJSGAEulyucc9Lh3DUNaKrBgweH8/IrLy//+c9/PmzYsOeee+7w4cMXL16sqakJBAIcJwZxMU0E+Hy+MM9et8Iw6GgGDx6s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OzVbrVa73d4K15lPnjx548aN58+fb3yz4LdoJ02atHTp0mnTpiUnJ9/6k6brutfrra+vv3bt2saNGzdv3hzOW2NFUSZOnGjgu2MROX369H++pQ0EAlevXn3zzTf37NmTnJzcp0+fBQsW5OXluVwuu92uqqrVarVYLIqiaJqmaZrP56uqqtq7d+/y5cvLysrCeedrtVp79OgRzefU2khhWMzdQRGpra198cUXo3HLgYyMjPnz57fCm8fMzMzBgwfv2LEjnMW4qqurlyxZUlBQsGTJkn79+gUP6Px+/wcffLBp06aPPvqooqIizIX50tLSnnzySWPPEZ8/f/620wavH7py5cr+/fvT0tKSk5PvvffeXr16feUrX0lJSXG73devX//888+PHTv21ltv/a+d3JbdbieFMKHKysrf//730dhz3759n3766VYohaqqy5Yt279/f8gDw1sOHz48bty44MliRVEaGhrCX3vtlilTprjdbmO/Xhnyysfg1ZGlpaXHjx9v+cNZrda8vDyTrdPFJ8gwj5ycnHHjxjX1y46aptXV1d28ebMZHUxMTFyyZImBl9EEhV//iIiJiXn22WdN9lEhKYR5qKq6YMGCPn36tNoxWn5+flJSkrGHhJqmnTp1qtUeTlGUtLS0/Pz8VnvE1kEKYSpdunRZuXJlWlpaKzyWxWL57ne/26SrVaLh0qVLIe+5GEFut/uXv/xlcnJyqz1i6yCFMJuHH3546dKlYS4r0GyKogwYMGDUqFFRfZRw/P3vf2+1BbrtdvsjjzwyZsyY1nm41kQKYTaqqj755JOLFi0Kc8mpZlAU5e677/7jH/9o+FlCESksLGydu9BZLJavfvWrGzZsMOVXqkghTMjhcCxZsmT16tURPza0WCw9e/Zcu3btgQMH0tPTI7vz5nG5XLGxsdF+lM6dO69bt+69996LxhVXbQEphAkFV2yeP39+UVHRAw88EKmPNVJSUlavXl1cXDxv3rzExMTgYn8R2XNLrFq1aufOnZ07d47eMFlZWTt27Jg7d258fHxbeMrRQAphWlartXfv3gUFBT/72c+6dOnSkl05nc6HHnroww8/fPbZZ9vaEq1WqzU/P//o0aOLFi3KycmJ7DUuycnJjz/++Pvvvx/Bvyhtk5mfGzq44LL1SUlJ8+bNO3z48Lx585oRxPj4+MGDB+/du3fXrl05OTnBi7GjMW1L2Gy24FqZR44c2bZt26BBg1JTU1tSLqvV2q1bt9mzZx86dGjDhg3du3c3/IPyaDP5t006zq1v8b8Ev0ySkZGxatWqxYsX79u3b/369adPn258cX9FUeLi4oYMGbJu3brk5GSXy9XGW2CxWGJjY51O57hx4x5++OG6urri4uIdO3YUFxeXl5dXVVWF/F0Iruyfmpo6YMCAWbNm9ejRIy4u7taiTaanmDgWXq/3wIED//rXvxrfzOVyjR071qy36PR4PH/5y18uXrxo1ACpqakTJkxoIx3Rdd3n89XW1lZVVV26dGnz5s1/+9vfPB5PcAECVVXtdnunTp2+9rWvfetb3+rTp09qamp8fHx7bEHwmTY0NARX2Th+/Pg777xz6tSpy5cv+3y+WwsuWK1Wm82WmJj4wAMPjBkzJisry+VyBQvY0RZeMnMKdV0PBAIhF6G0WCyqqpr1PIimacH72Rs1QHCdx7b2S6XrenAlroaGBo/HEwgENE0LpjDI4XCYqQXBLPq/cCuFwX8dVVUdDofT6QwuV2PsqEYxcwoBIEzmPBQCgCYhhQBACgGAFAKAkEIAEFIIAEIKAUBIIQAIKQQAIYUAICL/B6/rZw+/3GtBAAAAAElFTkSuQmCC">
   <div class="cover-title">보유 부동산을 활용한 개인화 노후자금 설계</div>
-  <div class="cover-sub">집의 가치를 매달 쓸 수 있는 생활비로,<br>AI와 함께 든든한 노후를 준비해 보세요</div>
+  <div class="cover-sub">집의 가치를 매달 쓸 수 있는 생활비로, AI와 함께 든든한 노후를 준비해 보세요</div>
   <div class="rule"></div>
   <div class="desc">집의 가치를 매달 쓸 수 있는 생활비로,<br>AI와 함께 든든한 노후를 준비해 보세요</div>
   <div class="camp">AI CAMP · SERVICE CONCEPT</div>
@@ -213,66 +296,75 @@ html,body{background:var(--gray-100);font-family:"Pretendard",-apple-system,"Seg
 <section class="slide p2" id="slide-2">
   <div class="topbar"></div><div class="eyebrow">01 PROBLEM &amp; TARGET</div>
   <div class="title">집은 있지만, 매달 쓸 생활비가 부족할 수 있어요</div>
-  <div class="stat-label">60 세 이상 가구가 가진 자산 중 부동산 비율</div>
-  <div class="stat-num">81.2%</div><div class="stat-note">39 세 이하 58.6% → 60 세 이상 81.2%</div><div class="sep"></div>
+  <div class="stat-label">39세 이하 58.6% &gt; 60세 이상 81.2%</div>
+  <div class="stat-num">81.2%</div><div class="stat-note">부동산에 자산이 집중될수록<br>노후 현금흐름의 유동성 문제는 커져요.</div><div class="sep"></div>
   <div class="statement">가진 재산이 집에 몰려 있으면 노후에 매달 쓸 돈을 마련하기가 더 어려워질 수 있어요.</div>
-  <div class="card problem"><div class="card-title">이런 점이 어려워요</div><ul><li>재산 대부분이 집에 묶여 있어요</li><li>연금만으로는 생활비가 부족해요</li><li>집을 팔지, 주택연금을 받을지,<br>작은 집으로 옮길지 고민돼요</li><li>세금과 건강보험료까지 따져<br>비교하기가 어려워요</li></ul></div>
-  <div class="card target"><div class="card-title">이런 분께 필요해요</div><ul class="target-lines"><li>60 대 이상이신 분</li><li>집이나 건물을 가지고 계신 분</li><li>연금과 금융소득만으로 노후 생활비가 부족하신 분</li><li>“집은 있지만 쓸 돈이 부족한” 분</li></ul></div>
+  <div class="card problem"><div class="card-title">이런 점이 어려워요</div><ul><li>재산 대부분이 집에 묶여 있어요</li><li>연금만으로는 생활비가 부족해요</li><li>주택연금, 임대, 매도와 이사 중 어떤 방법이 좋을지 고민돼요</li><li>세금과 중개비용까지 하나씩 비교하기가 어려워요</li></ul></div>
+  <div class="card target"><div class="card-title">이런 분께 도움이 돼요</div><ul class="target-lines"><li>60대 이상이신 분</li><li>주택을 가지고 계신 분</li><li>월 연금과 소득만으로 노후 생활비가 부족하신 분</li><li>“집은 있지만 쓸 돈이 부족한” 분</li></ul></div>
   <div class="footer">PLUS SILVER</div><div class="page-no">01</div>
 </section>
 <section class="slide p3" id="slide-3">
-  <div class="topbar"></div><div class="eyebrow">02 AI CORE SOLUTION</div><div class="title">AI가 필요한 정보를 모아, 나에게 맞는 방법을 쉽게 알려드려요</div>
-  <div class="card flow-card c1"><h3>① 기본 정보 확인</h3><p>집값
-세금 정책
-금리와 제도</p></div><div class="arrow a1">›</div>
-  <div class="card flow-card c2"><h3>② 내 정보 입력</h3><p>주소와 나이
-소득과 금융정보
-가지고 있는 부동산</p></div><div class="arrow a2">›</div>
-  <div class="card flow-card c3"><h3>③ 원하는 방향 확인</h3><p>상속 계획
-살고 싶은 지역
-현재 집의 매도 생각</p></div><div class="arrow a3">›</div>
-  <div class="card flow-card c4"><h3>④ 알기 쉽게 안내</h3><p>추천 이유 안내
-추가 질문
-내 의견 다시 반영</p></div>
-  <div class="result">결과 : 무엇을 고르면 좋은지뿐 아니라, 왜 나에게 잘 맞는지도 쉽게 설명해 드려요</div>
+  <div class="topbar"></div><div class="eyebrow">02 AI CORE SOLUTION</div><div class="title">AI가 집 정보와 내 생각을 함께 살펴보고, 네 가지 방법을 비교해 드려요</div>
+  <div class="process-label">AI가 이렇게 차근차근 살펴봐요</div>
+  <div class="card flow-card c1"><span class="flow-number">1</span><h3>집값 자료를 확인해요</h3><p>등록된 공동주택의
+공시가격과 시세 참고값</p></div>
+  <div class="card flow-card c2"><span class="flow-number">2</span><h3>필요한 정보를 알려주세요</h3><p>나이·주택 수·명의
+주소·취득·거주 기간</p></div>
+  <div class="card flow-card c3"><span class="flow-number">3</span><h3>내 생각을 반영해요</h3><p>상속과 거주에 대한 생각
+자금이 필요한 시점</p></div>
+  <div class="card flow-card c4"><span class="flow-number">4</span><h3>쉽게 설명해 드려요</h3><p>추천한 이유 안내
+추가 질문과 다시 계산</p></div>
+  <div class="option-label">네 가지 방법을 함께 비교해요</div>
+  <div class="option-card oc1"><div class="option-tag">첫 번째 방법</div><h4>주택연금</h4><p>가입 조건과 나이를 확인하고
+매달 받을 금액을 계산해 드려요.</p></div>
+  <div class="option-card oc2"><div class="option-tag">두 번째 방법</div><h4>부분 임대</h4><p>면적 등 필요한 조건을 확인하고
+매달 받을 임대수입을 더해 드려요.</p></div>
+  <div class="option-card oc3"><div class="option-tag">세 번째 방법</div><h4>팔고 전세</h4><p>세금과 중개비용을 반영해
+매달 쓸 수 있는 금액을 계산해 드려요.</p></div>
+  <div class="option-card oc4"><div class="option-tag">네 번째 방법</div><h4>작은 집으로 이동</h4><p>새 집 비용과 세금을 반영해
+매달 쓸 수 있는 금액을 계산해 드려요.</p></div>
+  <div class="result">네 가지 결과와 나에게 잘 맞는 이유를 함께 설명해 드려요</div>
   <div class="footer">PLUS SILVER</div><div class="page-no">02</div>
 </section>
 <section class="slide p4" id="slide-4">
-  <div class="topbar"></div><div class="eyebrow">03 SERVICE FLOW</div><div class="title">주소만 입력하면, 노후에 매달 받을 수 있는 돈을 알려드려요</div>
-  <div class="step-line"></div><div class="step s1">1</div><div class="step s2">2</div><div class="step s3">3</div><div class="step s4">4</div><div class="step s5">5</div>
-  <div class="step-title st1">내 정보 입력</div><div class="step-title st2">집값 확인</div><div class="step-title st3">세금 · 금융 확인</div><div class="step-title st4">원하는 방향 확인</div><div class="step-title st5">맞춤 결과 안내</div>
-  <div class="step-desc sd1">나이 · 부동산 · 금융소득</div><div class="step-desc sd2">국토부 자료로 집값 확인</div><div class="step-desc sd3">세금 · 금리 · 금융소득 확인</div><div class="step-desc sd4">상속 · 거주 · 매도 계획</div><div class="step-desc sd5">내게 맞는 방법과 추천 이유</div>
-  <div class="example"><div class="example-label">결과는 이렇게 보여드려요</div><div class="example-main">집 유지하기&nbsp;&nbsp;|&nbsp;&nbsp;균형 있게 준비하기&nbsp;&nbsp;|&nbsp;&nbsp;생활비 늘리기</div><div class="example-sub">각 방법으로 매달 얼마를 받을 수 있는지 비교하고, 답변을 더 받아 내 생각을 다시 반영해 드려요</div></div>
+  <div class="topbar"></div><div class="eyebrow">03 SERVICE FLOW</div><div class="title">계산부터 AI 추천까지 차근차근 이어져요</div>
+  <div class="flow-box fb1"><img class="flow-icon" src="./plus-silver-assets/flow-user.svg" alt=""><h3>기본 정보를 알려주세요</h3><p>나이·주택 수·명의
+주소·취득·거주 기간
+희망 지역·월소득</p></div><div class="flow-arrow fa1">›</div>
+  <div class="flow-box fb2"><img class="flow-icon" src="./plus-silver-assets/flow-house.svg" alt=""><h3>집값 자료를 확인해요</h3><p>등록된 공동주택의
+공시가격·시세 참고값을 보고
+주소를 다시 확인해요</p></div><div class="flow-arrow fa2">›</div>
+  <div class="flow-box fb3"><img class="flow-icon" src="./plus-silver-assets/feature-execution.svg" alt=""><h3>금액을 계산해요</h3><p>네 가지 방법의
+세금·비용·가능 여부와
+예상 월 금액을 계산해요</p></div><div class="flow-arrow fa3">›</div>
+  <div class="flow-box fb4"><img class="flow-icon" src="./plus-silver-assets/flow-ai.svg" alt=""><h3>내 생각을 살펴봐요</h3><p>상속·거주·필요 시점을
+함께 살펴보고
+추천 이유를 준비해요</p></div><div class="flow-arrow fa4">›</div>
+  <div class="flow-box fb5"><img class="flow-icon" src="./plus-silver-assets/feature-impact.svg" alt=""><h3>결과를 확인해요</h3><p>네 가지 방법을 비교하고
+더 궁금한 점을 반영해
+보유세를 다시 계산해요</p></div>
+  <div class="example"><div class="example-main">계산 기능이 먼저 금액을 구하고, AI가 그 결과를 바탕으로 추천 이유를 쉽게 설명해 드려요.</div></div>
   <div class="footer">PLUS SILVER</div><div class="page-no">03</div>
 </section>
 <section class="slide p5" id="slide-5">
-  <div class="topbar"></div><div class="eyebrow">04 MOCKUP / DEMO</div><div class="title">쉬운 질문과 한눈에 보는 비교표로 선택을 도와드려요</div>
-  <div class="phone"><div class="phone-inner"><div class="app-name">플러스 실버</div><div class="question">현재 집을 계속
-보유하고
-싶으신가요?</div><div class="choice ch1">네, 꼭 유지하고 싶어요</div><div class="choice ch2">조건이 맞으면 유지하고 싶어요</div><div class="choice ch3">필요하면 파는 것도 괜찮아요</div><div class="next">다음 질문 →</div></div></div>
-  <div class="report"><h2>김 OO 님을 위한 노후 생활비 제안</h2><div class="recommend">균형형을 추천해요</div><div class="report-sub">지금 생활을 지키면서 매달 쓸 돈을 늘리는 방법이 잘 맞아요.</div>
-  <div class="scenario sc1"><div class="name">집 유지하기</div><div class="money">매달 + 42 만원</div><div class="reason">상속과 현재 집 거주를 우선해요</div></div>
-  <div class="scenario sc2"><div class="name">균형 있게 준비하기</div><div class="money">매달 + 86 만원</div><div class="reason">계속 살면서 생활비도 마련해요</div></div>
-  <div class="scenario sc3"><div class="name">생활비 늘리기</div><div class="money">매달 + 148 만원</div><div class="reason">작은 집으로 옮기거나 집을 팔아요</div></div><div class="why">왜 이 방법을 추천하나요? →</div></div>
+  <div class="topbar"></div><div class="eyebrow">04 MOCKUP / DEMO</div><div class="title">쉬운 질문에 답하시면, 비교 결과를 한눈에 보여드려요</div>
+  <div class="phone"><div class="phone-inner"><div class="app-name">플러스 실버</div><div class="question">지금 사시는 동네를
+떠나는 건 어떠세요?</div><div class="choice ch1">절대 떠나고 싶지 않아요</div><div class="choice ch2">가능하면 지금 집에 살고 싶어요</div><div class="choice ch3">조건이 맞으면 이사할 수 있어요</div><div class="choice ch4">떠나도 괜찮아요</div><div class="next">다음 질문을 볼게요 →</div></div></div>
+  <div class="report"><h2>반포자이 47억 원 사례를 살펴볼게요</h2><div class="recommend">현재 기준으로 계산했어요</div><div class="report-sub">공시가격 34.91억 원과 기존 월 연금·소득 200만 원을 기준으로 차근차근 비교했어요.</div>
+  <div class="scenario sc1"><div class="name">주택연금</div><div class="money">가입하기 어려워요</div><div class="reason">공시가격이 12억 원 기준을 넘어요.</div></div>
+  <div class="scenario sc2"><div class="name">부분 임대</div><div class="money">적용하기 어려워요</div><div class="reason">전용면적이 115㎡ 기준보다 작아요.</div></div>
+  <div class="scenario sc3"><div class="name">팔고 전세</div><div class="money">월 총 529.6만 원</div><div class="reason">매달 쓸 수 있는 돈이 329.6만 원 늘어요.</div></div>
+  <div class="scenario sc4"><div class="name">작은 집으로 이동</div><div class="money">월 총 511.6만 원</div><div class="reason">매달 쓸 수 있는 돈이 311.6만 원 늘어요.</div></div><div class="why">이 방법을 추천한 이유도 알려드릴게요 →</div></div>
   <div class="footer">PLUS SILVER</div><div class="page-no">04</div>
 </section>
 <section class="slide p6" id="slide-6">
-  <div class="topbar"></div><div class="eyebrow">05 BUSINESS MODEL &amp; IMPACT</div><div class="title">간단한 확인은 무료로, 실제 진행과 꾸준한 관리로 수익을 만들어요</div>
-  <div class="market"><h3>이미 많은 분이 필요로 해요</h3><div class="big">한 해 1.5 만 가구</div><div class="copy">매년 약 1만 5천 가구가
-새로 주택연금에 가입해요
-집으로 생활비를 마련하려는
-분들이 이미 많다는 뜻이에요</div></div>
-  <div class="card biz b1"><img class="feature-icon" src="./plus-silver-assets/feature-free.svg" alt=""><h3>무료로 시작해요</h3><p>노후에 매달 받을 돈을
-확인하고 비교해 드려요</p></div>
-  <div class="card biz b2"><img class="feature-icon" src="./plus-silver-assets/feature-execution.svg" alt=""><h3>실행을 도와드려요</h3><p>세금과 법률 전문가를 연결하고
-실제 진행을 도와드려요</p></div>
-  <div class="card biz b3"><img class="feature-icon" src="./plus-silver-assets/feature-b2b.svg" alt=""><h3>금융사에도 제공해요</h3><p>금융사 앱과 상담 채널에
-진단 기능을 제공해요</p></div>
-  <div class="card subbiz sub1"><img class="feature-icon" src="./plus-silver-assets/feature-subscription.svg" alt=""><h3>꾸준히 관리해 드려요</h3><p>해마다 결과를 다시 살펴보고
-집값 · 세금 · 금리 변화를 반영해요</p></div>
-  <div class="card subbiz sub2"><img class="feature-icon" src="./plus-silver-assets/feature-impact.svg" alt=""><h3>이런 점이 좋아요</h3><p>고객 : 집으로 생활비를 마련해요
-금융사 : 시니어 고객을 새롭게 만나요
-서비스 : 여러 방법으로 안정적인 수익을 만들어요</p></div>
+  <div class="topbar"></div><div class="eyebrow">05 BUSINESS MODEL &amp; IMPACT</div><div class="title">무료 진단으로 시작하고, 실행과 꾸준한 관리로 수익을 만들어요</div>
+  <div class="market"><h3>이미 많은 분이 필요로 해요</h3><div class="big">한 해 1.5만<br>가구</div><div class="copy">매년 약 1만 5천 가구가 새로 주택연금에 가입해요.<br>집으로 생활비를 마련하려는 분들이 이미 많다는 뜻이에요.</div></div>
+  <div class="card biz b1"><img class="feature-icon" src="./plus-silver-assets/feature-free.svg" alt=""><h3>무료로 시작해요</h3><p>노후 현금흐름을 진단하고 여러 방법을 비교해 드려요.</p></div>
+  <div class="card biz b2"><img class="feature-icon" src="./plus-silver-assets/feature-execution.svg" alt=""><h3>실행을 도와드려요</h3><p>세무·법무 전문가와 연결하고 실제 진행을 도와드려요.</p></div>
+  <div class="card biz b3"><img class="feature-icon" src="./plus-silver-assets/feature-b2b.svg" alt=""><h3>금융사에도 제공해요</h3><p>금융사 앱과 상담 채널에 진단 기능을 제공해요.</p></div>
+  <div class="card subbiz sub1"><img class="feature-icon" src="./plus-silver-assets/feature-subscription.svg" alt=""><h3>꾸준히 관리해 드려요</h3><p>해마다 결과를 다시 살펴보고 공시가격·세법·금리 변화를 반영해요.</p></div>
+  <div class="card subbiz sub2"><img class="feature-icon" src="./plus-silver-assets/feature-impact.svg" alt=""><h3>이런 점이 좋아요</h3><p>고객은 집의 가치를 생활비로 바꾸고, 금융사는 시니어 고객을 새롭게 만날 수 있어요.</p></div>
   <div class="footer">PLUS SILVER</div><div class="page-no">05</div>
 </section>
 
