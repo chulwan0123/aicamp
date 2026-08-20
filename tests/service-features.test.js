@@ -35,3 +35,9 @@ test('알림 설정과 로그아웃은 브라우저 기능과 저장 상태에 �
   assert.match(source, /localStorage\.removeItem\(SESSION_KEY\)/);
   assert.match(source, /localStorage\.removeItem\('plus-parent-result-complete'\)/);
 });
+
+test('만료되거나 변조된 공유 링크 오류를 사용자에게 보여준다', () => {
+  assert.match(source, /silver:shared-restore-error/);
+  assert.match(source, /공유 결과를 열 수 없어요/);
+  assert.match(source, /새 링크를 요청해 주세요/);
+});

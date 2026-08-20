@@ -60,28 +60,26 @@
 - 운영 환경: Vercel
 - 로컬 실행: `npm run dev`
 - 검증: `npm run check`
-- 주 저장소: `https://github.com/chulwan0123/aicamp`
-- 공동 작업 저장소: `https://github.com/hyeji0503/hanwhaAiCamp`
-- 주 저장소 운영 배포: `https://aicamp-silver-weld.vercel.app`
-- 공동 작업 저장소 운영 배포: `https://hanwha-ai-camp-silver.vercel.app`
+- 운영 저장소: `https://github.com/wani3000/aicamp-silver`
+- 운영 배포: `https://aicamp-sigma.vercel.app`
+- Vercel 프로젝트: `oxaz1234-gmailcoms-projects/aicamp`
+- 예비 배포: `https://aicamp-silver.vercel.app`
 
-두 저장소의 배포 대상 트리는 같은 SILVER 통합 결과로 유지합니다. 주소 검색·PNU·공시가격 API의 출처는 `hyeji0503/hanwhaAiCamp`, 화면·디자인 계약과 통합 계산 엔진의 기준은 `chulwan0123/aicamp`입니다.
+기존 두 저장소의 통합 결과를 `wani3000/aicamp-silver`의 `main`에서 운영하며 Vercel Git 자동배포로 연결합니다.
 
-2026-08-21 기능 통합 기준 `index.html` SHA-256은 `c9addda854e3d0f71911794ec6ae89741e851e45129e6a8c02be0cfd83adaa4f`입니다. 운영 배포는 Vercel `chulwan-8137` 계정의 `camp17` 범위에서 수행합니다.
+운영 배포는 Vercel `oxaz1234-2461` 계정에서 수행합니다.
 
 ### 운영 환경변수 상태
 
-- 설정됨: `USE_MOCK=true`, 프로젝트별 `SHARE_SECRET`
-- 운영 배포 전 필수 확인: `OPENAI_API_KEY`, `PUBLIC_DATA_API_KEY`, `CONSULTATION_WEBHOOK_URL`
-- 영향: AI 설명은 현재 계산값을 이용한 규칙 기반 추천으로 동작합니다. `/api/price`는 공공데이터 키가 설정될 때까지 설정 오류를 반환합니다.
+- 설정됨: `OPENAI_API_KEY`, `OPENAI_MODEL=gpt-5.6-terra`, `USE_MOCK=false`, `SHARE_SECRET`
+- 추가 필요: `PUBLIC_DATA_API_KEY`, `CONSULTATION_WEBHOOK_URL`, `KAKAO_JAVASCRIPT_KEY`
+- 영향: 실제 AI 분석·채팅은 동작합니다. `/api/price`는 반포자이 검증 발췌값을 제공하며, 서울·경기 전체 조회에는 `PUBLIC_DATA_API_KEY`가 필요합니다.
 - 저장 원칙: 비밀값은 GitHub와 클라이언트에 넣지 않고 Vercel 프로젝트 환경변수로만 관리합니다.
 
 ### 자동배포 연결 상태
 
-- `camp17/aicamp-silver`와 `camp17/hanwha-ai-camp-silver`는 CLI로 Production 배포할 수 있습니다.
-- 현재 Vercel 계정에는 GitHub Login Connection이 없어 `vercel git connect`가 완료되지 않습니다.
-- 공동 저장소에 남아 있는 `SION` 팀 Vercel 실패 상태는 과거·별도 프로젝트 연결이며, `camp17/hanwha-ai-camp-silver`의 수동 운영 배포와는 별개입니다.
-- Git 자동배포를 복구하기 전까지는 두 저장소 `main` 동기화와 테스트 후 두 프로젝트에 각각 CLI Production 배포를 실행합니다.
+- `wani3000/aicamp-silver`와 Vercel `aicamp` 프로젝트가 연결되어 `main` 푸시 시 Production 자동배포가 실행됩니다.
+- CLI 수동 배포도 현재 Vercel 계정에서 가능합니다.
 
 ## 아직 부족한 기능
 

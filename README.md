@@ -4,12 +4,12 @@
 
 ## 배포 주소
 
-- `chulwan0123/aicamp` Vercel: <https://aicamp-silver-weld.vercel.app>
-- `hyeji0503/hanwhaAiCamp` Vercel: <https://hanwha-ai-camp-silver.vercel.app>
-- 주 저장소: <https://github.com/chulwan0123/aicamp>
-- 공동 작업 저장소: <https://github.com/hyeji0503/hanwhaAiCamp>
+- 현재 운영: <https://aicamp-sigma.vercel.app>
+- 현재 저장소: <https://github.com/wani3000/aicamp-silver>
+- Vercel 프로젝트: `oxaz1234-gmailcoms-projects/aicamp`
+- 예비 배포: <https://aicamp-silver.vercel.app>
 
-두 GitHub 저장소에는 같은 SILVER 통합 결과를 유지합니다. 화면·디자인 시스템·세금 및 추천 엔진은 `chulwan0123/aicamp`의 현행 구현을 기준으로 하며, 다음 주소검색·도로명주소 기반 PNU 생성·국토교통부 공동주택 공시가격 API 호출과 응답 처리는 `hyeji0503/hanwhaAiCamp` 구현을 통합했습니다.
+기존 `chulwan0123/aicamp`와 `hyeji0503/hanwhaAiCamp`의 통합 결과를 `wani3000/aicamp-silver`에서 운영합니다. GitHub `main`과 Vercel `aicamp` 프로젝트는 자동배포로 연결되어 있습니다.
 
 ## 실행 방법
 
@@ -60,7 +60,7 @@ npm run dev
 - HTML5
 - CSS3 및 PLUS 디자인 시스템 토큰·폰트
 - Vanilla JavaScript
-- Node.js 20 이상
+- Node.js 22
 - Vercel Functions (`/api/advise`, `/api/chat`, `/api/client-config`, `/api/consultations`, `/api/share`, `/api/price`, `/api/health`)
 - Lottie 로컬 런타임과 MP4 미디어 에셋
 - Lucide Icons 로컬 SVG 에셋
@@ -70,8 +70,8 @@ npm run dev
 
 루트 정적 파일과 `api/**` 서버리스 함수를 Vercel에 함께 배포합니다. 운영 환경에는 `OPENAI_API_KEY`, `OPENAI_MODEL`, `OPENAI_CHAT_MODEL`, `USE_MOCK=false`, `SHARE_SECRET`, `PUBLIC_DATA_API_KEY`, `CONSULTATION_WEBHOOK_URL`, `KAKAO_JAVASCRIPT_KEY`를 설정합니다. 상담 채널이 서명 검증을 지원하면 `CONSULTATION_WEBHOOK_SECRET`도 설정합니다. 비밀값은 저장소와 클라이언트 코드에 넣지 않습니다. 카카오 JavaScript 키는 브라우저 SDK 초기화에 쓰이는 공개 식별자이므로 운영 도메인 제한을 반드시 함께 설정합니다.
 
-카카오디벨로퍼스 앱의 JavaScript 키에는 두 운영 주소를 `JavaScript SDK 도메인`으로 등록하고, 같은 주소를 `제품 링크 관리 > 웹 도메인`에도 등록해야 합니다. 키가 없거나 SDK 연결에 실패하면 기존 버튼은 기기 공유 화면을 열고, 그것도 지원하지 않는 환경에서는 암호화 링크를 클립보드에 복사합니다.
+카카오디벨로퍼스 앱의 JavaScript 키에는 운영 주소를 `JavaScript SDK 도메인`으로 등록하고, 같은 주소를 `제품 링크 관리 > 웹 도메인`에도 등록해야 합니다. 키가 없거나 SDK 연결에 실패하면 기존 버튼은 기기 공유 화면을 열고, 그것도 지원하지 않는 환경에서는 암호화 링크를 클립보드에 복사합니다.
 
 배포 전 `npm run check`를 실행하고, 운영 배포 후 `/`, `/api/health`, 모바일 320·375·390px 화면과 주소 검색 → PNU → `/api/price` 흐름을 확인합니다.
 
-2026-08-20 기준 Vercel `chulwan-8137` 계정의 `camp17` 범위에서 두 저장소를 각각 독립 프로젝트로 운영합니다. 현재 `USE_MOCK=true`와 프로젝트별 `SHARE_SECRET`은 설정되어 규칙 기반 분석과 암호화 공유를 사용할 수 있습니다. `OPENAI_API_KEY`와 `PUBLIC_DATA_API_KEY`는 제공되지 않아 AI 원격 호출은 규칙 기반 응답으로 대체되고, 실제 공동주택 공시가격 호출은 키 설정 전까지 명시적 오류를 반환합니다. 두 `camp17` 프로젝트는 Vercel CLI 운영 배포가 가능하지만 GitHub Login Connection이 없어 Git 자동배포 연결은 별도 복구가 필요합니다.
+2026-08-21 기준 Vercel `oxaz1234-2461` 계정의 `aicamp` 프로젝트에서 운영합니다. `OPENAI_API_KEY`, `OPENAI_MODEL=gpt-5.6-terra`, `USE_MOCK=false`, `SHARE_SECRET`이 설정되어 실제 AI 분석·채팅과 암호화 공유가 동작합니다. `PUBLIC_DATA_API_KEY`는 아직 없으므로 반포자이 기본 호는 공공 원본 발췌값으로 동작하고, 서울·경기 전체 호별 조회에는 공공데이터포털 서비스 키가 추가로 필요합니다.

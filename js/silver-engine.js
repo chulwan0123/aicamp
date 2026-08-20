@@ -942,7 +942,25 @@ async function restoreShared() {
   Object.assign(state, body.session);
   renderAdvice(state.advice, state.property, state.subject);
   persist();
+  const clean = new URL(location.href);
+  clean.searchParams.delete('r');
+  history.replaceState({ screen: 'result' }, '', `${clean.pathname}${clean.search}${clean.hash}`);
   return true;
+}
+
+function requiresAnalysisResult() {
+  const current = shell?.getCurrent?.();
+  return location.hash === '#ai-consulting' || (Number.isInteger(current) && current >= 10 && current <= 16);
+}
+
+function reportSharedRestoreError(error) {
+  const message = error?.message || '공유 결과를 불러오지 못했어요.';
+  window.SILVER_SHARED_RESTORE_ERROR = message;
+  const clean = new URL(location.href);
+  clean.searchParams.delete('r');
+  history.replaceState({ screen: 'start' }, '', `${clean.pathname}${clean.search}#start`);
+  shell?.showStart?.(false);
+  document.dispatchEvent(new CustomEvent('silver:shared-restore-error', { detail: { message } }));
 }
 
 document.addEventListener('click', (event) => {
@@ -1026,9 +1044,18 @@ document.addEventListener('change', () => {
   renderConfirm(subject, state.property);
 });
 
-try {
-  if (!(await restoreShared())) restore();
-} catch (error) {
-  console.error('[silver] 공유 결과 복원 실패', error);
-  restore();
+const hasSharedToken = new URLSearchParams(location.search).has('r');
+if (hasSharedToken) {
+  try {
+    await restoreShared();
+  } catch (error) {
+    console.error('[silver] 공유 결과 복원 실패', error);
+    reportSharedRestoreError(error);
+  }
+} else {
+  const restored = restore();
+  if (!restored) {
+    localStorage.removeItem('plus-parent-result-complete');
+    if (requiresAnalysisResult()) shell?.showStart?.();
+  }
 }

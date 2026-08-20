@@ -66,3 +66,11 @@ test('ZIP 엔진의 전체 결과 계약이 요약과 상세 화면에 연결된
   }
   assert.match(engine, /advice\.refine\.title/);
 });
+
+test('분석값 없는 결과 딥링크와 잘못된 공유 토큰은 샘플 결과를 노출하지 않는다', () => {
+  assert.match(engine, /current >= 10 && current <= 16/);
+  assert.match(engine, /location\.hash === '#ai-consulting'/);
+  assert.match(engine, /shell\?\.showStart\?\./);
+  assert.match(engine, /clean\.searchParams\.delete\('r'\)/);
+  assert.match(engine, /history\.replaceState/);
+});

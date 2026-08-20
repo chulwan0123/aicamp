@@ -10,6 +10,6 @@
     "check": "node --check api/advise.js && node --check api/chat.js && node --check api/client-config.js && node --check api/consultations.js && node --check api/share.js && node --check api/price.js && node --check js/address.js && node --check js/property.js && node --check js/kakao-share.js && node --check js/silver-engine.js && node --check js/service-features.js && node --test tests/*.test.js"
   },
   "engines": {
-    "node": ">=20"
+    "node": "22.x"
   }
 }
