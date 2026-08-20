@@ -5,5 +5,5 @@ node_modules/
 output/
 test-results/
 tmp/
-exec-*.png
-silver-*.png
+/exec-*.png
+/silver-*.png
