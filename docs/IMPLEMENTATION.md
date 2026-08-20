@@ -63,7 +63,7 @@
 
 ### 서울·경기 단지 검색
 
-- 로컬에는 `시/도 → 시/군/구 → 단지명 → 전용면적 → 동·호` 순서의 검색 UI와 `GET /api/complexes`가 구현 중입니다.
+- 운영에는 `시/도 → 시/군/구 → 단지명 → 전용면적 → 동·호` 순서의 검색 UI와 `GET /api/complexes`가 배포돼 있습니다.
 - 2025년 서울·경기 69개 시군구 gzip 조각과 192,195개 단지 색인을 사용합니다.
 - 이 작업은 반포자이 고정값이나 다른 단지 폴백을 사용하지 않습니다.
 - `index.html`의 3단계 문구·DOM·레이아웃을 변경했으며 시각 QA 증거는 `design-qa.md`에 기록돼 있습니다.
@@ -73,7 +73,7 @@
 ## 배포 구조
 
 - 정적 화면: `index.html`, `assets/**`, `js/**`, `data/**`
-- 서버리스 API: `/api/advise`, `/api/chat`, `/api/client-config`, `/api/consultations`, `/api/share`, `/api/price`, `/api/market`, `/api/auth/**`, `/api/health`
+- 서버리스 API: `/api/advise`, `/api/chat`, `/api/client-config`, `/api/complexes`, `/api/consultations`, `/api/share`, `/api/price`, `/api/market`, `/api/auth/**`; `/api/health`는 `/api/client-config?mode=health`로 내부 재작성
 - 운영 환경: Vercel
 - 로컬 실행: `npm run dev`
 - 검증: `npm run check`

@@ -64,14 +64,14 @@ npm run dev
 - CSS3 및 PLUS 디자인 시스템 토큰·폰트
 - Vanilla JavaScript
 - Node.js 22
-- Vercel Functions (`/api/advise`, `/api/chat`, `/api/client-config`, `/api/consultations`, `/api/share`, `/api/price`, `/api/market`, `/api/auth/**`, `/api/health`)
+- Vercel API (`/api/advise`, `/api/chat`, `/api/client-config`, `/api/complexes`, `/api/consultations`, `/api/share`, `/api/price`, `/api/market`, `/api/auth/**`, `/api/health`)
 - Lottie 로컬 런타임과 MP4 미디어 에셋
 - Lucide Icons 로컬 SVG 에셋
 - Vercel
 
 ## 배포 방식
 
-루트 정적 파일과 `api/**` 서버리스 함수를 Vercel에 함께 배포합니다. 운영 환경에는 `OPENAI_API_KEY`, `OPENAI_MODEL`, `USE_MOCK=false`, `SHARE_SECRET`, `DATA_GO_KR_API_KEY`, `AUTH_SESSION_SECRET`, `KAKAO_JAVASCRIPT_KEY`, `KAKAO_REST_API_KEY`, `KAKAO_CLIENT_SECRET`, `KAKAO_REDIRECT_URI`가 설정돼 있습니다. 상담 실접수에는 `CONSULTATION_WEBHOOK_URL`이 추가로 필요하며, 수신 채널이 서명을 지원하면 `CONSULTATION_WEBHOOK_SECRET`도 설정합니다. 비밀값은 저장소와 클라이언트 코드에 넣지 않습니다.
+루트 정적 파일과 `api/**` 서버리스 함수를 Vercel에 함께 배포합니다. `/api/health`는 Hobby 요금제의 함수 개수 한도 안에서 동작하도록 `/api/client-config?mode=health`로 내부 재작성됩니다. 운영 환경에는 `OPENAI_API_KEY`, `OPENAI_MODEL`, `USE_MOCK=false`, `SHARE_SECRET`, `DATA_GO_KR_API_KEY`, `AUTH_SESSION_SECRET`, `KAKAO_JAVASCRIPT_KEY`, `KAKAO_REST_API_KEY`, `KAKAO_CLIENT_SECRET`, `KAKAO_REDIRECT_URI`가 설정돼 있습니다. 상담 실접수에는 `CONSULTATION_WEBHOOK_URL`이 추가로 필요하며, 수신 채널이 서명을 지원하면 `CONSULTATION_WEBHOOK_SECRET`도 설정합니다. 비밀값은 저장소와 클라이언트 코드에 넣지 않습니다.
 
 카카오디벨로퍼스 앱의 JavaScript 키에는 운영 주소를 `JavaScript SDK 도메인`으로 등록하고, 같은 주소를 `제품 링크 관리 > 웹 도메인`에도 등록해야 합니다. 키가 없거나 SDK 연결에 실패하면 기존 버튼은 기기 공유 화면을 열고, 그것도 지원하지 않는 환경에서는 암호화 링크를 클립보드에 복사합니다.
 

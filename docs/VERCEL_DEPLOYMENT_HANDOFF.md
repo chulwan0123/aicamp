@@ -61,6 +61,8 @@ Production에서 존재를 확인한 변수:
 ## 5. 확인된 운영 상태
 
 - `/api/health`: `{"ok":true,"service":"silver","engine":"plushome-v2"}`
+- `/api/health`는 Hobby 함수 개수 한도 안에서 `/api/client-config?mode=health`로 내부 재작성된다.
+- `/api/complexes`: 서울·경기 192,195개 단지 색인과 시군구별 검색 조회 성공
 - `/api/price`: 반포자이 101동 101호·84.943㎡의 2025년 공시가격 2,462,000,000원 조회 성공
 - `/api/market`: 운영 `DATA_GO_KR_API_KEY`로 실제 실거래 조회 성공
 - 공시가격 출처: 국토교통부 주택 공시가격 정보
