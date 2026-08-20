@@ -20,6 +20,17 @@ const OPTION_LABELS = {
   PARTIAL: '집 일부를 세놓기',
   PENSION: '주택연금',
 };
+const SIMPLIFIED_INPUT_DEFAULTS = Object.freeze({
+  targetExpense: 3_296_000,
+  rentalDeposit: 1_500_000_000,
+  medicalReserve: 0,
+});
+const MONTHLY_INCOME_BY_BAND = Object.freeze({
+  '100만원 미만': 500_000,
+  '100만~200만원': 1_500_000,
+  '약 200만원': 2_000_000,
+  '300만원 이상': 3_000_000,
+});
 
 function element(tag, className, value) {
   const node = document.createElement(tag);
@@ -251,13 +262,17 @@ function renderEngineDetails(advice) {
   sellSection?.append(calculationCard('매도·임차 산식', sell.steps, sell.basis));
 
   const downSection = engineSection(13, 'zip-downsize', '다운사이징 계산 전체 내역', '매도부터 새 집 구입, 생활비 배분까지 순서대로 확인해요.');
-  downSection?.append(summaryCard((downsize.proceeds || []).map((row) => [row.label, signed(row.amount)])));
-  downSection?.append(element('h3', 'section-heading', '남은 돈의 배분'), summaryCard((downsize.allocation || []).map((row) => [row.label, `${format(row.amount)} · ${row.note || ''}`])));
-  downSection?.append(element('h3', 'section-heading', '매월 들어오고 나가는 돈'), summaryCard((downsize.monthlyFlow || []).map((row) => [row.label, signed(row.amount)])));
-  if (downsize.remainingAssets) downSection?.append(element('h3', 'section-heading', '남는 자산'), summaryCard([
-    ['새 주택', format(downsize.remainingAssets.home)], ['금융자산', format(downsize.remainingAssets.financial)],
-    ['총자산', format(downsize.remainingAssets.total)],
-  ]), infoBox('자산 설명', downsize.remainingAssets.note));
+  if (!downsize.eligible) {
+    downSection?.append(infoBox('현재 비교 상태', downsize.reason));
+  } else {
+    downSection?.append(summaryCard((downsize.proceeds || []).map((row) => [row.label, signed(row.amount)])));
+    downSection?.append(element('h3', 'section-heading', '남은 돈의 배분'), summaryCard((downsize.allocation || []).map((row) => [row.label, `${format(row.amount)} · ${row.note || ''}`])));
+    downSection?.append(element('h3', 'section-heading', '매월 들어오고 나가는 돈'), summaryCard((downsize.monthlyFlow || []).map((row) => [row.label, signed(row.amount)])));
+    if (downsize.remainingAssets) downSection?.append(element('h3', 'section-heading', '남는 자산'), summaryCard([
+      ['새 주택', format(downsize.remainingAssets.home)], ['금융자산', format(downsize.remainingAssets.financial)],
+      ['총자산', format(downsize.remainingAssets.total)],
+    ]), infoBox('자산 설명', downsize.remainingAssets.note));
+  }
   downSection?.append(calculationCard('다운사이징 산식', downsize.steps, downsize.basis));
 
   const pensionSection = engineSection(15, 'zip-pension', '주택연금 계산 전체 내역', pension.eligible ? '현재 소득과 주택연금 월지급금을 함께 봐요.' : pension.reason);
@@ -319,7 +334,7 @@ function acquisitionValues() {
     if (!Number.isFinite(ownershipRatio) || ownershipRatio <= 0 || ownershipRatio > 100) {
       throw new Error(`주택 ${index + 1}의 명의 지분율을 확인해 주세요.`);
     }
-    const isResiding = node.querySelector(`input[name="residing-${index}"]:checked`)?.value === 'yes';
+    const isResiding = false;
     return { acquisitionYear: year, acquisitionPrice: price, residencyYears, ownershipRatio, isResiding };
   });
 }
@@ -576,13 +591,18 @@ function collectAnswers() {
     urgency: checkedValue('q-urgency'),
     liquidityForm: checkedValue('q-liquidityForm'),
     familyConsensus: checkedValue('q-familyConsensus'),
+    income: checkedValue('q-income'),
   };
 }
 
 function collectSubject(properties) {
   const property = properties[0];
-  const fatherAge = numericValue('#father-age', '아버지 만 나이', { min: 18, max: 120 });
-  const motherAge = numericValue('#mother-age', '어머니 만 나이', { min: 18, max: 120 });
+  const fatherAge = Number(checkedValue('father-age-band'));
+  const motherAge = Number(checkedValue('mother-age-band'));
+  if (!(fatherAge > 0) || !(motherAge > 0)) throw new Error('부모님의 연령대를 선택해 주세요.');
+  const fatherAgeBand = checkedLabel('father-age-band');
+  const motherAgeBand = checkedLabel('mother-age-band');
+  const incomeBand = checkedValue('q-income');
   const acquired = property.acquisitionYear;
   const wishRegion = document.querySelector('#wish-region')?.value.trim() || '';
   const count = shell.getPropertyCount();
@@ -600,7 +620,7 @@ function collectSubject(properties) {
   return {
     age: fatherAge,
     spouseAge: motherAge,
-    ageBands: { father: `${fatherAge}세`, mother: `${motherAge}세` },
+    ageBands: { father: fatherAgeBand, mother: motherAgeBand },
     houseCount: count,
     ownership: joint ? 'JOINT_50_50' : 'SINGLE',
     holdingYears: Math.max(0, new Date().getFullYear() - acquired),
@@ -609,24 +629,36 @@ function collectSubject(properties) {
     acquisitions,
     isResiding: property.isResiding,
     residencyYears: property.residencyYears,
-    residencyBand: properties.map((item, index) => `주택 ${index + 1} ${item.residencyYears}년`).join(' · '),
+    residencyBand: properties.map((item, index) => {
+      const years = Number(item.residencyYears) || 0;
+      const band = years >= 10 ? '10년 이상' : years >= 5 ? '5년 이상 10년 미만' : years >= 2 ? '2년 이상 5년 미만' : '2년 미만·거주하지 않음';
+      return `주택 ${index + 1} ${band}`;
+    }).join(' · '),
     wishRegion,
     wishRegionIsCapitalArea: /^(서울|경기|인천)/.test(wishRegion),
-    newHomeMarketPrice: numericValue('#new-home-market-price', '옮길 집의 예상 매매가격', { optional: true }),
-    newHomeOfficialPrice: numericValue('#new-home-official-price', '옮길 집의 예상 공시가격', { optional: true }),
-    rentalDeposit: numericValue('#rental-deposit', '임차 보증금', { min: 0 }),
-    medicalReserve: numericValue('#medical-reserve', '의료·간병 예비자금', { min: 0 }),
-    partialSpacePossible: checkedValue('partial-space') === 'yes',
-    partialMonthlyRent: numericValue('#partial-monthly-rent', '예상 월 임대수입', { optional: true }) || 0,
-    monthlyIncome: numericValue('#monthly-income', '월 연금·소득', { min: 0 }),
-    targetExpense: numericValue('#target-expense', '필요한 월 생활비', { min: 1 }),
+    newHomeMarketPrice: null,
+    newHomeOfficialPrice: null,
+    rentalDeposit: SIMPLIFIED_INPUT_DEFAULTS.rentalDeposit,
+    medicalReserve: SIMPLIFIED_INPUT_DEFAULTS.medicalReserve,
+    partialSpacePossible: false,
+    partialMonthlyRent: 0,
+    incomeBand,
+    monthlyIncome: MONTHLY_INCOME_BY_BAND[incomeBand] ?? 0,
+    targetExpense: SIMPLIFIED_INPUT_DEFAULTS.targetExpense,
+    inputAssumptions: {
+      residencyYears: '실제 거주기간은 선택한 구간의 시작 연수로 보수적으로 계산했어요.',
+      currentResidence: '현재 거주 여부는 입력받지 않아 거주 주택 공제를 적용하지 않았어요.',
+      targetExpense: '필요 생활비는 서울 부부 적정 노후생활비 통계값인 월 329만 6천원으로 계산했어요.',
+      monthlyIncome: `월소득은 선택한 “${incomeBand}” 구간의 계산값 ${format(MONTHLY_INCOME_BY_BAND[incomeBand] ?? 0)}을 사용했어요.`,
+      rentalDeposit: '매도 후 임차 보증금은 서울 전용 84㎡ 기준 가정치인 15억원으로 계산했어요.',
+      medicalReserve: '의료·간병 예비자금은 별도 입력을 받지 않아 0원으로 계산했어요.',
+    },
   };
 }
 
 function collectRefinements(subject) {
   return {
     householdHouseCount: subject.houseCount,
-    isResidingHome: subject.isResiding,
     ownershipRatio: subject.acquisitions[0]?.ownershipRatio || 100,
   };
 }
@@ -1097,13 +1129,6 @@ document.querySelector('#lookup-items')?.addEventListener('input', (event) => {
   if (input) input.setCustomValidity('');
 });
 
-for (const selector of ['#new-home-market-price', '#new-home-official-price', '#rental-deposit', '#medical-reserve', '#partial-monthly-rent', '#monthly-income', '#target-expense']) {
-  document.querySelector(selector)?.addEventListener('blur', (event) => {
-    const amount = Number(String(event.target.value || '').replace(/[^0-9]/g, ''));
-    if (amount > 0) event.target.value = amount.toLocaleString('ko-KR');
-  });
-}
-
 document.querySelector('#address-fields')?.addEventListener('input', (event) => {
   const input = event.target.closest('[data-detail-input], [data-address-input]');
   const propertyNode = input?.closest('.property');
@@ -1173,13 +1198,10 @@ function reportSharedRestoreError(error) {
 document.addEventListener('click', (event) => {
   const next = event.target.closest('[data-next]');
   if (next && next.closest('[data-screen="1"]')) {
-    try {
-      numericValue('#father-age', '아버지 만 나이', { min: 18, max: 120 });
-      numericValue('#mother-age', '어머니 만 나이', { min: 18, max: 120 });
-    } catch (error) {
+    if (!checkedValue('father-age-band') || !checkedValue('mother-age-band')) {
       event.preventDefault();
       event.stopImmediatePropagation();
-      alert(error.message);
+      alert('부모님의 연령대를 선택해 주세요.');
     }
     return;
   }
@@ -1243,20 +1265,15 @@ document.addEventListener('click', (event) => {
     return;
   }
   if (next && next.closest('[data-screen="6"]')) {
-    try {
-      numericValue('#rental-deposit', '임차 보증금', { min: 0 });
-      numericValue('#medical-reserve', '의료·간병 예비자금', { min: 0 });
-    } catch (error) {
+    if (checkedValue('wish') === 'yes' && !document.querySelector('#wish-region')?.value) {
       event.preventDefault();
       event.stopImmediatePropagation();
-      alert(error.message);
+      alert('희망하는 서울·경기 지역을 선택해 주세요.');
     }
     return;
   }
   if (next && next.closest('[data-screen="7"]')) {
     try {
-      numericValue('#monthly-income', '월 연금·소득', { min: 0 });
-      numericValue('#target-expense', '필요한 월 생활비', { min: 1 });
       const subject = collectSubject(state.properties);
       renderConfirm(subject, state.property);
     } catch (error) {

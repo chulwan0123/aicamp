@@ -31,9 +31,44 @@ test('신규 콘텐츠 상세화면은 기존 카드와 디자인 토큰을 재�
 test('입력 흐름은 1/8부터 8/8까지다', () => {
   for (let step = 1; step <= 8; step += 1) assert.match(html, new RegExp(`${step}/8`));
   assert.match(html, /name="q-inheritance"/);
-  assert.match(html, /id="monthly-income"/);
-  assert.match(html, /id="target-expense"/);
+  assert.match(html, /name="father-age-band"/);
+  assert.match(html, /name="mother-age-band"/);
+  assert.match(html, /name="q-income"/);
   assert.match(html, /data-residency-years/);
+  for (const removed of [
+    'new-home-market-price', 'new-home-official-price', 'rental-deposit', 'medical-reserve',
+    'partial-monthly-rent', 'monthly-income', 'target-expense',
+  ]) assert.doesNotMatch(html, new RegExp(`id="${removed}"`));
+  assert.match(engine, /SIMPLIFIED_INPUT_DEFAULTS/);
+  assert.match(engine, /MONTHLY_INCOME_BY_BAND/);
+});
+
+test('희망 지역은 서울·경기 선택 한 번으로 제한한다', () => {
+  assert.match(html, /id="wish-region" class="select" disabled/);
+  assert.match(html, /<optgroup label="서울">/);
+  assert.match(html, /<optgroup label="경기">/);
+  assert.doesNotMatch(html, /<option>인천 /);
+  assert.doesNotMatch(html, /<option>강원 /);
+});
+
+test('공동명의는 추가 지분 입력 없이 50대50으로 계산한다', () => {
+  assert.match(html, /data-ownership-ratio="'\+index\+'" value="'\+\(jointOwnership\[index\]\?'50':'100'\)\+'"/);
+  assert.doesNotMatch(html, /아버지 명의 지분율/);
+});
+
+test('거주기간 구간은 대표값이 아니라 과소 계산을 막는 하한값을 사용한다', () => {
+  assert.match(html, /<option value="5">5년 이상 10년 미만<\/option>/);
+  assert.match(html, /<option value="2">2년 이상 5년 미만<\/option>/);
+  assert.doesNotMatch(html, /<option value="7">5년 이상 10년 미만<\/option>/);
+  assert.doesNotMatch(html, /<option value="3">2년 이상 5년 미만<\/option>/);
+  assert.match(html, /선택한 구간의 시작 연수로 보수적으로 계산해요/);
+});
+
+test('과거 거주기간으로 현재 거주 주택을 자동 판정하지 않는다', () => {
+  assert.match(engine, /const isResiding = false/);
+  assert.doesNotMatch(engine, /isResiding = index === 0 && residencyYears > 0/);
+  assert.doesNotMatch(engine, /isResidingHome: subject\.isResiding/);
+  assert.match(engine, /현재 거주 여부는 입력받지 않아 거주 주택 공제를 적용하지 않았어요/);
 });
 
 test('스플래시는 본 화면 번호와 분리되고 엔진 모듈이 연결된다', () => {
@@ -47,6 +82,8 @@ test('주택 입력은 시도·시군구·단지·전용면적 순서이며 도�
   assert.match(html, /data-property-sigungu disabled/);
   assert.match(html, /data-complex-query placeholder="단지명을 입력해 주세요"/);
   assert.match(html, /data-area-select disabled/);
+  assert.match(html, /data-detail-input placeholder="예: 120동 1002호"/);
+  assert.match(html, />공시가격 조회하기<\/button>/);
   assert.match(html, /data-address-input placeholder="단지를 선택하면 자동으로 입력돼요" readonly/);
   assert.doesNotMatch(html, /value="서울특별시 서초구 신반포로 270"/);
   assert.match(engine, /selectedAreaM2/);

@@ -9,6 +9,7 @@
 - 배포 브랜치: `codex/fix-my-shortcut-font-14-5`
 - Vercel 프로젝트: `oxaz1234-gmailcoms-projects/aicamp`
 - 운영 계정 이메일: `Oxaz1234@gmail.com`
+- Git 커밋 기여자 이메일: `Oxaz1234@gmail.com`, `Chulwan@hanwha.plus`
 
 2026-08-21 현재 운영 별칭은 Vercel Production을 가리킵니다. 실제 불변 배포 URL과 배포 ID는 `vercel inspect https://aicamp-sigma.vercel.app --scope oxaz1234-gmailcoms-projects`로 확인합니다.
 
@@ -30,7 +31,7 @@ npm run dev
 - 홈·마이 하단 탭과 고정 헤더
 - 신규 사용자 시작 화면과 결과 경험 사용자 홈
 - SILVER 로고, 자동 재생 영상, 로띠 애니메이션을 활용한 홈 비주얼
-- plushome 기준 19개 본 화면과 부모님 연령, 주택 수·명의, 주소, 실거래가, 취득·거주, 희망 지역, 성향·소득, 최종 확인의 입력 8단계
+- plushome 기준 19개 본 화면과 부모님 연령대, 주택 수·명의, 주소, 실거래가, 취득·거주, 서울·경기 희망 지역, 성향·소득 구간, 최종 확인의 간소화된 입력 8단계
 - 모든 선택 필드의 하단 시트 UI와 심플 체크 상태
 - 5초 분석 화면과 결과 요약
 - 보유세, 양도소득세, 주택연금, 임차·금융운용, 다운사이징, 상속·증여 상세 화면

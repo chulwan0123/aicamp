@@ -285,8 +285,8 @@ export function buildScenarios({ property, properties, subject }) {
   if (!(newHomePrice > 0)) {
     options.DOWNSIZE = {
       eligible: false,
-      reason: '옮길 집의 예상 매매가격을 입력하면 다운사이징을 비교할 수 있어요.',
-      steps: ['옮길 집의 예상 매매가격이 입력되지 않았어요.'],
+      reason: '간소화된 입력에서는 새 집 가격을 받지 않아 다운사이징 금액 비교를 제외했어요.',
+      steps: ['새 집 가격을 별도로 입력받지 않아 다운사이징 금액을 임의로 추정하지 않았어요.'],
       basis: [BASIS.acquisition, BASIS.brokerage],
     };
   } else {
@@ -420,6 +420,7 @@ export function buildScenarios({ property, properties, subject }) {
         `집 팔 때 드는 비용을 ${won(expenses)}으로 잡았어요`,
         `${holdingYears}년 갖고 계시고 ${lived}년 사신 걸로 계산했어요`,
         `앞으로 ${years}년 동안 나눠 쓰시는 걸로 잡았어요 (통계청 기대수명 기준)`,
+        ...Object.values(subject.inputAssumptions || {}).filter(Boolean),
         ...(newHomePrice > 0 ? [`옮기실 새 집 매매가격은 입력하신 ${won(newHomePrice)}을 썼어요`] : ['옮길 집 가격을 입력하지 않아 다운사이징은 비교에서 제외했어요']),
         ...(newHomeOfficialPrice > 0 ? [`옮기실 새 집 공시가격은 입력하신 ${won(newHomeOfficialPrice)}을 썼어요`] : ['옮길 집 공시가격이 없어 새 집 보유세는 계산하지 않았어요']),
       ],

@@ -55,6 +55,25 @@ test('다운사이징은 입력한 새 집 매매가격과 공시가격을 따�
   assert.equal(computed.options.DOWNSIZE.specialWhatIfAvailable, true);
 });
 
+test('간소화 입력의 고정 가정은 결과 계약에 빠짐없이 노출한다', () => {
+  const inputAssumptions = {
+    targetExpense: '필요 생활비는 월 329만 6천원으로 계산했어요.',
+    rentalDeposit: '임차 보증금은 15억원으로 계산했어요.',
+    medicalReserve: '의료비 예비자금은 0원으로 계산했어요.',
+  };
+  const computed = compute({ subject: { inputAssumptions } });
+  for (const assumption of Object.values(inputAssumptions)) {
+    assert.ok(computed.meta.assumptions.includes(assumption));
+  }
+});
+
+test('새 집 가격을 받지 않는 간소화 입력은 다운사이징을 임의 추정하거나 입력을 요구하지 않는다', () => {
+  const computed = compute({ subject: { newHomeMarketPrice: null, newHomeOfficialPrice: null } });
+  assert.equal(computed.options.DOWNSIZE.eligible, false);
+  assert.match(computed.options.DOWNSIZE.reason, /간소화된 입력에서는 새 집 가격을 받지 않아/);
+  assert.doesNotMatch(computed.options.DOWNSIZE.reason, /입력하면/);
+});
+
 test('주택연금 가입 연령은 부부 중 연장자, 지급표는 연소자를 사용한다', () => {
   const pension = housingPension({ officialPrice: 800_000_000, marketPrice: 1_000_000_000, olderAge: 56, youngerAge: 50 });
   assert.equal(pension.eligible, true);

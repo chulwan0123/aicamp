@@ -15,7 +15,7 @@
 | 항목 | 값 |
 |---|---|
 | GitHub 계정 | `chulwan0123` |
-| Git 작성자 이메일 | `Oxaz1234@gmail.com` |
+| Git 커밋 기여자 이메일 | `Oxaz1234@gmail.com`, `Chulwan@hanwha.plus` |
 | 공식 저장소 | `https://github.com/chulwan0123/aicamp` |
 | 배포 기준 브랜치 | `codex/fix-my-shortcut-font-14-5` |
 | 배포 기준 커밋 | 운영 별칭을 `vercel inspect`로 확인 |
@@ -75,7 +75,7 @@ Production에서 존재를 확인한 변수:
 - 서울·경기 69개 시군구 gzip 조각, 192,195개 단지 색인
 - 공시가격 저장소·화면 3·엔진·테스트·Vercel 설정 변경
 - 모바일 편집 필드 16px 이상으로 iOS 포커스 확대 방지
-- 현재 `npm run check`: 78개 통과
+- 현재 `npm run check`: 84개 통과
 
 `index.html`의 문구·DOM·레이아웃 변경과 시각 QA 증거는 `design-qa.md`에 기록돼 있다.
 
