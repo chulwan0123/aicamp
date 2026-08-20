@@ -50,6 +50,7 @@ npm run dev
 ## 문서
 
 - [구현 현황과 보완 과제](./docs/IMPLEMENTATION.md)
+- [Vercel 자동배포 장애 및 인계 문서](./docs/VERCEL_DEPLOYMENT_HANDOFF.md)
 - [세금 기준과 추천 알고리즘](./docs/TAX_AND_ALGORITHM.md)
 - [반포자이 은퇴 부부 페르소나 및 자산관리 결론](./docs/반포자이_은퇴부부_페르소나_및_자산관리_결론.md)
 
