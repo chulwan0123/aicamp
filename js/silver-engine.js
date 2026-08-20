@@ -927,10 +927,7 @@ function restore() {
 
 async function share() {
   if (!state.advice) throw new Error('먼저 분석 결과를 확인해 주세요.');
-  return shareResult(state, {
-    title: '부모님 노후 준비 결과',
-    text: state.advice.familyNote || '부모님과 함께 노후 준비 결과를 확인해 보세요.',
-  });
+  return shareResult(state, { purpose: 'result' });
 }
 
 async function restoreShared() {

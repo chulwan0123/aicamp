@@ -250,8 +250,7 @@ async function inviteParent() {
   if (!session) return;
   try {
     const result = await shareResult(session, {
-      title: '부모님 노후 준비 결과',
-      text: session.advice.familyNote || '부모님과 함께 노후 준비 결과를 확인해 보세요.',
+      purpose: 'invite',
     });
     if (result.method === 'clipboard') {
       openSheet('부모님 초대', (root) => root.append(info('암호화된 결과 링크를 복사했어요. 부모님께 전달해 주세요. 링크는 7일 후 만료돼요.')));

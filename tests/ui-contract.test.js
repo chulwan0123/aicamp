@@ -4,10 +4,21 @@ import fs from 'node:fs';
 
 const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const engine = fs.readFileSync(new URL('../js/silver-engine.js', import.meta.url), 'utf8');
+const ogImage = fs.readFileSync(new URL('../assets/og-silver-share.png', import.meta.url));
 
 test('본 화면은 plushome 계약대로 19개다', () => {
   const screens = [...html.matchAll(/<section\b[^>]*\bdata-screen="(\d+)"[^>]*>/g)].map((match) => Number(match[1]));
   assert.deepEqual(screens, Array.from({ length: 19 }, (_, index) => index));
+});
+
+test('공유 미리보기는 1200×630 전용 이미지와 일관된 OG 문구를 사용한다', () => {
+  assert.equal(ogImage.readUInt32BE(16), 1200);
+  assert.equal(ogImage.readUInt32BE(20), 630);
+  assert.match(html, /property="og:title" content="부모님 노후 준비, 함께 확인해요"/);
+  assert.match(html, /property="og:image" content="https:\/\/aicamp-sigma\.vercel\.app\/assets\/og-silver-share\.png"/);
+  assert.match(html, /property="og:image:width" content="1200"/);
+  assert.match(html, /name="twitter:card" content="summary_large_image"/);
+  assert.match(engine, /purpose: 'result'/);
 });
 
 test('신규 콘텐츠 상세화면은 기존 카드와 디자인 토큰을 재사용한다', () => {

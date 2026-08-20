@@ -1,5 +1,18 @@
 let kakaoSdkPromise;
 
+const SHARE_COPY = {
+  result: {
+    title: '부모님 노후 준비 결과가 도착했어요',
+    text: '부동산과 생활비를 바탕으로 정리한 추천과 다음 단계를 함께 확인해 보세요.',
+    buttonTitle: '결과 함께 보기',
+  },
+  invite: {
+    title: '부모님, 함께 확인해 주세요',
+    text: '우리 가족의 노후 준비 결과와 추천 내용을 안전한 링크에서 확인해 보세요.',
+    buttonTitle: '초대 결과 보기',
+  },
+};
+
 export async function createResultLink(session) {
   const response = await fetch('./api/share', {
     method: 'POST',
@@ -44,7 +57,7 @@ function appendKakaoSdk(config) {
   return kakaoSdkPromise;
 }
 
-async function openKakaoShare({ url, title, text }) {
+async function openKakaoShare({ url, title, text, buttonTitle }) {
   const config = await getKakaoConfig();
   if (!config.configured || !config.javascriptKey) {
     const error = new Error('카카오 JavaScript 키가 아직 설정되지 않았어요.');
@@ -59,10 +72,12 @@ async function openKakaoShare({ url, title, text }) {
     content: {
       title,
       description: text,
-      imageUrl: new URL('./assets/start-card-parents.png', document.baseURI).toString(),
-      link: { webUrl: url },
+      imageUrl: new URL('./assets/og-silver-share.png', document.baseURI).toString(),
+      imageWidth: 1200,
+      imageHeight: 630,
+      link: { webUrl: url, mobileWebUrl: url },
     },
-    buttonTitle: '분석 결과 확인하기',
+    buttonTitle,
   });
   return { method: 'kakao', url };
 }
@@ -79,10 +94,12 @@ async function fallbackShare({ url, title, text }) {
 
 export async function shareResult(session, options = {}) {
   const shared = await createResultLink(session);
+  const preset = SHARE_COPY[options.purpose] || SHARE_COPY.result;
   const payload = {
     url: shared.url,
-    title: options.title || '부모님 노후 준비 결과',
-    text: options.text || session?.advice?.familyNote || '부모님과 함께 노후 준비 결과를 확인해 보세요.',
+    title: options.title || preset.title,
+    text: options.text || preset.text,
+    buttonTitle: options.buttonTitle || preset.buttonTitle,
   };
   try {
     return { ...await openKakaoShare(payload), token: shared.token };
