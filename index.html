@@ -324,7 +324,9 @@
   let analysisTimer=null;
   let analysisPromise=null;
   const resultStorageKey="plus-parent-result-complete";
-  let hasCompletedResult=localStorage.getItem(resultStorageKey)==="true";
+  const temporaryResultStorageKey="silver-analysis-session-guest-v2";
+  const hasStoredResult=()=>sessionStorage.getItem(resultStorageKey)==="true"||(window.SILVER_AUTH?.authenticated&&localStorage.getItem(resultStorageKey)==="true");
+  let hasCompletedResult=hasStoredResult();
   const selectionSheet=document.querySelector("#selection-sheet");
   const startOverlay=document.querySelector("#start-overlay");
   const aiOverlay=document.querySelector("#ai-consulting-overlay");
@@ -504,7 +506,8 @@
     aiOverlay.hidden=true;
     if(current===10){
       hasCompletedResult=true;
-      localStorage.setItem(resultStorageKey,"true");
+      sessionStorage.setItem(resultStorageKey,"true");
+      if(window.SILVER_AUTH?.authenticated)localStorage.setItem(resultStorageKey,"true");
     }
     if(current===0)renderHome();
     screens.forEach((screen,i)=>screen.hidden=i!==current);
@@ -612,6 +615,8 @@
     if(destination)show(Number(destination.dataset.go));
     if(event.target.closest("[data-reset-result]")){
       localStorage.removeItem(resultStorageKey);
+      sessionStorage.removeItem(resultStorageKey);
+      sessionStorage.removeItem(temporaryResultStorageKey);
       hasCompletedResult=false;
       renderHome();
       window.scrollTo({top:0,behavior:"smooth"});
@@ -634,6 +639,7 @@
   });
   document.addEventListener("keydown",event=>{if(event.key==="Escape"&&!selectionSheet.hidden)closeSheet()});
   document.addEventListener("visibilitychange",syncAutoplayVideos);
+  document.addEventListener("silver:auth-ready",()=>{hasCompletedResult=hasStoredResult();renderHome()});
   window.addEventListener("pageshow",syncAutoplayVideos);
   window.addEventListener("popstate",restoreFromUrl);
   window.SILVER_SHELL={show,showStart,showAi,getCurrent:()=>current,setAnalysisPromise:promise=>{analysisPromise=promise},getPropertyCount:()=>propertyCount,getJointOwnership:()=>[...jointOwnership]};
@@ -642,9 +648,9 @@
   renderHome();
   restoreFromUrl();
 </script>
+<script type="module" src="./js/kakao-login.js"></script>
 <script type="module" src="./js/silver-engine.js"></script>
 <script type="module" src="./js/property-search.js"></script>
 <script type="module" src="./js/service-features.js"></script>
-<script type="module" src="./js/kakao-login.js"></script>
 </body>
 </html>

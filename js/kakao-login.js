@@ -1,4 +1,6 @@
 const shell = window.SILVER_SHELL;
+const GUEST_SESSION_KEY = 'silver-analysis-session-guest-v2';
+const RESULT_FLAG_KEY = 'plus-parent-result-complete';
 const authState = { authenticated: false, user: null };
 
 function syncAuthUi() {
@@ -37,6 +39,7 @@ async function loadSession() {
   }
   window.SILVER_AUTH = authState;
   syncAuthUi();
+  document.dispatchEvent(new CustomEvent('silver:auth-ready', { detail: authState }));
 }
 
 function startKakaoLogin(button) {
@@ -49,10 +52,13 @@ async function logout() {
   try {
     await fetch('./api/auth/logout', { method: 'POST', credentials: 'same-origin' });
   } finally {
+    sessionStorage.removeItem(GUEST_SESSION_KEY);
+    sessionStorage.removeItem(RESULT_FLAG_KEY);
     authState.authenticated = false;
     authState.user = null;
     window.SILVER_AUTH = authState;
     syncAuthUi();
+    document.dispatchEvent(new CustomEvent('silver:auth-ready', { detail: authState }));
     shell?.showStart?.();
   }
 }
@@ -81,4 +87,4 @@ if (authError) {
   queueMicrotask(() => document.dispatchEvent(new CustomEvent('silver:auth-error', { detail: { code: authError } })));
 }
 
-loadSession();
+window.SILVER_AUTH_READY = loadSession();

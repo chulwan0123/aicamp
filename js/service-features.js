@@ -1,6 +1,7 @@
 import { createResultLink, shareResult } from './kakao-share.js';
 
 const SESSION_KEY = 'silver-analysis-session-v2';
+const GUEST_SESSION_KEY = 'silver-analysis-session-guest-v2';
 const NOTIFICATION_KEY = 'silver-notification-preference-v1';
 const shell = window.SILVER_SHELL;
 
@@ -250,7 +251,9 @@ function showShareFeedback(result, title = '결과 공유') {
 
 function getSession() {
   try {
-    const value = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+    const temporary = sessionStorage.getItem(GUEST_SESSION_KEY);
+    const permanent = window.SILVER_AUTH?.authenticated ? localStorage.getItem(SESSION_KEY) : null;
+    const value = JSON.parse(temporary || permanent || 'null');
     return value?.advice && value?.property ? value : null;
   } catch {
     return null;

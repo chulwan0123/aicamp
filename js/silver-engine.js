@@ -5,6 +5,7 @@ import { refineAnswerLabel } from './refine-fields.js';
 import { preloadKakaoShare, prepareResultShare, shareResult } from './kakao-share.js';
 
 const SESSION_KEY = 'silver-analysis-session-v2';
+const GUEST_SESSION_KEY = 'silver-analysis-session-guest-v2';
 const shell = window.SILVER_SHELL;
 const state = { property: null, properties: [], subject: null, answers: null, advice: null, refinements: {}, chatHistory: [] };
 
@@ -1162,16 +1163,23 @@ document.addEventListener('silver:property-area-selected', (event) => {
 });
 
 function persist() {
-  try { localStorage.setItem(SESSION_KEY, JSON.stringify(state)); }
+  try {
+    const serialized = JSON.stringify(state);
+    sessionStorage.setItem(GUEST_SESSION_KEY, serialized);
+    if (window.SILVER_AUTH?.authenticated) localStorage.setItem(SESSION_KEY, serialized);
+  }
   catch (error) { console.warn('[silver] 결과 저장 실패', error); }
 }
 
 function restore() {
   try {
-    const saved = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+    const temporary = sessionStorage.getItem(GUEST_SESSION_KEY);
+    const permanent = window.SILVER_AUTH?.authenticated ? localStorage.getItem(SESSION_KEY) : null;
+    const saved = JSON.parse(temporary || permanent || 'null');
     if (!saved?.advice || !saved?.property || !saved?.subject) return false;
     Object.assign(state, saved);
     renderAdvice(state.advice, state.property, state.subject);
+    persist();
     prepareResultShare(state).catch((error) => console.warn('[silver] 공유 링크 준비 실패', error));
     return true;
   } catch (error) {
@@ -1349,6 +1357,7 @@ document.addEventListener('click', (event) => {
   }
   if (event.target.closest('[data-reset-result]')) {
     localStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(GUEST_SESSION_KEY);
     Object.assign(state, { property: null, properties: [], subject: null, answers: null, advice: null, refinements: {}, chatHistory: [] });
   }
 }, true);
@@ -1365,6 +1374,7 @@ document.addEventListener('change', () => {
 
 const hasSharedToken = new URLSearchParams(location.search).has('r');
 preloadKakaoShare().catch((error) => console.warn('[silver] 카카오 SDK 준비 실패', error));
+await window.SILVER_AUTH_READY?.catch(() => undefined);
 if (hasSharedToken) {
   try {
     await restoreShared();
@@ -1375,7 +1385,8 @@ if (hasSharedToken) {
 } else {
   const restored = restore();
   if (!restored) {
-    localStorage.removeItem('plus-parent-result-complete');
+    sessionStorage.removeItem('plus-parent-result-complete');
+    if (window.SILVER_AUTH?.authenticated) localStorage.removeItem('plus-parent-result-complete');
     if (requiresAnalysisResult()) shell?.showStart?.();
   }
 }

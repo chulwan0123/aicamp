@@ -163,3 +163,11 @@ test('분석값 없는 결과 딥링크와 잘못된 공유 토큰은 샘플 결
   assert.match(engine, /clean\.searchParams\.delete\('r'\)/);
   assert.match(engine, /history\.replaceState/);
 });
+
+test('비로그인 결과는 현재 탭에만 두고 로그인 결과만 기기에 저장한다', () => {
+  assert.match(engine, /sessionStorage\.setItem\(GUEST_SESSION_KEY, serialized\)/);
+  assert.match(engine, /window\.SILVER_AUTH\?\.authenticated\) localStorage\.setItem\(SESSION_KEY, serialized\)/);
+  assert.match(engine, /await window\.SILVER_AUTH_READY/);
+  assert.match(html, /document\.addEventListener\("silver:auth-ready"/);
+  assert.ok(html.indexOf('src=".\/js\/kakao-login.js"') < html.indexOf('src=".\/js\/silver-engine.js"'));
+});

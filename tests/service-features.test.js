@@ -33,9 +33,12 @@ test('결과 공유와 부모님 초대는 카카오 공식 SDK 호출을 우선
   assert.doesNotMatch(shareSource, /[a-f0-9]{32}/i);
 });
 
-test('알림 설정과 로그아웃은 로그인만 종료하고 기기 분석 결과는 보존한다', () => {
+test('알림 설정과 로그아웃은 로그인만 종료하고 로그인 사용자의 기기 분석 결과는 보존한다', () => {
   assert.match(source, /Notification\.requestPermission/);
   assert.match(source, /new Notification\('SILVER 알림 설정 완료'/);
+  assert.match(source, /sessionStorage\.getItem\(GUEST_SESSION_KEY\)/);
+  assert.match(loginSource, /sessionStorage\.removeItem\(GUEST_SESSION_KEY\)/);
+  assert.match(loginSource, /document\.dispatchEvent\(new CustomEvent\('silver:auth-ready'/);
   assert.doesNotMatch(loginSource, /localStorage\.removeItem/);
   assert.doesNotMatch(source, /if \(event\.target\.closest\('\[data-logout\]'\)\) \{\s*localStorage\.removeItem/);
 });
