@@ -1,4 +1,5 @@
 import { recommendationHeadline } from './recommendationCopy.js';
+import { enforceMandatoryRecommendation } from './recommendationRules.js';
 
 const LABELS = {
   HOLD: '현재 집 그대로 보유하기',
@@ -69,7 +70,7 @@ export function createFallbackDraft({ computed, answers = {} }) {
     cautions.push('매도 후 5년 안에 수도권 주택을 다시 사면 감면세액이 추징될 수 있어요.');
   }
 
-  return {
+  return enforceMandatoryRecommendation({ computed, draft: {
     profile,
     cashflowSummary: computed.cashflow.monthlyShortage > 0
       ? `집은 ${computed.display.marketPrice}이지만, 매달 ${shortage}이 부족해요.`
@@ -102,5 +103,5 @@ export function createFallbackDraft({ computed, answers = {} }) {
         reason: candidate.reason || `${LABELS[excludedId]}의 적용 요건을 현재 충족하지 못해요.`,
       })),
     familyNote: `부모님의 노후 현금흐름을 함께 확인했어요. 현재는 매달 ${shortage}이 부족해요. ${label}를 우선 비교해 보면 좋겠어요. 예상 월 금액은 ${monthly}이에요. 다만 세금과 실제 계약 조건은 실행 시점에 다시 확인해야 해요. 부모님의 거주 의향을 먼저 듣고 가족이 함께 결정해요.`,
-  };
+  } });
 }

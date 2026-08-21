@@ -66,6 +66,35 @@ test('거주와 상속 의향이 높고 생활비가 급하지 않으면 현재 
   assert.equal(draft.headline, '지금 집을 계속 보유해도 좋아요');
 });
 
+test('월 연금·소득이 300만원 이상이면 다른 성향보다 현재 집 보유를 우선한다', () => {
+  const computed = compute({ subject: { monthlyIncome: 3_000_000 } });
+  const draft = createFallbackDraft({
+    computed,
+    answers: {
+      inheritance: '생활비가 우선이다',
+      residency: '떠나도 괜찮다',
+      urgency: '지금 당장 해결해야 한다',
+    },
+  });
+  assert.equal(draft.recommendedId, 'HOLD');
+  assert.equal(draft.headline, '지금 집을 계속 보유해도 좋아요');
+  assert.match(draft.why, /300만원 이상/);
+  assert.ok(draft.alternatives.some((option) => option.id === 'SELL'));
+});
+
+test('월 연금·소득이 300만원 미만이면 보유 강제 규칙을 적용하지 않는다', () => {
+  const computed = compute({ subject: { monthlyIncome: 2_999_999 } });
+  const draft = createFallbackDraft({
+    computed,
+    answers: {
+      inheritance: '생활비가 우선이다',
+      residency: '떠나도 괜찮다',
+      urgency: '지금 당장 해결해야 한다',
+    },
+  });
+  assert.notEqual(draft.recommendedId, 'HOLD');
+});
+
 test('증여재산이 자녀 공제 이하라면 세율 구간을 읽지 않고 0원으로 안내한다', () => {
   const gift = giftTaxTotal({ value: 50_000_000 });
   assert.equal(gift.giftTax, 0);
