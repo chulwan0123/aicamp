@@ -1,4 +1,4 @@
-import { fmtKRW } from './format.js';
+import { fmtKRW, fmtKoreanMoneyInput } from './format.js';
 import { openAddressSearch } from './address.js';
 import { lookupApartmentMarket, lookupOfficialPrice, lookupProperty } from './property.js';
 import { refineAnswerLabel } from './refine-fields.js';
@@ -14,6 +14,11 @@ const checkedValue = (name) => document.querySelector(`input[name="${name}"]:che
 const text = (node, value) => { if (node && value !== undefined && value !== null) node.textContent = String(value); };
 const format = (value, exact = false) => fmtKRW(Math.round(Number(value) || 0), exact ? { exact: true } : undefined);
 const signed = (value) => `${value < 0 ? '- ' : ''}${format(Math.abs(value))}`;
+
+function updateMoneyPreview(input) {
+  const preview = input?.closest('.field')?.querySelector('[data-money-preview]');
+  if (preview) preview.textContent = fmtKoreanMoneyInput(input.value);
+}
 const OPTION_LABELS = {
   SELL: '팔고 전세로 옮기기',
   DOWNSIZE: '작은 집으로 옮기기',
@@ -105,6 +110,16 @@ function optionStatus(advice, id) {
   if (advice.recommended.id === id) return '가장 추천';
   if (advice.details.options[id]?.eligible) return '선택 가능';
   return '현재 어려움';
+}
+
+function recommendationHeadline(recommended) {
+  const headlines = {
+    SELL: '집을 파는 게 더 유리해요',
+    DOWNSIZE: '작은 집으로 옮기면 좋아요',
+    PARTIAL: '집 일부를 임대하면 좋아요',
+    PENSION: '주택연금이 가장 잘 맞아요',
+  };
+  return headlines[recommended?.id] || recommended?.headline || '이 방법이 현재 가장 잘 맞아요';
 }
 
 function optionExplanation(advice, id) {
@@ -567,22 +582,9 @@ async function searchAddress(searchButton) {
     roadInput.value = selected.roadAddress;
     propertyNode.dataset.pnu = selected.pnu;
     clearOfficialPrice(propertyNode);
-
-    searchButton.textContent = '조회 중…';
-    try {
-      setOfficialPriceLoading(propertyNode, true);
-      const detailInput = propertyNode.querySelector('[data-detail-input]');
-      const found = await lookupProperty(selected.roadAddress, detailInput?.value || '');
-      const unit = unitParts(detailInput?.value || '');
-      if (unit.dong && unit.ho) {
-        cacheOfficialPrice(propertyNode, await lookupOfficialPrice(selected.pnu, { ...unit, areaM2: found?.areaM2 }));
-      }
-    } catch (error) {
-      cacheOfficialPriceError(propertyNode, error);
-      console.warn('[silver] 공시가격 자동 조회 실패', error);
-    } finally {
-      setOfficialPriceLoading(propertyNode, false);
-    }
+    document.dispatchEvent(new CustomEvent('silver:address-search-selected', {
+      detail: { property: propertyNode, selected, trigger: searchButton },
+    }));
   } finally {
     searchButton.disabled = false;
     searchButton.textContent = original;
@@ -675,6 +677,8 @@ function renderLookup(properties) {
   properties.forEach((property, index) => {
     const item = document.createElement('div');
     item.className = 'lookup-item';
+    const meta = document.createElement('div');
+    meta.className = 'lookup-meta';
     const address = document.createElement('div');
     address.className = 'lookup-address';
     address.textContent = `주택 ${index + 1} · ${shell.getJointOwnership()[index] ? '공동명의' : '단독명의'} · ${property.roadAddress}`;
@@ -682,7 +686,7 @@ function renderLookup(properties) {
     detail.className = 'lookup-address';
     detail.textContent = [property.detailAddress, property.areaM2 ? `전용 ${property.areaM2}㎡` : '', property.pyeong ? `${property.pyeong}평형` : '']
       .filter(Boolean).join(' · ');
-    item.append(address, detail);
+    meta.append(address, detail);
     if (property.officialPrice > 0) {
       const official = document.createElement('div');
       official.className = 'lookup-address';
@@ -692,13 +696,13 @@ function renderLookup(properties) {
           ? '동일 면적 유사값'
           : '공공데이터 조회';
       official.textContent = `${property.officialPriceYear || '최신'}년 공시가격 · ${format(property.officialPrice)} · ${officialSource}`;
-      item.append(official);
+      meta.append(official);
     }
     if (property.tradeEvidence?.count > 0) {
       const trade = document.createElement('div');
       trade.className = 'lookup-address';
       trade.textContent = `최근 ${property.tradeEvidence.period?.months || 6}개월 동일 면적 매매 ${property.tradeEvidence.count}건 · 중앙값 ${format(property.tradeEvidence.medianPrice)}`;
-      item.append(trade);
+      meta.append(trade);
     }
     if (property.rentEvidence?.count > 0) {
       const rent = document.createElement('div');
@@ -707,8 +711,9 @@ function renderLookup(properties) {
       if (property.rentEvidence.jeonse?.count > 0) parts.push(`전세 ${property.rentEvidence.jeonse.count}건 중앙값 ${format(property.rentEvidence.jeonse.medianDeposit)}`);
       if (property.rentEvidence.monthly?.count > 0) parts.push(`월세 ${property.rentEvidence.monthly.count}건 보증금 ${format(property.rentEvidence.monthly.medianDeposit)}·월 ${format(property.rentEvidence.monthly.medianMonthlyRent)}`);
       rent.textContent = `최근 ${property.rentEvidence.period?.months || 6}개월 임대 참고 · ${parts.join(' · ')}`;
-      item.append(rent);
+      meta.append(rent);
     }
+    item.append(meta);
     const officialField = document.createElement('label');
     officialField.className = 'field';
     const officialLabel = document.createElement('span');
@@ -717,9 +722,14 @@ function renderLookup(properties) {
     const officialInput = document.createElement('input');
     officialInput.className = 'input';
     officialInput.inputMode = 'numeric';
+    officialInput.dataset.moneyInput = '';
     officialInput.dataset.officialPrice = String(index);
     officialInput.placeholder = '예: 3,000,000,000';
     officialInput.value = property.officialPrice > 0 ? Math.round(property.officialPrice).toLocaleString('ko-KR') : '';
+    const officialPreview = document.createElement('span');
+    officialPreview.className = 'money-korean-preview';
+    officialPreview.dataset.moneyPreview = '';
+    officialPreview.textContent = fmtKoreanMoneyInput(officialInput.value);
     const officialHint = document.createElement('span');
     officialHint.className = 'hint';
     officialHint.textContent = property.officialPrice > 0
@@ -727,7 +737,7 @@ function renderLookup(properties) {
         ? '같은 단지·전용면적의 공시가격 범위로 넣은 유사값이에요. 필요하면 수정해 주세요.'
         : '자동 조회값을 확인해 주세요. 수정하면 사용자 입력값으로 기록돼요.'
       : '자동 조회가 되지 않았어요. 공동주택 공시가격을 원 단위로 입력해 주세요.';
-    officialField.append(officialLabel, officialInput, officialHint);
+    officialField.append(officialLabel, officialInput, officialPreview, officialHint);
     item.append(officialField);
 
     const areaField = document.createElement('label');
@@ -751,16 +761,21 @@ function renderLookup(properties) {
     const marketInput = document.createElement('input');
     marketInput.className = 'input';
     marketInput.inputMode = 'numeric';
+    marketInput.dataset.moneyInput = '';
     marketInput.dataset.marketPrice = String(index);
     marketInput.dataset.fetchedMarketPrice = property.marketPriceSource === 'data.go.kr-trade' ? String(property.marketPrice) : '';
     marketInput.placeholder = '예: 4,700,000,000';
     marketInput.value = property.marketPrice > 0 ? Math.round(property.marketPrice).toLocaleString('ko-KR') : '';
+    const marketPreview = document.createElement('span');
+    marketPreview.className = 'money-korean-preview';
+    marketPreview.dataset.moneyPreview = '';
+    marketPreview.textContent = fmtKoreanMoneyInput(marketInput.value);
     const hint = document.createElement('span');
     hint.className = 'hint';
     hint.textContent = property.marketPriceSource === 'data.go.kr-trade'
       ? '동일 단지·지번·면적의 국토교통부 매매 중앙값입니다. 필요하면 수정해 주세요.'
       : '공시가격과 다른 값입니다. 최근 시세나 실거래가를 참고해 입력해 주세요.';
-    marketField.append(marketLabel, marketInput, hint);
+    marketField.append(marketLabel, marketInput, marketPreview, hint);
     item.append(marketField);
     list.append(item);
   });
@@ -857,7 +872,7 @@ function renderAdvice(advice, property, subject) {
   text(cashValues[1], format(cashflow.monthlyIncome));
   text(cashValues[2], format(cashflow.monthlyShortage));
 
-  text(report.querySelector('.ai-title'), advice.recommended.headline);
+  text(report.querySelector('.ai-title'), recommendationHeadline(advice.recommended));
   text(report.querySelector('.ai-copy'), advice.recommended.why);
   const recommendedMetric = report.querySelector('.ai-recommendation-group .overview-metric');
   text(recommendedMetric?.querySelector('span'), `${advice.recommended.label} 월 예상액`);
@@ -943,7 +958,7 @@ function renderDownsizeDetail(advice, property, subject) {
 
 function renderRecommendation(advice) {
   const root = screen(14);
-  text(root.querySelector('.title'), advice.recommended.headline);
+  text(root.querySelector('.title'), recommendationHeadline(advice.recommended));
   text(root.querySelector('.desc'), `${advice.recommended.label} — 왜 이 방법인지, 금액은 어떻게 나왔는지 정리했어요.`);
   const detail = root.querySelector('#recommendation-detail');
   if (!detail) return;
@@ -1129,6 +1144,11 @@ document.querySelector('#acquisition-fields')?.addEventListener('blur', (event) 
   if (amount > 0) input.value = amount.toLocaleString('ko-KR');
 }, true);
 
+document.addEventListener('input', (event) => {
+  const input = event.target.closest('[data-money-input]');
+  if (input) updateMoneyPreview(input);
+});
+
 document.querySelector('#lookup-items')?.addEventListener('blur', (event) => {
   const input = event.target.closest('[data-market-price], [data-official-price]');
   if (!input) return;
@@ -1155,6 +1175,12 @@ document.querySelector('#address-fields')?.addEventListener('input', (event) => 
 });
 
 document.addEventListener('silver:property-area-selected', (event) => {
+  const propertyNode = event.detail?.property;
+  const official = event.detail?.official;
+  if (propertyNode && official?.officialPrice > 0) cacheOfficialPrice(propertyNode, official);
+});
+
+document.addEventListener('silver:property-unit-selected', (event) => {
   const propertyNode = event.detail?.property;
   const official = event.detail?.official;
   if (propertyNode && official?.officialPrice > 0) cacheOfficialPrice(propertyNode, official);
@@ -1318,7 +1344,7 @@ document.addEventListener('click', (event) => {
     return;
   }
 
-  const search = event.target.closest('#address-fields .small');
+  const search = event.target.closest('#address-fields [data-address-search]');
   if (search) {
     event.preventDefault();
     searchAddress(search).catch((error) => renderLookupError(error.message || '주소 검색에 실패했어요.'));

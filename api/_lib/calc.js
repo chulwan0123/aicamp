@@ -17,8 +17,10 @@ const won = (n) => fmtKRW(round(n), { exact: true });
 
 /** 누진세율표에서 과세표준에 해당하는 구간을 찾아 산출세액을 구한다. */
 function progressiveTax(base, brackets) {
-  if (base <= 0) return { tax: 0, bracket: null };
-  const bracket = brackets.find((b) => b.upTo === null || base <= b.upTo);
+  const table = Array.isArray(brackets) ? brackets : [];
+  if (base <= 0) return { tax: 0, bracket: table[0] ?? null };
+  const bracket = table.find((b) => b.upTo === null || base <= b.upTo) ?? table.at(-1) ?? null;
+  if (!bracket) throw new TypeError('세율 기준을 확인할 수 없어요. 잠시 후 다시 시도해 주세요.');
   return { tax: Math.max(0, base * bracket.rate - bracket.progressive), bracket };
 }
 
@@ -138,7 +140,13 @@ export function capitalGainsTax({
 
 /** 주택 유상취득 취득세 (구간별 단순세율 근사) */
 export function acquisitionTax(price) {
-  const rate = RULES.acquisition.rates.find((r) => r.upTo === null || price <= r.upTo).rate;
+  if (!(price > 0)) {
+    return { total: 0, rate: 0, step: '새 집 가격이 없어 취득세는 0원으로 계산했어요.' };
+  }
+  const rates = RULES.acquisition.rates;
+  const bracket = rates.find((r) => r.upTo === null || price <= r.upTo) ?? rates.at(-1) ?? null;
+  if (!bracket) throw new TypeError('취득세율 기준을 확인할 수 없어요. 잠시 후 다시 시도해 주세요.');
+  const { rate } = bracket;
   return { total: round(price * rate), rate, step: `새 집 살 때 내는 세금 (취득세) = ${won(price)} × ${(rate * 100).toFixed(1)}% = ${won(price * rate)}` };
 }
 
@@ -159,7 +167,9 @@ export function giftTaxTotal({ value, area = 0, isAdjustedArea = false, isSingle
   steps.push(`증여세 매기는 금액 = 집값 ${won(value)} - 자녀 공제 ${won(g.childDeduction)} = ${won(base)}`);
 
   const { tax, bracket } = progressiveTax(base, g.brackets);
-  steps.push(`증여세 = ${won(base)} × ${(bracket.rate * 100).toFixed(0)}% - 누진공제 ${won(bracket.progressive)} = ${won(tax)}`);
+  steps.push(base > 0 && bracket
+    ? `증여세 = ${won(base)} × ${(bracket.rate * 100).toFixed(0)}% - 누진공제 ${won(bracket.progressive)} = ${won(tax)}`
+    : `자녀 공제를 적용하고 나니 세금 매길 금액이 남지 않아 증여세는 0원이에요.`);
 
   const giftTax = tax * (1 - g.filingCredit);
   steps.push(`제때 신고하면 ${g.filingCredit * 100}% 깎아드려요 = ${won(giftTax)}`);

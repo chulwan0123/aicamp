@@ -1,5 +1,6 @@
 const shell = window.SILVER_SHELL;
 const ANALYSIS_SESSION_KEY = 'silver-analysis-session-v2';
+const AUTH_DEVICE_KEY = 'silver-auth-device-v1';
 const authState = { authenticated: false, user: null };
 
 function syncAuthUi() {
@@ -37,7 +38,19 @@ async function loadSession() {
     authState.user = null;
   }
   window.SILVER_AUTH = authState;
+  if (authState.authenticated) {
+    try {
+      localStorage.setItem(AUTH_DEVICE_KEY, JSON.stringify({
+        provider: authState.user?.provider || 'kakao',
+        nickname: authState.user?.nickname || '플러스실버 회원',
+        lastSeenAt: new Date().toISOString(),
+      }));
+    } catch (error) {
+      console.warn('[plus-silver-auth] 기기 로그인 정보 저장 실패', error);
+    }
+  }
   syncAuthUi();
+  shell?.resolveEntryGate?.(authState.authenticated);
 }
 
 function startKakaoLogin(button) {
@@ -52,6 +65,7 @@ async function logout() {
   } finally {
     localStorage.removeItem(ANALYSIS_SESSION_KEY);
     localStorage.removeItem('plus-parent-result-complete');
+    try { localStorage.removeItem(AUTH_DEVICE_KEY); } catch { /* 저장소를 사용할 수 없어도 로그아웃을 계속한다. */ }
     authState.authenticated = false;
     authState.user = null;
     window.SILVER_AUTH = authState;
@@ -64,7 +78,7 @@ document.addEventListener('click', (event) => {
   const guestButton = event.target.closest('[data-guest-start]');
   if (guestButton) {
     event.preventDefault();
-    return shell?.show?.(0);
+    return shell?.enterGuest?.();
   }
 
   const loginButton = event.target.closest('[data-kakao-login]');

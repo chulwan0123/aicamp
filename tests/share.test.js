@@ -52,6 +52,8 @@ test('전체 분석 결과는 짧은 스냅샷으로 공유하고 수신 시 같
   const computed = buildScenarios({ property: input.property, properties: [input.property], subject: input.subject });
   const draft = createFallbackDraft({ computed, answers: input.answers });
   const advice = assemble({ computed, draft, property: input.property, subject: input.subject });
+  assert.match(advice.recommended.headline, /더 유리해요|좋아요|가장 잘 맞아요/);
+  assert.doesNotMatch(advice.recommended.headline, /\d|월 |만원|억원/);
   const session = { ...input, properties: [input.property], refinements: {}, advice, chatHistory: [] };
   const create = response();
   await handler({ method: 'POST', body: { session } }, create);

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  SESSION_MAX_AGE,
   authorizeUrl,
   equalState,
   openSession,
@@ -10,6 +11,10 @@ import {
 } from '../api/_lib/kakaoAuth.js';
 
 const secret = 'a-secure-test-secret-that-is-longer-than-thirty-two-characters';
+
+test('로그인 세션은 같은 기기에서 30일 동안 유지한다', () => {
+  assert.equal(SESSION_MAX_AGE, 60 * 60 * 24 * 30);
+});
 
 test('카카오 세션은 암호화해 복원하고 만료 시 거부한다', () => {
   const now = Date.now();

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { buildScenarios } from '../api/_lib/scenarios.js';
 import { comprehensiveTax } from '../api/_lib/holdingTax.js';
-import { housingPension } from '../api/_lib/calc.js';
+import { acquisitionTax, giftTaxTotal, housingPension } from '../api/_lib/calc.js';
 
 const sample = JSON.parse(fs.readFileSync(new URL('../docs/샘플-payload.json', import.meta.url), 'utf8'));
 
@@ -39,6 +39,20 @@ test('주택연금과 부분 임대 적격성은 규칙 엔진 값으로 판정�
   assert.equal(computed.options.PARTIAL.eligible, false);
   assert.equal(computed.options.SELL.eligible, true);
   assert.equal(computed.options.DOWNSIZE.eligible, true);
+});
+
+test('증여재산이 자녀 공제 이하라면 세율 구간을 읽지 않고 0원으로 안내한다', () => {
+  const gift = giftTaxTotal({ value: 50_000_000 });
+  assert.equal(gift.giftTax, 0);
+  assert.match(gift.steps.join('\n'), /증여세는 0원이에요/);
+});
+
+test('새 집 가격이 없으면 취득세를 0원으로 안전하게 계산한다', () => {
+  assert.deepEqual(acquisitionTax(0), {
+    total: 0,
+    rate: 0,
+    step: '새 집 가격이 없어 취득세는 0원으로 계산했어요.',
+  });
 });
 
 test('금융자산 인출은 기존 소득을 뺀 생활비 부족액만 채운다', () => {

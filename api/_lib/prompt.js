@@ -64,7 +64,7 @@ export const SYSTEM_PROMPT = `당신은 시니어 자산 유동화를 전문으�
   "cashflowSummary": "진단 한 문장. 자산 규모와 월 부족액을 대비시켜라. (예: 집은 47억인데, 매달 130만원이 부족해요)",
   "recommendedId": "SELL | DOWNSIZE | PARTIAL | PENSION 중 eligible:true 인 것 하나",
   "label": "추천안 이름 (예: 다운사이징 (2027 특례 활용))",
-  "headline": "25자 이내 한 줄. 이 가족이 얻는 가장 큰 이득을 말하라. 절감액이나 월 수령액처럼 구체적인 금액이 있으면 넣어라.",
+  "headline": "25자 이내 한 줄. 추천 행동을 결론부터 말하라. 예: 집을 파는 게 가장 유리해요. 금액은 제목에 넣지 마라.",
   "why": "이 가족에게 이 방법이 맞는 이유. 3~5문장. 금액은 computed 값을 인용.",
   "tradeoff": "대신 포기하거나 감수해야 하는 것. 1~2문장.",
   "cautions": ["주의사항 2~4개"],

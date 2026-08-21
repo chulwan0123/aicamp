@@ -18,6 +18,8 @@ test('AI를 사용하지 못해도 정적 목업이 아니라 현재 계산값�
   assert.equal(res.body.details.taxes.holding[0].total, 6_279_902);
   assert.equal(res.body.details.taxes.sale2026.capitalGainsWithLocal, 176_139_720);
   assert.ok(res.body.recommended.id);
+  assert.match(res.body.recommended.headline, /더 유리해요|좋아요|가장 잘 맞아요/);
+  assert.doesNotMatch(res.body.recommended.headline, /\d|월 |만원|억원/);
 });
 
 test('필수 숫자가 빠진 요청은 다른 주택 목업으로 대체하지 않고 거절한다', async () => {

@@ -34,9 +34,23 @@ function propertyNodes(property) {
     search: property.querySelector('[data-complex-search]'),
     area: property.querySelector('[data-area-select]'),
     areaValue: property.querySelector('[data-area-value]'),
+    unit: property.querySelector('[data-unit-select]'),
+    unitValue: property.querySelector('[data-unit-value]'),
+    detail: property.querySelector('[data-detail-input]'),
     summary: property.querySelector('[data-property-selection-summary]'),
     road: property.querySelector('[data-address-input]'),
   };
+}
+
+function clearUnitSelection(property, { disabled = true } = {}) {
+  const nodes = propertyNodes(property);
+  if (nodes.detail) nodes.detail.value = '';
+  if (nodes.unit) nodes.unit.disabled = disabled;
+  if (nodes.unitValue) nodes.unitValue.textContent = disabled
+    ? '전용면적을 먼저 선택해 주세요'
+    : '동·호수를 선택하면 정확한 가격을 확인해요';
+  delete property.dataset.selectedDong;
+  delete property.dataset.selectedHo;
 }
 
 function selectTrigger(select) {
@@ -83,7 +97,26 @@ function resetComplex(property) {
   nodes.areaValue.textContent = '단지를 먼저 선택해 주세요';
   nodes.summary.textContent = '';
   nodes.summary.dataset.visible = 'false';
+  clearUnitSelection(property);
   clearOfficialData(property);
+}
+
+function resetSelectionForManualAddress(property) {
+  const nodes = propertyNodes(property);
+  const roadAddress = nodes.road.value;
+  propertyState.delete(property);
+  delete property.dataset.pnu;
+  delete property.dataset.complexName;
+  delete property.dataset.areaM2;
+  delete property.dataset.selectedRoadAddress;
+  nodes.query.value = '';
+  nodes.area.disabled = true;
+  nodes.areaValue.textContent = '단지를 먼저 선택해 주세요';
+  nodes.summary.textContent = '';
+  nodes.summary.dataset.visible = 'false';
+  clearUnitSelection(property);
+  clearOfficialData(property);
+  nodes.road.value = roadAddress;
 }
 
 function closeSheet() {
@@ -133,9 +166,12 @@ function selectArea(property, area) {
     nodes.road.value = roadAddress;
   }
   property.dataset.areaM2 = String(area.areaM2);
+  state.area = area;
+  delete state.units;
   nodes.areaValue.textContent = `${area.areaM2}㎡ (약 ${Math.round(area.areaM2 * 0.3025)}평)`;
   nodes.summary.textContent = `${state.complex.complexName} · ${nodes.areaValue.textContent}`;
   nodes.summary.dataset.visible = 'true';
+  clearUnitSelection(property, { disabled: false });
   clearOfficialData(property);
   const estimatedOfficialPrice = estimateOfficialPriceFromArea(area);
   if (estimatedOfficialPrice) {
@@ -156,6 +192,99 @@ function selectArea(property, area) {
     }));
   }
   closeSheet();
+}
+
+function selectHome(property, dong, home) {
+  const nodes = propertyNodes(property);
+  const state = propertyState.get(property);
+  const detail = `${dong}동 ${home.ho}호`;
+  nodes.detail.value = detail;
+  nodes.unitValue.textContent = detail;
+  property.dataset.selectedDong = dong;
+  property.dataset.selectedHo = home.ho;
+  clearOfficialData(property);
+  document.dispatchEvent(new CustomEvent('silver:property-unit-selected', {
+    detail: {
+      property,
+      official: {
+        pnu: state.complex.pnu,
+        complexName: state.complex.complexName,
+        officialPrice: home.officialPrice,
+        officialPriceYear: home.officialPriceYear || '2025',
+        areaM2: home.areaM2 || state.area.areaM2,
+        dong: `${dong}동`,
+        ho: `${home.ho}호`,
+        _source: 'data.go.kr-file-shard',
+      },
+    },
+  }));
+  closeSheet();
+}
+
+function showHomes(property, dongGroup, trigger) {
+  const state = propertyState.get(property);
+  const back = document.createElement('button');
+  back.type = 'button';
+  back.className = 'property-picker-option property-unit-back';
+  back.textContent = '← 동을 다시 선택할게요';
+  back.addEventListener('click', () => showDongs(property, trigger));
+  const options = dongGroup.homes.map((home) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'property-picker-option property-area-option';
+    const title = document.createElement('strong');
+    title.textContent = `${home.ho}호`;
+    const price = document.createElement('span');
+    price.className = 'area-price';
+    price.textContent = `${home.officialPriceYear || '2025'}년 공시가격 ${formatWon(home.officialPrice)}`;
+    button.append(title, price);
+    button.addEventListener('click', () => selectHome(property, dongGroup.dong, home));
+    return button;
+  });
+  sheetOptions.replaceChildren(back, ...options);
+  sheetTitle.textContent = '호수 선택';
+  sheetSubtitle.textContent = `${state.complex.complexName} · ${dongGroup.dong}동 · ${state.area.areaM2}㎡`;
+  sheetOptions.querySelector('button')?.focus();
+}
+
+function renderDongs(property, trigger) {
+  const state = propertyState.get(property);
+  const options = state.units.dongs.map((dongGroup) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'property-picker-option property-area-option';
+    const title = document.createElement('strong');
+    title.textContent = `${dongGroup.dong}동`;
+    const count = document.createElement('span');
+    count.className = 'area-units';
+    count.textContent = `${dongGroup.homes.length.toLocaleString('ko-KR')}개 호수`;
+    button.append(title, count);
+    button.addEventListener('click', () => showHomes(property, dongGroup, trigger));
+    return button;
+  });
+  sheetOptions.replaceChildren(...options);
+  openSheet(trigger, '동 선택', `${state.complex.complexName} · ${state.area.areaM2}㎡`);
+}
+
+async function showDongs(property, trigger) {
+  const state = propertyState.get(property);
+  if (!state?.complex || !state?.area) return;
+  if (state.units?.dongs?.length) {
+    renderDongs(property, trigger);
+    return;
+  }
+  status('선택할 수 있는 동·호수를 찾고 있어요…');
+  openSheet(trigger, '동 선택', `${state.complex.complexName} · ${state.area.areaM2}㎡`);
+  try {
+    const params = new URLSearchParams({ pnu: state.complex.pnu, areaM2: String(state.area.areaM2) });
+    const response = await fetch(`./api/units?${params}`, { headers: { Accept: 'application/json' } });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(body.error || '동·호수 목록을 불러오지 못했어요.');
+    state.units = body;
+    renderDongs(property, trigger);
+  } catch (error) {
+    status(error.message || '동·호수 목록을 불러오지 못했어요. 유사 공시가격으로 계속할 수 있어요.');
+  }
 }
 
 function showAreas(property, trigger) {
@@ -200,6 +329,7 @@ function selectComplex(property, complex, trigger) {
   nodes.areaValue.textContent = '전용면적을 선택해 주세요';
   nodes.summary.textContent = `${complex.complexName} · 면적 선택 전`;
   nodes.summary.dataset.visible = 'true';
+  clearUnitSelection(property);
   document.dispatchEvent(new CustomEvent('silver:property-selection-applied', {
     detail: { property, pnu: complex.pnu, roadAddress },
   }));
@@ -271,6 +401,41 @@ async function populateDistricts(property) {
   syncSelectTrigger(nodes.sigungu);
 }
 
+async function applyAddressSelection(property, selected, trigger) {
+  const nodes = propertyNodes(property);
+  const sidoName = selected.roadAddress.startsWith('서울') ? '서울특별시' : '경기도';
+  const districtCode = String(selected.pnu || '').slice(0, 5);
+  nodes.sido.value = sidoName;
+  syncSelectTrigger(nodes.sido);
+  await populateDistricts(property);
+  nodes.sigungu.value = districtCode;
+  syncSelectTrigger(nodes.sigungu);
+  nodes.search.disabled = false;
+  nodes.road.value = selected.roadAddress;
+  property.dataset.selectedRoadAddress = selected.roadAddress;
+  property.dataset.pnu = selected.pnu;
+
+  status('주소와 일치하는 단지를 찾고 있어요…');
+  openSheet(trigger, '단지 확인', selected.roadAddress);
+  try {
+    const params = new URLSearchParams({ districtCode, pnu: selected.pnu });
+    const response = await fetch(`./api/complexes?${params}`, { headers: { Accept: 'application/json' } });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(body.error || '주소와 일치하는 단지를 찾지 못했어요.');
+    const complex = body.items?.[0];
+    if (!complex) {
+      nodes.query.value = selected.buildingName || '';
+      status('주소는 입력했어요. 단지명을 확인한 뒤 검색해 주세요.');
+      return;
+    }
+    nodes.query.value = complex.complexName;
+    selectComplex(property, complex, trigger);
+  } catch (error) {
+    nodes.query.value = selected.buildingName || '';
+    status(error.message || '주소는 입력했어요. 단지명을 확인한 뒤 검색해 주세요.');
+  }
+}
+
 function initializeProperty(property) {
   const nodes = propertyNodes(property);
   if (!nodes.sido || property.dataset.propertySearchReady === 'true') return;
@@ -302,6 +467,12 @@ function initializeProperty(property) {
   });
   nodes.search.addEventListener('click', () => search(property, nodes.search));
   nodes.area.addEventListener('click', () => showAreas(property, nodes.area));
+  nodes.unit.addEventListener('click', () => showDongs(property, nodes.unit));
+  nodes.road.addEventListener('input', () => {
+    if (nodes.road.value.trim() !== String(property.dataset.selectedRoadAddress || '').trim()) {
+      resetSelectionForManualAddress(property);
+    }
+  });
 }
 
 function initialize() {
@@ -312,4 +483,10 @@ sheetClose?.addEventListener('click', closeSheet);
 sheet?.addEventListener('click', (event) => { if (event.target === sheet) closeSheet(); });
 document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !sheet?.hidden) closeSheet(); });
 document.addEventListener('silver:property-fields-rendered', initialize);
+document.addEventListener('silver:address-search-selected', (event) => {
+  const property = event.detail?.property;
+  const selected = event.detail?.selected;
+  const trigger = event.detail?.trigger;
+  if (property && selected && trigger) applyAddressSelection(property, selected, trigger);
+});
 initialize();

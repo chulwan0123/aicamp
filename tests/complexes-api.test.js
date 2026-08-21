@@ -55,6 +55,19 @@ test('지역 목록과 단지 검색 API가 실제 색인을 반환한다', asyn
   assert.match(complexes.headers['Cache-Control'], /s-maxage/);
 });
 
+test('주소 검색 PNU로 등록 단지와 다음 평형 선택지를 바로 찾는다', async () => {
+  clearComplexSearchCache();
+  const result = response();
+  await handler(request({
+    districtCode: '11650',
+    pnu: '1165010700000200043',
+  }), result);
+  assert.equal(result.code, 200);
+  assert.equal(result.body.count, 1);
+  assert.equal(result.body.items[0].complexName, '반포자이');
+  assert.ok(result.body.items[0].areas.length > 1);
+});
+
 test('지역 또는 검색어가 없으면 단지 검색을 거절한다', async () => {
   const noDistrict = response();
   await handler(request({ q: '반포자이' }), noDistrict);
@@ -63,4 +76,8 @@ test('지역 또는 검색어가 없으면 단지 검색을 거절한다', async
   const noQuery = response();
   await handler(request({ districtCode: '11650' }), noQuery);
   assert.equal(noQuery.code, 400);
+
+  const mismatchedPnu = response();
+  await handler(request({ districtCode: '11650', pnu: '4113510100000340000' }), mismatchedPnu);
+  assert.equal(mismatchedPnu.code, 400);
 });

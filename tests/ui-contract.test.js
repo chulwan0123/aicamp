@@ -5,6 +5,7 @@ import fs from 'node:fs';
 const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const engine = fs.readFileSync(new URL('../js/silver-engine.js', import.meta.url), 'utf8');
 const propertySearch = fs.readFileSync(new URL('../js/property-search.js', import.meta.url), 'utf8');
+const kakaoLoginJs = fs.readFileSync(new URL('../js/kakao-login.js', import.meta.url), 'utf8');
 const ogImage = fs.readFileSync(new URL('../assets/og-silver-share.png', import.meta.url));
 
 test('본 화면은 plushome 계약대로 19개다', () => {
@@ -82,13 +83,19 @@ test('주택 입력은 시도·시군구·단지·전용면적 순서이며 도�
   assert.match(html, /data-property-sigungu disabled/);
   assert.match(html, /data-complex-query placeholder="단지명을 입력해 주세요"/);
   assert.match(html, /data-area-select disabled/);
-  assert.match(html, /data-detail-input placeholder="예: 120동 1002호"/);
+  assert.match(html, /data-unit-select disabled/);
+  assert.match(html, /type="hidden" data-detail-input/);
   assert.match(html, />공시가격 조회하기<\/button>/);
-  assert.match(html, /data-address-input placeholder="단지를 선택하면 자동으로 입력돼요" readonly/);
+  assert.match(html, /data-address-input placeholder="단지를 선택하면 자동으로 입력돼요"/);
+  assert.match(html, /data-address-search>주소 검색<\/button>/);
+  assert.doesNotMatch(html, /data-address-input[^>]*readonly/);
   assert.doesNotMatch(html, /value="서울특별시 서초구 신반포로 270"/);
   assert.match(engine, /selectedAreaM2/);
   assert.match(html, /동·호수 \(선택\)/);
   assert.match(propertySearch, /silver:property-area-selected/);
+  assert.match(propertySearch, /\.\/api\/units/);
+  assert.match(propertySearch, /silver:address-search-selected/);
+  assert.match(propertySearch, /silver:property-unit-selected/);
   assert.match(engine, /data\.go\.kr-area-estimate/);
 });
 
@@ -108,6 +115,23 @@ test('모바일 탭 화면은 페이지 가로 스크롤을 막고 내부 레일
 
 test('모바일 편집 필드는 iOS 포커스 확대를 막도록 16px 이상을 사용한다', () => {
   assert.match(html, /@media\(max-width:500px\)\{input:not\(\[type="checkbox"\]\):not\(\[type="radio"\]\):not\(\[type="hidden"\]\):not\(\[readonly\]\),select,textarea\{font-size:16px\}\}/);
+});
+
+test('가격 입력 필드 아래에 읽기 쉬운 한글 금액을 바로 표시한다', () => {
+  assert.match(html, /data-acquisition-price="'\+index\+'" data-money-input/);
+  assert.match(html, /class="money-korean-preview" data-money-preview/);
+  assert.match(engine, /officialInput\.dataset\.moneyInput/);
+  assert.match(engine, /marketInput\.dataset\.moneyInput/);
+  assert.match(engine, /fmtKoreanMoneyInput/);
+});
+
+test('입력 화면은 가로 흔들림을 막고 가격 확인 필드는 카드 밖의 표준 간격을 사용한다', () => {
+  assert.match(html, /html,body\{[^}]*overflow-x:hidden;overscroll-behavior-x:none/);
+  assert.match(html, /\.screen\{[^}]*overflow-x:hidden/);
+  assert.match(html, /\.lookup\{[^}]*gap:42px;[^}]*padding:0;[^}]*border:0/);
+  assert.match(html, /id="lookup-items" class="lookup"/);
+  assert.doesNotMatch(html, /id="lookup-items" class="card lookup"/);
+  assert.match(engine, /meta\.className = 'lookup-meta'/);
 });
 
 test('결과 공유와 상담 버튼 글자는 AI 컨설팅 버튼과 같은 크기와 굵기다', () => {
@@ -141,6 +165,23 @@ test('ZIP 엔진의 전체 결과 계약이 요약과 상세 화면에 연결된
     assert.match(engine, new RegExp(`advice\\.${field}`));
   }
   assert.match(engine, /advice\.refine\.title/);
+});
+
+test('AI 추천 제목은 금액보다 선택 결론을 먼저 보여준다', () => {
+  assert.match(engine, /SELL:\s*'집을 파는 게 더 유리해요'/);
+  assert.match(engine, /PENSION:\s*'주택연금이 가장 잘 맞아요'/);
+  assert.match(engine, /recommendationHeadline\(advice\.recommended\)/);
+});
+
+test('첫 진입은 인증 확인 전 스플래시로 고정하고 로그인 사용자만 홈으로 연결한다', () => {
+  assert.match(html, /let entryGateResolved=false/);
+  assert.match(html, /if\(!entryGateResolved\)return showStart\(false\)/);
+  assert.match(html, /resolveEntryGate\(authenticated=false\)/);
+  assert.match(html, /if\(authenticated\)[\s\S]*show\(0,false\)/);
+  assert.match(html, /history\.replaceState\(\{screen:"start"\}/);
+  assert.match(kakaoLoginJs, /shell\?\.resolveEntryGate\?\.\(authState\.authenticated\)/);
+  assert.match(kakaoLoginJs, /AUTH_DEVICE_KEY = 'silver-auth-device-v1'/);
+  assert.match(kakaoLoginJs, /shell\?\.enterGuest\?\.\(\)/);
 });
 
 test('분석값 없는 결과 딥링크와 잘못된 공유 토큰은 샘플 결과를 노출하지 않는다', () => {

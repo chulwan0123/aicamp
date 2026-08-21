@@ -59,6 +59,14 @@ export async function searchComplexes(districtCode, query, { req, fetchImpl = fe
     .slice(0, Math.max(1, Math.min(Number(limit) || 30, 50)));
 }
 
+export async function findComplexByPnu(districtCode, pnu, { req, fetchImpl = fetch } = {}) {
+  const code = String(districtCode || '');
+  const target = String(pnu || '');
+  if (!/^(11|41)\d{3}$/.test(code) || !/^(11|41)\d{17}$/.test(target)) return null;
+  const items = await load(`${code}.json.gz`, { req, fetchImpl });
+  return items.find((item) => String(item.pnu) === target) || null;
+}
+
 export function clearComplexSearchCache() {
   cache.clear();
 }

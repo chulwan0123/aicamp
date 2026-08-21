@@ -1,3 +1,5 @@
+import { recommendationHeadline } from './recommendationCopy.js';
+
 const LABELS = {
   SELL: '팔고 전세로 옮기기',
   DOWNSIZE: '작은 집으로 옮기기',
@@ -72,7 +74,7 @@ export function createFallbackDraft({ computed, answers = {} }) {
       : `집은 ${computed.display.marketPrice}이고, 현재 소득으로 필요한 생활비를 채울 수 있어요.`,
     recommendedId: id,
     label,
-    headline: `${label}로 월 ${monthly}을 마련해요`,
+    headline: recommendationHeadline(id),
     why: `현재 가능한 선택지 가운데 월 현금흐름이 큰 방법이에요. 매달 쓸 수 있는 금액은 ${monthly}이에요. 부모님의 거주와 상속 성향도 함께 반영했어요. 실행 전 실제 계약 조건을 다시 확인해요.`,
     tradeoff: id === 'PENSION'
       ? '집을 계속 보유하는 대신 해마다 보유세를 부담해야 해요.'

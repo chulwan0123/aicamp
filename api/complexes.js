@@ -1,4 +1,4 @@
-import { getComplexSearchManifest, searchComplexes } from './_lib/complexSearchStore.js';
+import { findComplexByPnu, getComplexSearchManifest, searchComplexes } from './_lib/complexSearchStore.js';
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=604800');
@@ -8,12 +8,20 @@ export default async function handler(req, res) {
   try {
     const districtCode = String(req.query?.districtCode || '');
     const query = String(req.query?.q || '').trim();
-    if (!districtCode && !query) {
+    const pnu = String(req.query?.pnu || '');
+    if (!districtCode && !query && !pnu) {
       const manifest = await getComplexSearchManifest({ req, fetchImpl: req.fetchImpl || fetch });
       return res.status(200).json(manifest);
     }
     if (!/^(11|41)\d{3}$/.test(districtCode)) {
       return res.status(400).json({ error: '서울·경기의 시/군/구를 선택해 주세요.' });
+    }
+    if (pnu) {
+      if (!/^(11|41)\d{17}$/.test(pnu) || !pnu.startsWith(districtCode)) {
+        return res.status(400).json({ error: '선택한 지역과 주소 정보를 다시 확인해 주세요.' });
+      }
+      const item = await findComplexByPnu(districtCode, pnu, { req, fetchImpl: req.fetchImpl || fetch });
+      return res.status(200).json({ items: item ? [item] : [], count: item ? 1 : 0 });
     }
     if (!query) return res.status(400).json({ error: '단지명을 입력해 주세요.' });
     const items = await searchComplexes(districtCode, query, { req, fetchImpl: req.fetchImpl || fetch });

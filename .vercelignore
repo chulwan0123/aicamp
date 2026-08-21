@@ -7,3 +7,4 @@ test-results/
 tmp/
 /exec-*.png
 /silver-*.png
+/qa-*.png

@@ -29,6 +29,32 @@ export function fmtKRW(value, { exact = false } = {}) {
   return `${negative ? '-' : ''}${parts.join(' ')}원`;
 }
 
+/**
+ * 입력 중인 원 단위 금액을 바로 읽을 수 있는 큰 단위로 바꾼다.
+ * 예: 1,500,000,000 → 15억 원, 50,000,000 → 5천만 원
+ */
+export function fmtKoreanMoneyInput(value) {
+  const digits = String(value ?? '').replace(/[^0-9]/g, '');
+  const amount = Number(digits);
+  if (!Number.isSafeInteger(amount) || amount <= 0) return '';
+
+  const eok = Math.floor(amount / 100_000_000);
+  const man = Math.floor((amount % 100_000_000) / 10_000);
+  const won = amount % 10_000;
+  const parts = [];
+
+  if (eok) parts.push(`${eok.toLocaleString('ko-KR')}억`);
+  if (man) {
+    const readableMan = man >= 1_000 && man % 1_000 === 0
+      ? `${man / 1_000}천`
+      : man.toLocaleString('ko-KR');
+    parts.push(`${readableMan}만`);
+  }
+  if (won) parts.push(`${won.toLocaleString('ko-KR')}원`);
+
+  return won ? parts.join(' ') : `${parts.join(' ')} 원`;
+}
+
 /** 부호를 앞에 붙여 차감 항목임을 드러낸다. */
 export function fmtSigned(value, options) {
   return value < 0 ? `- ${fmtKRW(Math.abs(value), options)}` : fmtKRW(value, options);

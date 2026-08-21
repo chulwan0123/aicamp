@@ -3,6 +3,7 @@
  * LLM 이 숫자를 틀려도 화면에는 반영되지 않는다.
  */
 import { REFINE_FIELDS } from './holdingTax.js';
+import { recommendationHeadline } from './recommendationCopy.js';
 
 const OPTION_LABEL = {
   SELL: '팔고 전세로 옮기기', DOWNSIZE: '작은 집으로 옮기기',
@@ -65,7 +66,7 @@ export function assemble({ computed, draft, property, subject }) {
     recommended: {
       id,
       label: draft.label || OPTION_LABEL[id],
-      headline: draft.headline,
+      headline: recommendationHeadline(id),
       gross,
       deductions,
       net: monthlyNet,

@@ -22,14 +22,18 @@ const won = (n) => fmtKRW(round(n), { exact: true });
 const pct = (n, digits = 0) => `${(n * 100).toFixed(digits)}%`;
 
 function progressive(base, brackets) {
-  if (base <= 0) return { tax: 0, bracket: brackets[0] };
-  const bracket = brackets.find((b) => b.upTo === null || base <= b.upTo);
+  const table = Array.isArray(brackets) ? brackets : [];
+  if (base <= 0) return { tax: 0, bracket: table[0] ?? null };
+  const bracket = table.find((b) => b.upTo === null || base <= b.upTo) ?? table.at(-1) ?? null;
+  if (!bracket) throw new TypeError('보유세율 기준을 확인할 수 없어요. 잠시 후 다시 시도해 주세요.');
   return { tax: Math.max(0, base * bracket.rate - bracket.progressive), bracket };
 }
 
 /** 공시가격 구간에 따른 1세대1주택 공정시장가액비율 */
 function singleHouseRatio(officialPrice, table) {
-  return table.find((row) => row.upTo === null || officialPrice <= row.upTo).rate;
+  const bracket = table.find((row) => row.upTo === null || officialPrice <= row.upTo) ?? table.at(-1) ?? null;
+  if (!bracket) throw new TypeError('공정시장가액비율 기준을 확인할 수 없어요. 잠시 후 다시 시도해 주세요.');
+  return bracket.rate;
 }
 
 /**
