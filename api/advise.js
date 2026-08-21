@@ -15,7 +15,7 @@ import { SYSTEM_PROMPT, buildRepairPrompt } from './_lib/prompt.js';
 import { verify } from './_lib/verify.js';
 import { assemble } from './_lib/assemble.js';
 import { createFallbackDraft } from './_lib/fallback.js';
-import { enforceMandatoryRecommendation } from './_lib/recommendationRules.js';
+import { enforceRecommendationPolicy } from './_lib/recommendationRules.js';
 
 const ENDPOINT = 'https://api.openai.com/v1/chat/completions';
 const DEFAULT_MODEL = 'gpt-5.6-terra';
@@ -197,7 +197,7 @@ export default async function handler(req, res) {
 
   try {
     let { draft, usage } = await callOpenAI(messages);
-    draft = enforceMandatoryRecommendation({ draft, computed });
+    draft = enforceRecommendationPolicy({ draft, computed, answers });
     let errors = verify(draft, computed);
 
     if (errors.length) {
@@ -207,7 +207,7 @@ export default async function handler(req, res) {
         { role: 'assistant', content: JSON.stringify(draft) },
         { role: 'user', content: buildRepairPrompt(errors) },
       ]);
-      const repairedDraft = enforceMandatoryRecommendation({ draft: retry.draft, computed });
+      const repairedDraft = enforceRecommendationPolicy({ draft: retry.draft, computed, answers });
       const retryErrors = verify(repairedDraft, computed);
       if (!retryErrors.length) { draft = repairedDraft; usage = retry.usage; errors = []; }
       else { console.warn('[advise] 재시도도 실패:', retryErrors); errors = retryErrors; }

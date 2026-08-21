@@ -1,5 +1,5 @@
 import { recommendationHeadline } from './recommendationCopy.js';
-import { enforceMandatoryRecommendation } from './recommendationRules.js';
+import { enforceRecommendationPolicy } from './recommendationRules.js';
 
 const LABELS = {
   HOLD: '현재 집 그대로 보유하기',
@@ -70,7 +70,7 @@ export function createFallbackDraft({ computed, answers = {} }) {
     cautions.push('매도 후 5년 안에 수도권 주택을 다시 사면 감면세액이 추징될 수 있어요.');
   }
 
-  return enforceMandatoryRecommendation({ computed, draft: {
+  return enforceRecommendationPolicy({ computed, answers, draft: {
     profile,
     cashflowSummary: computed.cashflow.monthlyShortage > 0
       ? `집은 ${computed.display.marketPrice}이지만, 매달 ${shortage}이 부족해요.`
