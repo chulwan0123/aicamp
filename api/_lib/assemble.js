@@ -6,6 +6,7 @@ import { REFINE_FIELDS } from './holdingTax.js';
 import { recommendationHeadline } from './recommendationCopy.js';
 
 const OPTION_LABEL = {
+  HOLD: '현재 집 그대로 보유하기',
   SELL: '팔고 전세로 옮기기', DOWNSIZE: '작은 집으로 옮기기',
   PARTIAL: '집 일부를 세놓기', PENSION: '주택연금',
 };

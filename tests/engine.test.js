@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { buildScenarios } from '../api/_lib/scenarios.js';
+import { createFallbackDraft } from '../api/_lib/fallback.js';
 import { comprehensiveTax } from '../api/_lib/holdingTax.js';
 import { acquisitionTax, giftTaxTotal, housingPension } from '../api/_lib/calc.js';
 
@@ -35,10 +36,34 @@ test('2027 고령 1주택 특례는 네 조건을 모두 충족할 때만 적용
 
 test('주택연금과 부분 임대 적격성은 규칙 엔진 값으로 판정한다', () => {
   const computed = compute();
+  assert.equal(computed.options.HOLD.eligible, true);
   assert.equal(computed.options.PENSION.eligible, false);
   assert.equal(computed.options.PARTIAL.eligible, false);
   assert.equal(computed.options.SELL.eligible, true);
   assert.equal(computed.options.DOWNSIZE.eligible, true);
+});
+
+test('현재 집을 그대로 보유하는 선택지는 소득에서 월 보유세를 뺀 금액과 남는 집을 보여준다', () => {
+  const computed = compute();
+  const expectedMonthlyTax = Math.round(computed.taxes.holding[0].total / 12);
+  assert.equal(computed.options.HOLD.monthlyNet, sample.subject.monthlyIncome - expectedMonthlyTax);
+  assert.equal(computed.options.HOLD.remainingAssets.home, sample.property.marketPrice);
+  assert.equal(computed.options.HOLD.remainingAssets.total, sample.property.marketPrice);
+  assert.match(computed.options.HOLD.steps.join('\n'), /현재 집을 그대로 보유해요/);
+});
+
+test('거주와 상속 의향이 높고 생활비가 급하지 않으면 현재 집 보유를 추천할 수 있다', () => {
+  const computed = compute({ subject: { monthlyIncome: 3_500_000, targetExpense: 3_296_000 } });
+  const draft = createFallbackDraft({
+    computed,
+    answers: {
+      inheritance: '매우 중요하다',
+      residency: '절대 떠나고 싶지 않다',
+      urgency: '여유 있게 검토 중이다',
+    },
+  });
+  assert.equal(draft.recommendedId, 'HOLD');
+  assert.equal(draft.headline, '지금 집을 계속 보유해도 좋아요');
 });
 
 test('증여재산이 자녀 공제 이하라면 세율 구간을 읽지 않고 0원으로 안내한다', () => {

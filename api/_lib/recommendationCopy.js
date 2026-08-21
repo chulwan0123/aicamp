@@ -1,4 +1,5 @@
 const CONCLUSION_HEADLINE = {
+  HOLD: '지금 집을 계속 보유해도 좋아요',
   SELL: '집을 파는 게 더 유리해요',
   DOWNSIZE: '작은 집으로 옮기면 좋아요',
   PARTIAL: '집 일부를 임대하면 좋아요',

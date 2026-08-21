@@ -3,7 +3,7 @@
  * 금액은 규칙 엔진이 계산하므로 산술 검산은 필요 없다.
  * 여기서는 판단의 정합성과 문장의 완결성만 본다.
  */
-const OPTION_IDS = ['SELL', 'DOWNSIZE', 'PARTIAL', 'PENSION'];
+const OPTION_IDS = ['HOLD', 'SELL', 'DOWNSIZE', 'PARTIAL', 'PENSION'];
 
 function stringValues(value, output = []) {
   if (typeof value === 'string') output.push(value);

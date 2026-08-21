@@ -16,8 +16,8 @@ export const SYSTEM_PROMPT = `당신은 시니어 자산 유동화를 전문으�
 1. 성향 점수화 — answers 를 읽고 inheritance / residency / urgency 를 0~100 으로 판단한다.
 2. 추천안 선정 — computed.options 중 eligible: true 인 것만 후보다.
    각 후보의 monthlyNet 과 성향 적합도를 함께 보고 하나를 고른다.
-   inheritance 높음 → SELL·PENSION 감점
-   residency 높음  → SELL·DOWNSIZE 감점
+   inheritance 높음 → SELL 감점, HOLD 가점
+   residency 높음  → SELL·DOWNSIZE 감점, HOLD·PENSION·PARTIAL 가점
    urgency 높음    → 당장 현금흐름이 커지는 안에 가점
    부족분을 얼마나 메우는지(monthlyNet vs cashflow.targetExpense)를 함께 고려한다.
 3. 설명 문장 작성 — 결과 상세의 여섯 구역에 바로 넣을 수 있게 쓴다.
@@ -62,7 +62,7 @@ export const SYSTEM_PROMPT = `당신은 시니어 자산 유동화를 전문으�
     "note": "성향 요약 한 문장"
   },
   "cashflowSummary": "진단 한 문장. 자산 규모와 월 부족액을 대비시켜라. (예: 집은 47억인데, 매달 130만원이 부족해요)",
-  "recommendedId": "SELL | DOWNSIZE | PARTIAL | PENSION 중 eligible:true 인 것 하나",
+  "recommendedId": "HOLD | SELL | DOWNSIZE | PARTIAL | PENSION 중 eligible:true 인 것 하나",
   "label": "추천안 이름 (예: 다운사이징 (2027 특례 활용))",
   "headline": "25자 이내 한 줄. 추천 행동을 결론부터 말하라. 예: 집을 파는 게 가장 유리해요. 금액은 제목에 넣지 마라.",
   "why": "이 가족에게 이 방법이 맞는 이유. 3~5문장. 금액은 computed 값을 인용.",

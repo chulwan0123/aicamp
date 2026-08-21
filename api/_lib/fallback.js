@@ -1,6 +1,7 @@
 import { recommendationHeadline } from './recommendationCopy.js';
 
 const LABELS = {
+  HOLD: '현재 집 그대로 보유하기',
   SELL: '팔고 전세로 옮기기',
   DOWNSIZE: '작은 집으로 옮기기',
   PARTIAL: '집 일부를 세놓기',
@@ -39,6 +40,7 @@ function chooseOption(computed, profile) {
       if (id === 'DOWNSIZE') score -= profile.residency * 0.2;
       if (id === 'PENSION') score += profile.residency * 0.3 - profile.inheritance * 0.1;
       if (id === 'PARTIAL') score += profile.residency * 0.2;
+      if (id === 'HOLD') score += profile.residency * 0.25 + profile.inheritance * 0.15 - profile.urgency * 0.35;
       score += profile.urgency * Math.min(1, (option.monthlyNet || 0) / target) * 0.2;
       return { id, option, score };
     })
@@ -76,9 +78,11 @@ export function createFallbackDraft({ computed, answers = {} }) {
     label,
     headline: recommendationHeadline(id),
     why: `현재 가능한 선택지 가운데 월 현금흐름이 큰 방법이에요. 매달 쓸 수 있는 금액은 ${monthly}이에요. 부모님의 거주와 상속 성향도 함께 반영했어요. 실행 전 실제 계약 조건을 다시 확인해요.`,
-    tradeoff: id === 'PENSION'
-      ? '집을 계속 보유하는 대신 해마다 보유세를 부담해야 해요.'
-      : '거주지를 옮기거나 현재 집의 소유 형태가 바뀔 수 있어요.',
+    tradeoff: id === 'HOLD'
+      ? '집은 그대로 남지만 생활비 부족액도 그대로 남을 수 있어요. 해마다 보유세도 계속 내셔야 해요.'
+      : id === 'PENSION'
+        ? '집을 계속 보유하는 대신 해마다 보유세를 부담해야 해요.'
+        : '거주지를 옮기거나 현재 집의 소유 형태가 바뀔 수 있어요.',
     cautions,
     actionPlan: [
       { title: '서류 확인', desc: '등기와 취득가액, 실제 거주기간을 먼저 확인해요.' },

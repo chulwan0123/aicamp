@@ -1,6 +1,6 @@
 /**
  * 시나리오 계산 엔진.
- * 네 가지 선택지(SELL/DOWNSIZE/PARTIAL/PENSION)와 증여 검토안의 금액을
+ * 다섯 가지 선택지(HOLD/SELL/DOWNSIZE/PARTIAL/PENSION)와 증여 검토안의 금액을
  * RULES 만으로 결정적으로 산출하고, 각 금액에 산식(steps)과 법령 근거(basis)를 붙인다.
  *
  * LLM 은 이 결과를 받아 자격 판정 해설·선택지 비교·성향 반영·추천·문장 생성을 맡는다.
@@ -216,6 +216,30 @@ export function buildScenarios({ property, properties, subject }) {
           steps: [`가입 여부 = ${pension.reason}`],
           basis: BASIS.housingPension,
         },
+  };
+
+  /* ------------------------------------------------------------- HOLD */
+  const holdingTaxMonthly = round(annualHoldingTax / 12);
+  options.HOLD = {
+    eligible: true,
+    monthlyNet: Math.max(0, round(monthlyIncome - holdingTaxMonthly)),
+    monthlyFlow: [
+      { label: '지금 받으시는 연금과 소득', amount: monthlyIncome },
+      { label: '현재 집 보유세', amount: -holdingTaxMonthly, formula: `한 해 ${won(annualHoldingTax)} ÷ 12개월` },
+    ],
+    remainingAssets: {
+      home: marketPrice,
+      deposit: 0,
+      financial: 0,
+      total: marketPrice,
+      note: '현재 집을 팔지 않아 주택 자산은 그대로 남아요. 매달 부족한 생활비는 별도로 마련해야 해요.',
+    },
+    steps: [
+      `현재 집을 그대로 보유해요 = 매도·임대·주택연금을 이용하지 않아요`,
+      `월 사용 가능 금액 = 소득 ${won(monthlyIncome)} - 보유세 월평균 ${won(holdingTaxMonthly)} = ${won(Math.max(0, monthlyIncome - holdingTaxMonthly))}`,
+      `필요한 생활비와의 차이 = ${won(targetExpense)} - ${won(Math.max(0, monthlyIncome - holdingTaxMonthly))} = ${won(Math.max(0, targetExpense - Math.max(0, monthlyIncome - holdingTaxMonthly)))}`,
+    ],
+    basis: [taxes.holdingBasis, BASIS.livingCost],
   };
 
   /* ---------------------------------------------------------- PARTIAL */

@@ -20,6 +20,7 @@ function updateMoneyPreview(input) {
   if (preview) preview.textContent = fmtKoreanMoneyInput(input.value);
 }
 const OPTION_LABELS = {
+  HOLD: '현재 집 그대로 보유하기',
   SELL: '팔고 전세로 옮기기',
   DOWNSIZE: '작은 집으로 옮기기',
   PARTIAL: '집 일부를 세놓기',
@@ -114,6 +115,7 @@ function optionStatus(advice, id) {
 
 function recommendationHeadline(recommended) {
   const headlines = {
+    HOLD: '지금 집을 계속 보유해도 좋아요',
     SELL: '집을 파는 게 더 유리해요',
     DOWNSIZE: '작은 집으로 옮기면 좋아요',
     PARTIAL: '집 일부를 임대하면 좋아요',
@@ -158,7 +160,7 @@ function renderFullEngineResult(advice) {
     infoBox('성향 판단', advice.profile.note),
     infoBox('현금흐름 진단', advice.cashflow.summary),
     element('div', 'result-divider'),
-    element('h3', 'section-title', '네 가지 선택지를 모두 비교했어요'),
+    element('h3', 'section-title', '다섯 가지 선택지를 모두 비교했어요'),
     element('p', 'section-copy', '추천안뿐 아니라 가능한 대안과 현재 어려운 방법도 함께 보여드려요.'),
   );
 
