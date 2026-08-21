@@ -7,6 +7,17 @@ const marketCache = new Map();
 
 const normalize = (text) => String(text || '').replace(/[\s,·\-()]/g, '');
 
+/**
+ * 동·호수를 모를 때 같은 단지·전용면적의 공시가격 범위로 대표값을 만든다.
+ * 원본 공시가격 단위에 맞춰 10만원 단위로 반올림하고, 화면에서 수정할 수 있게 한다.
+ */
+export function estimateOfficialPriceFromArea(area = {}) {
+  const min = Number(area.minOfficialPrice);
+  const max = Number(area.maxOfficialPrice);
+  if (!(min > 0) || !(max > 0) || max < min) return null;
+  return Math.round(((min + max) / 2) / 100_000) * 100_000;
+}
+
 async function loadDataset() {
   if (cache) return cache;
   try {

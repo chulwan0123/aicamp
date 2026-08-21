@@ -87,6 +87,9 @@ test('주택 입력은 시도·시군구·단지·전용면적 순서이며 도�
   assert.match(html, /data-address-input placeholder="단지를 선택하면 자동으로 입력돼요" readonly/);
   assert.doesNotMatch(html, /value="서울특별시 서초구 신반포로 270"/);
   assert.match(engine, /selectedAreaM2/);
+  assert.match(html, /동·호수 \(선택\)/);
+  assert.match(propertySearch, /silver:property-area-selected/);
+  assert.match(engine, /data\.go\.kr-area-estimate/);
 });
 
 test('선택한 도로명주소는 입력칸 값이 유실돼도 다음 단계에서 복원한다', () => {

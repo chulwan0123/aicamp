@@ -1,3 +1,5 @@
+import { estimateOfficialPriceFromArea } from './property.js';
+
 const sheet = document.querySelector('#property-picker-sheet');
 const sheetTitle = document.querySelector('#property-picker-title');
 const sheetSubtitle = document.querySelector('#property-picker-subtitle');
@@ -63,7 +65,7 @@ function setOptions(select, options, placeholder) {
 function clearOfficialData(property) {
   for (const key of [
     'officialPrice', 'fetchedOfficialPrice', 'officialPriceYear', 'officialComplexName', 'officialAreaM2',
-    'officialDong', 'officialHo', 'officialPriceSource', 'officialPriceError',
+    'officialDong', 'officialHo', 'officialPriceSource', 'officialPriceEstimated', 'officialPriceError',
   ]) delete property.dataset[key];
   property.dataset.priceConfirmed = 'false';
   document.dispatchEvent(new CustomEvent('silver:property-selection-changed', { detail: { property } }));
@@ -135,8 +137,25 @@ function selectArea(property, area) {
   nodes.summary.textContent = `${state.complex.complexName} · ${nodes.areaValue.textContent}`;
   nodes.summary.dataset.visible = 'true';
   clearOfficialData(property);
+  const estimatedOfficialPrice = estimateOfficialPriceFromArea(area);
+  if (estimatedOfficialPrice) {
+    document.dispatchEvent(new CustomEvent('silver:property-area-selected', {
+      detail: {
+        property,
+        official: {
+          pnu: state.complex.pnu,
+          complexName: state.complex.complexName,
+          officialPrice: estimatedOfficialPrice,
+          officialPriceYear: '2025',
+          areaM2: area.areaM2,
+          dong: null,
+          ho: null,
+          _source: 'data.go.kr-area-estimate',
+        },
+      },
+    }));
+  }
   closeSheet();
-  property.querySelector('[data-detail-input]')?.focus();
 }
 
 function showAreas(property, trigger) {

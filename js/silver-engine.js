@@ -368,6 +368,7 @@ function addressRows() {
       officialDong: propertyNode.dataset.officialDong || null,
       officialHo: propertyNode.dataset.officialHo || null,
       officialPriceSource: propertyNode.dataset.officialPriceSource || null,
+      officialPriceEstimated: propertyNode.dataset.officialPriceEstimated === 'true',
       priceConfirmed: propertyNode.dataset.priceConfirmed === 'true',
       officialPriceError: propertyNode.dataset.officialPriceError || null,
     };
@@ -416,13 +417,15 @@ async function resolveProperties({ requireMarketPrice = false, requireOfficialPr
       pnu,
       _source: row.officialPriceSource || 'data.go.kr-file-shard',
     } : null;
-    if (pnu && !official) {
+    const estimatedOfficial = official && row.officialPriceEstimated ? official : null;
+    if (pnu && (!official || (estimatedOfficial && unit.dong && unit.ho))) {
       try {
         setOfficialPriceLoading(propertyNode, true);
         official = await lookupOfficialPrice(pnu, { ...unit, areaM2: row.selectedAreaM2 || found?.areaM2 });
         cacheOfficialPrice(propertyNode, official);
       } catch (error) {
-        cacheOfficialPriceError(propertyNode, error);
+        if (estimatedOfficial) cacheOfficialPrice(propertyNode, estimatedOfficial);
+        else cacheOfficialPriceError(propertyNode, error);
         console.warn(`[silver] 주택 ${index + 1} 공시가격 자동 조회 실패`, error);
       } finally {
         setOfficialPriceLoading(propertyNode, false);
@@ -516,6 +519,7 @@ function cacheOfficialPrice(propertyNode, official) {
   propertyNode.dataset.officialDong = official.dong || '';
   propertyNode.dataset.officialHo = official.ho || '';
   propertyNode.dataset.officialPriceSource = official._source || 'data.go.kr-file-shard';
+  propertyNode.dataset.officialPriceEstimated = String(official._source === 'data.go.kr-area-estimate');
   propertyNode.dataset.priceConfirmed = 'true';
   delete propertyNode.dataset.officialPriceError;
 }
@@ -529,6 +533,7 @@ function clearOfficialPrice(propertyNode) {
   delete propertyNode.dataset.officialDong;
   delete propertyNode.dataset.officialHo;
   delete propertyNode.dataset.officialPriceSource;
+  delete propertyNode.dataset.officialPriceEstimated;
   propertyNode.dataset.priceConfirmed = 'false';
 }
 
@@ -681,7 +686,12 @@ function renderLookup(properties) {
     if (property.officialPrice > 0) {
       const official = document.createElement('div');
       official.className = 'lookup-address';
-      official.textContent = `${property.officialPriceYear || '최신'}년 공시가격 · ${format(property.officialPrice)} · ${property.officialPriceSource === 'user-input' ? '사용자 입력' : '공공데이터 조회'}`;
+      const officialSource = property.officialPriceSource === 'user-input'
+        ? '사용자 입력'
+        : property.officialPriceSource === 'data.go.kr-area-estimate'
+          ? '동일 면적 유사값'
+          : '공공데이터 조회';
+      official.textContent = `${property.officialPriceYear || '최신'}년 공시가격 · ${format(property.officialPrice)} · ${officialSource}`;
       item.append(official);
     }
     if (property.tradeEvidence?.count > 0) {
@@ -713,7 +723,9 @@ function renderLookup(properties) {
     const officialHint = document.createElement('span');
     officialHint.className = 'hint';
     officialHint.textContent = property.officialPrice > 0
-      ? '자동 조회값을 확인해 주세요. 수정하면 사용자 입력값으로 기록돼요.'
+      ? property.officialPriceSource === 'data.go.kr-area-estimate'
+        ? '같은 단지·전용면적의 공시가격 범위로 넣은 유사값이에요. 필요하면 수정해 주세요.'
+        : '자동 조회값을 확인해 주세요. 수정하면 사용자 입력값으로 기록돼요.'
       : '자동 조회가 되지 않았어요. 공동주택 공시가격을 원 단위로 입력해 주세요.';
     officialField.append(officialLabel, officialInput, officialHint);
     item.append(officialField);
@@ -1142,6 +1154,12 @@ document.querySelector('#address-fields')?.addEventListener('input', (event) => 
   }
 });
 
+document.addEventListener('silver:property-area-selected', (event) => {
+  const propertyNode = event.detail?.property;
+  const official = event.detail?.official;
+  if (propertyNode && official?.officialPrice > 0) cacheOfficialPrice(propertyNode, official);
+});
+
 function persist() {
   try { localStorage.setItem(SESSION_KEY, JSON.stringify(state)); }
   catch (error) { console.warn('[silver] 결과 저장 실패', error); }
@@ -1242,7 +1260,10 @@ document.addEventListener('click', (event) => {
         const fetched = Number(document.querySelectorAll('#address-fields .property')[index]?.dataset.fetchedOfficialPrice || 0);
         const enteredOfficial = Number(officialInput.value.replace(/[^0-9]/g, ''));
         state.properties[index].officialPrice = enteredOfficial;
-        state.properties[index].officialPriceSource = fetched === enteredOfficial ? 'data.go.kr' : 'user-input';
+        const fetchedSource = document.querySelectorAll('#address-fields .property')[index]?.dataset.officialPriceSource;
+        state.properties[index].officialPriceSource = fetched === enteredOfficial
+          ? (fetchedSource || 'data.go.kr')
+          : 'user-input';
         state.properties[index].areaM2 = Number(areaInputs[index].value.replace(/[^0-9.]/g, ''));
       }
     });

@@ -464,11 +464,11 @@
       '<label class="field"><span class="label">전용면적 선택</span><button class="area-select-trigger" type="button" data-area-select disabled><span data-area-value>단지를 먼저 선택해 주세요</span><img src="'+chevronUrl+'" alt=""></button></label>'+
       '<p class="property-selection-summary" data-property-selection-summary></p>'+
       '<label class="field road-address-field"><span class="label">도로명주소</span><input class="input" data-address-input placeholder="단지를 선택하면 자동으로 입력돼요" readonly></label>'+
-      '<label class="field"><span class="label">동·호수</span><input class="input" data-detail-input placeholder="예: 120동 1002호"></label>'+
-      '<div class="info"><strong>전용면적과 정확한 동·호수를 선택해 주세요.</strong><br>공공데이터에서 해당 세대의 공시가격을 찾아요.</div></section>'
+      '<label class="field"><span class="label">동·호수 (선택)</span><input class="input" data-detail-input placeholder="예: 120동 1002호"></label>'+
+      '<div class="info"><strong>전용면적을 고르면 공시가격 유사값을 먼저 넣어드려요.</strong><br>동·호수를 입력하면 해당 세대의 정확한 가격으로 다시 확인해요.</div></section>'
     ).join("");
 
-    lookups.innerHTML='<div class="lookup-item"><div class="lookup-address">주소와 동·호수를 입력한 뒤 공시가격을 조회해 주세요.</div></div>';
+    lookups.innerHTML='<div class="lookup-item"><div class="lookup-address">단지와 전용면적을 고르면 공시가격 유사값을 먼저 넣어드려요.</div></div>';
 
     acquisitions.innerHTML=Array.from({length:propertyCount},(_,index)=>
       '<section class="property"><h3 class="card-title">주택 '+(index+1)+'</h3>'+

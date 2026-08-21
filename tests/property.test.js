@@ -4,7 +4,15 @@ import fs from 'node:fs';
 
 const dataset = JSON.parse(fs.readFileSync(new URL('../data/properties.json', import.meta.url), 'utf8'));
 globalThis.fetch = async () => ({ ok: true, json: async () => dataset });
-const { lookupProperty } = await import('../js/property.js');
+const { estimateOfficialPriceFromArea, lookupProperty } = await import('../js/property.js');
+
+test('같은 단지·전용면적의 공시가격 범위로 유사값을 자동 계산한다', () => {
+  assert.equal(estimateOfficialPriceFromArea({
+    minOfficialPrice: 2_273_000_000,
+    maxOfficialPrice: 2_774_000_000,
+  }), 2_523_500_000);
+  assert.equal(estimateOfficialPriceFromArea({ minOfficialPrice: 0, maxOfficialPrice: 1 }), null);
+});
 
 test('등록 주소는 해당 주택을 찾는다', async () => {
   const property = await lookupProperty('서울특별시 서초구 신반포로 270', '101동 101호');
