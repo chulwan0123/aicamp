@@ -135,6 +135,11 @@ test('입력 화면은 가로 흔들림을 막고 가격 확인 필드는 카드
   assert.match(engine, /meta\.className = 'lookup-meta'/);
 });
 
+test('도로명주소 입력칸은 같은 줄 검색 버튼과 동일한 높이를 사용한다', () => {
+  assert.match(html, /\.complex-search-button\{[^}]*height:52px/);
+  assert.match(html, /\.road-address-field \.input\{height:52px/);
+});
+
 test('결과 공유와 상담 버튼 글자는 AI 컨설팅 버튼과 같은 크기와 굵기다', () => {
   assert.match(html, /\.result-status \.ai-consult-button\{[^}]*font-size:17px/);
   assert.match(html, /\.result-cta \.share-primary,\.result-cta \.share-secondary\{font-size:17px;font-weight:700\}/);
