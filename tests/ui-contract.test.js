@@ -93,7 +93,8 @@ test('주택 입력은 시도·시군구·단지·전용면적 순서이며 도�
   assert.match(engine, /selectedAreaM2/);
   assert.match(html, /동·호수 \(선택\)/);
   assert.match(propertySearch, /silver:property-area-selected/);
-  assert.match(propertySearch, /\.\/api\/units/);
+  assert.match(propertySearch, /mode: 'units'/);
+  assert.match(propertySearch, /\.\/api\/complexes/);
   assert.match(propertySearch, /silver:address-search-selected/);
   assert.match(propertySearch, /silver:property-unit-selected/);
   assert.match(engine, /data\.go\.kr-area-estimate/);

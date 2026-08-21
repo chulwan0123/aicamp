@@ -276,8 +276,8 @@ async function showDongs(property, trigger) {
   status('선택할 수 있는 동·호수를 찾고 있어요…');
   openSheet(trigger, '동 선택', `${state.complex.complexName} · ${state.area.areaM2}㎡`);
   try {
-    const params = new URLSearchParams({ pnu: state.complex.pnu, areaM2: String(state.area.areaM2) });
-    const response = await fetch(`./api/units?${params}`, { headers: { Accept: 'application/json' } });
+    const params = new URLSearchParams({ mode: 'units', pnu: state.complex.pnu, areaM2: String(state.area.areaM2) });
+    const response = await fetch(`./api/complexes?${params}`, { headers: { Accept: 'application/json' } });
     const body = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(body.error || '동·호수 목록을 불러오지 못했어요.');
     state.units = body;

@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import handler, { groupUnitsByDong } from '../api/units.js';
+import handler from '../api/complexes.js';
+import { groupUnitsByDong } from '../api/_lib/unitGroups.js';
 import { clearPublicPriceCache } from '../api/_lib/publicPriceStore.js';
 
 function response() {
@@ -37,7 +38,7 @@ test('동·호수 목록 API는 실제 반포자이 평형의 선택지를 반�
   const res = response();
   await handler({
     method: 'GET',
-    query: { pnu: '1165010700000200043', areaM2: '84.943' },
+    query: { mode: 'units', pnu: '1165010700000200043', areaM2: '84.943' },
     headers: { host: 'public-price.test' },
     fetchImpl: shardFetch,
   }, res);
@@ -52,7 +53,7 @@ test('동·호수 목록 API는 실제 반포자이 평형의 선택지를 반�
 
 test('평형 없이 동·호수 목록을 요청하면 안내하고 거절한다', async () => {
   const res = response();
-  await handler({ method: 'GET', query: { pnu: '1165010700000200043' }, headers: {} }, res);
+  await handler({ method: 'GET', query: { mode: 'units', pnu: '1165010700000200043' }, headers: {} }, res);
   assert.equal(res.code, 400);
   assert.match(res.body.error, /전용면적/);
 });
