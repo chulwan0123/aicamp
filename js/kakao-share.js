@@ -1,6 +1,8 @@
 let kakaoSdkPromise;
 let kakaoConfigPromise;
 let preparedShare;
+let kakaoConfigValue;
+let kakaoSdkValue;
 
 const RESULT_HASHES = new Set([
   '#result',
@@ -34,6 +36,7 @@ async function createShareToken(session) {
   }).then(async (response) => {
     const body = await response.json().catch(() => ({}));
     if (!response.ok || !body.token) throw new Error(body.error || '공유 링크를 만들지 못했어요.');
+    if (preparedShare?.promise === promise) preparedShare.token = body.token;
     return body.token;
   });
   preparedShare = { advice: session?.advice, promise };
@@ -50,15 +53,24 @@ function resultHash(hash) {
 
 async function publicResultUrl() {
   const config = await getKakaoConfig().catch(() => ({}));
+  return resultUrl(config);
+}
+
+function resultUrl(config = {}) {
   if (config.appUrl) return new URL(config.appUrl);
   return new URL(location.origin + location.pathname);
 }
 
+function resultLink(token, hash, config = {}) {
+  const url = resultUrl(config);
+  url.searchParams.set('r', token);
+  url.hash = resultHash(hash);
+  return url.toString();
+}
+
 export async function createResultLink(session, options = {}) {
   const [token, url] = await Promise.all([createShareToken(session), publicResultUrl()]);
-  url.searchParams.set('r', token);
-  url.hash = resultHash(options.hash);
-  return { token, url: url.toString() };
+  return { token, url: resultLink(token, options.hash, { appUrl: url.toString() }) };
 }
 
 async function getKakaoConfig() {
@@ -66,7 +78,8 @@ async function getKakaoConfig() {
   kakaoConfigPromise = fetch('./api/client-config', { cache: 'no-store' }).then(async (response) => {
     const body = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(body.error || '카카오톡 공유 설정을 확인하지 못했어요.');
-    return body.kakao || {};
+    kakaoConfigValue = body.kakao || {};
+    return kakaoConfigValue;
   }).catch((error) => {
     kakaoConfigPromise = undefined;
     throw error;
@@ -75,12 +88,19 @@ async function getKakaoConfig() {
 }
 
 function appendKakaoSdk(config) {
-  if (window.Kakao) return Promise.resolve(window.Kakao);
+  if (window.Kakao) {
+    kakaoSdkValue = window.Kakao;
+    return Promise.resolve(kakaoSdkValue);
+  }
   if (kakaoSdkPromise) return kakaoSdkPromise;
   kakaoSdkPromise = new Promise((resolve, reject) => {
     const existing = document.querySelector('script[data-silver-kakao-sdk]');
     const script = existing || document.createElement('script');
-    const done = () => window.Kakao ? resolve(window.Kakao) : reject(new Error('카카오 SDK를 불러오지 못했어요.'));
+    const done = () => {
+      if (!window.Kakao) return reject(new Error('카카오 SDK를 불러오지 못했어요.'));
+      kakaoSdkValue = window.Kakao;
+      return resolve(kakaoSdkValue);
+    };
     script.addEventListener('load', done, { once: true });
     script.addEventListener('error', () => reject(new Error('카카오 SDK 연결에 실패했어요.')), { once: true });
     if (!existing) {
@@ -97,14 +117,12 @@ function appendKakaoSdk(config) {
   return kakaoSdkPromise;
 }
 
-async function openKakaoShare({ url, title, text, buttonTitle }) {
-  const config = await getKakaoConfig();
+function sendKakaoShare({ url, title, text, buttonTitle }, config, Kakao) {
   if (!config.configured || !config.javascriptKey) {
     const error = new Error('카카오 JavaScript 키가 아직 설정되지 않았어요.');
     error.code = 'KAKAO_NOT_CONFIGURED';
     throw error;
   }
-  const Kakao = await appendKakaoSdk(config);
   if (!Kakao.isInitialized()) Kakao.init(config.javascriptKey);
   if (!Kakao.Share?.sendDefault) throw new Error('이 브라우저에서 카카오톡 공유를 시작하지 못했어요.');
   Kakao.Share.sendDefault({
@@ -122,6 +140,12 @@ async function openKakaoShare({ url, title, text, buttonTitle }) {
   return { method: 'kakao', url };
 }
 
+async function openKakaoShare(payload) {
+  const config = await getKakaoConfig();
+  const Kakao = await appendKakaoSdk(config);
+  return sendKakaoShare(payload, config, Kakao);
+}
+
 export async function preloadKakaoShare() {
   const config = await getKakaoConfig();
   if (!config.configured || !config.javascriptKey) return false;
@@ -132,6 +156,24 @@ export async function preloadKakaoShare() {
 
 export function prepareResultShare(session) {
   return createShareToken(session).then((token) => ({ token }));
+}
+
+function sharePayload(url, options) {
+  const preset = SHARE_COPY[options.purpose] || SHARE_COPY.result;
+  return {
+    url,
+    title: options.title || preset.title,
+    text: options.text || preset.text,
+    buttonTitle: options.buttonTitle || preset.buttonTitle,
+  };
+}
+
+function preparedKakaoShare(session, options) {
+  if (preparedShare?.advice !== session?.advice || !preparedShare.token) return null;
+  if (!kakaoConfigValue || !kakaoSdkValue) return null;
+  const token = preparedShare.token;
+  const url = resultLink(token, options.hash, kakaoConfigValue);
+  return { ...sendKakaoShare(sharePayload(url, options), kakaoConfigValue, kakaoSdkValue), token };
 }
 
 function copyWithTextarea(value) {
@@ -170,14 +212,16 @@ async function fallbackShare({ url, title, text }) {
 }
 
 export async function shareResult(session, options = {}) {
+  try {
+    const prepared = preparedKakaoShare(session, options);
+    if (prepared) return prepared;
+  } catch (kakaoError) {
+    const shared = await createResultLink(session, { hash: options.hash });
+    const fallback = await fallbackShare(sharePayload(shared.url, options));
+    return { ...fallback, token: shared.token, kakaoError };
+  }
   const shared = await createResultLink(session, { hash: options.hash });
-  const preset = SHARE_COPY[options.purpose] || SHARE_COPY.result;
-  const payload = {
-    url: shared.url,
-    title: options.title || preset.title,
-    text: options.text || preset.text,
-    buttonTitle: options.buttonTitle || preset.buttonTitle,
-  };
+  const payload = sharePayload(shared.url, options);
   try {
     return { ...await openKakaoShare(payload), token: shared.token };
   } catch (kakaoError) {

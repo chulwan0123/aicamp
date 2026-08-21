@@ -8,7 +8,7 @@ import {
 
 export const AUTH_COOKIE = 'plus_silver_session';
 export const OAUTH_STATE_COOKIE = 'plus_silver_kakao_state';
-export const SESSION_MAX_AGE = 60 * 60 * 24 * 7;
+export const SESSION_MAX_AGE = 60 * 60 * 24 * 30;
 export const OAUTH_STATE_MAX_AGE = 60 * 10;
 
 function base64url(value) {

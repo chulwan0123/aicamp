@@ -1,6 +1,6 @@
 # 구현 현황과 보완 과제
 
-> 운영 기준일: 2026-08-21. 운영 URL은 `https://aicamp-sigma.vercel.app`이다.
+> 운영 기준일: 2026-08-21. 운영 URL은 `https://hanwha-ai-camp-silver.vercel.app`이다.
 
 ## 제품 목표
 
@@ -58,8 +58,9 @@
 ### 저장·공유
 
 - 계산 결과는 브라우저에 저장해 홈 요약과 상세 화면에 다시 반영합니다.
+- 카카오 로그인 세션은 30일 동안 유지하며, 로그인 이동·새로고침·로그아웃 뒤에도 현재 기기의 계산 결과는 명시적인 `결과 초기화` 전까지 보존합니다.
 - 공유 링크는 AES-256-GCM 인증 암호화 토큰을 사용하며 7일 후 만료됩니다.
-- 결과 공유와 부모님 초대는 카카오 JavaScript SDK의 `Kakao.Share.sendDefault()`를 우선 호출하고, 미설정·미지원 환경에서는 기기 공유 또는 클립보드 복사로 대체합니다.
+- 결과 공유와 부모님 초대는 준비된 링크와 SDK를 클릭 순간에 `Kakao.Share.sendDefault()`로 호출합니다. 공유창이 차단되면 같은 바텀시트에서 링크 복사를 제공하고, 미설정·미지원 환경에서는 기기 공유 또는 클립보드 복사로 대체합니다.
 - 부모님 초대는 같은 암호화 결과 링크를 사용하고, 전문가 상담은 연락처·희망 시간·동의를 검증한 뒤 결과 토큰만 상담 웹훅으로 전달합니다.
 - 알림 설정은 브라우저 알림 권한을 확인하고 허용된 경우 실제 확인 알림을 표시합니다.
 - 뉴스·콘텐츠·공지·고객센터와 마이 분류 메뉴는 기존 바텀시트·상세 화면 패턴으로 연결합니다.
@@ -83,9 +84,9 @@
 - 로컬 실행: `npm run dev`
 - 검증: `npm run check`
 - 운영 저장소: `https://github.com/chulwan0123/aicamp`
-- 운영 배포: `https://aicamp-sigma.vercel.app`
-- Vercel 프로젝트: `oxaz1234-gmailcoms-projects/aicamp`
-- 배포 브랜치: `codex/fix-my-shortcut-font-14-5`
+- 운영 배포: `https://hanwha-ai-camp-silver.vercel.app`
+- Vercel 프로젝트: `camp17/hanwha-ai-camp-silver`
+- 배포 브랜치: `codex/kakao-result-sharing`
 - Git 커밋 기여자 이메일: `Oxaz1234@gmail.com`, `Chulwan@hanwha.plus`
 
 Production의 불변 URL과 배포 ID는 `vercel inspect`로 확인합니다.

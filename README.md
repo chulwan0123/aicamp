@@ -4,14 +4,14 @@
 
 ## 배포 주소
 
-- 현재 운영: <https://aicamp-sigma.vercel.app>
+- 현재 운영: <https://hanwha-ai-camp-silver.vercel.app>
 - 현재 저장소: <https://github.com/chulwan0123/aicamp>
-- 배포 브랜치: `codex/fix-my-shortcut-font-14-5`
-- Vercel 프로젝트: `oxaz1234-gmailcoms-projects/aicamp`
-- 운영 계정 이메일: `Oxaz1234@gmail.com`
+- 배포 브랜치: `codex/kakao-result-sharing`
+- Vercel 프로젝트: `camp17/hanwha-ai-camp-silver`
+- 운영 계정: `chulwan-8137`
 - Git 커밋 기여자 이메일: `Oxaz1234@gmail.com`, `Chulwan@hanwha.plus`
 
-2026-08-21 현재 운영 별칭은 Vercel Production을 가리킵니다. 실제 불변 배포 URL과 배포 ID는 `vercel inspect https://aicamp-sigma.vercel.app --scope oxaz1234-gmailcoms-projects`로 확인합니다.
+2026-08-21 현재 운영 별칭은 Vercel Production을 가리킵니다. 실제 불변 배포 URL과 배포 ID는 `vercel inspect https://hanwha-ai-camp-silver.vercel.app --scope camp17`로 확인합니다.
 
 ## 실행 방법
 
@@ -42,6 +42,7 @@ npm run dev
 - 공지·고객센터·분류별 바로가기가 연결된 마이페이지
 - 최신 세제개편안 안내 상세 화면
 - 계산 입력·결과의 브라우저 저장과 인증 암호화된 7일 만료 공유 링크
+- 카카오 로그인 세션 30일 유지와 로그아웃 후에도 현재 기기의 분석 결과 보존
 - plushome 규칙 엔진 기반 재산세·종합부동산세·양도소득세·주택연금·다운사이징·금융운용·증여 계산
 - OpenAI 응답 검증과 계산값 고정, AI 호출 실패 시 현재 입력값을 사용하는 규칙 기반 추천
 - 서울·경기 2025년 공동주택 공시가격 7,138,888세대의 PNU·동·호·전용면적 일치 조회

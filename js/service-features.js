@@ -223,6 +223,31 @@ function info(message) {
   return element('div', 'info', message);
 }
 
+function showShareFeedback(result, title = '결과 공유') {
+  if (result?.method === 'kakao') {
+    openSheet(title, (root) => {
+      root.append(info('카카오톡 공유창을 열었어요. 공유창이 보이지 않으면 아래 버튼으로 링크를 복사해 주세요.'));
+      const button = element('button', 'primary', '공유 링크 복사하기');
+      button.type = 'button';
+      button.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(result.url);
+          button.textContent = '링크를 복사했어요';
+        } catch {
+          button.textContent = '링크 복사를 허용해 주세요';
+        }
+      });
+      root.append(button);
+    });
+    return;
+  }
+  if (result?.method === 'clipboard') {
+    openSheet(title, (root) => root.append(info('암호화된 결과 링크를 복사했어요. 링크는 7일 후 만료돼요.')));
+  } else if (result?.kakaoError) {
+    openSheet(title, (root) => root.append(info('카카오톡 공유창 대신 기기의 공유 화면으로 전달했어요.')));
+  }
+}
+
 function getSession() {
   try {
     const value = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
@@ -252,11 +277,7 @@ async function inviteParent() {
     const result = await shareResult(session, {
       purpose: 'invite',
     });
-    if (result.method === 'clipboard') {
-      openSheet('부모님 초대', (root) => root.append(info('암호화된 결과 링크를 복사했어요. 부모님께 전달해 주세요. 링크는 7일 후 만료돼요.')));
-    } else if (result.kakaoError) {
-      openSheet('부모님 초대', (root) => root.append(info('카카오톡 설정을 찾지 못해 기기의 공유 화면으로 전달했어요. 운영 환경에 카카오 JavaScript 키를 연결하면 카카오톡 친구 선택 화면이 바로 열려요.')));
-    }
+    showShareFeedback(result, '부모님 초대');
   } catch (error) {
     if (error?.name === 'AbortError') return;
     openSheet('부모님 초대', (root) => root.append(info(error.message || '초대 링크를 만들지 못했어요.')));
@@ -508,11 +529,7 @@ function handleAction(action) {
   if (action === 'consult') return openConsultation();
   if (action === 'inheritance') return requireResult() && go(16);
   if (action === 'invite') return inviteParent();
-  if (action === 'logout') {
-    localStorage.removeItem(SESSION_KEY);
-    localStorage.removeItem('plus-parent-result-complete');
-    return shell?.showStart?.();
-  }
+  if (action === 'logout') return undefined;
 }
 
 function renderCategory(label) {
@@ -574,19 +591,10 @@ document.addEventListener('click', (event) => {
   }
   const action = event.target.closest('[data-service-action]')?.dataset.serviceAction;
   if (action) handleAction(action);
-  if (event.target.closest('[data-logout]')) {
-    localStorage.removeItem(SESSION_KEY);
-    localStorage.removeItem('plus-parent-result-complete');
-  }
 });
 
 document.addEventListener('silver:share-complete', (event) => {
-  const result = event.detail;
-  if (result?.method === 'clipboard') {
-    openSheet('결과 공유', (root) => root.append(info('암호화된 결과 링크를 복사했어요. 링크는 7일 후 만료돼요.')));
-  } else if (result?.kakaoError) {
-    openSheet('결과 공유', (root) => root.append(info('카카오톡 설정을 찾지 못해 기기의 공유 화면으로 전달했어요. 운영 환경에 카카오 JavaScript 키를 연결하면 카카오톡 친구 선택 화면이 바로 열려요.')));
-  }
+  showShareFeedback(event.detail);
 });
 
 document.addEventListener('silver:share-error', (event) => {

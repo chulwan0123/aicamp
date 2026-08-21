@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { shareResult } from '../js/kakao-share.js';
+import { preloadKakaoShare, prepareResultShare, shareResult } from '../js/kakao-share.js';
 
 test('설정된 카카오 SDK로 암호화 결과 링크를 보낸다', async (t) => {
   let initializedWith;
@@ -39,7 +39,12 @@ test('설정된 카카오 SDK로 암호화 결과 링크를 보낸다', async (t
   };
 
   const session = { advice: { familyNote: '가족과 결과를 확인해 보세요.' } };
-  const result = await shareResult(session);
+  await preloadKakaoShare();
+  await prepareResultShare(session);
+  template = undefined;
+  const resultPromise = shareResult(session);
+  assert.ok(template, '준비된 공유는 클릭 호출 안에서 즉시 카카오 SDK를 실행해야 한다');
+  const result = await resultPromise;
   assert.equal(result.method, 'kakao');
   assert.equal(initializedWith, 'public-js-key');
   assert.equal(template.objectType, 'feed');

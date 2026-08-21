@@ -7,9 +7,14 @@ import {
   readCookie,
   safeNickname,
   sealSession,
+  SESSION_MAX_AGE,
 } from '../api/_lib/kakaoAuth.js';
 
 const secret = 'a-secure-test-secret-that-is-longer-than-thirty-two-characters';
+
+test('카카오 로그인은 브라우저를 다시 열어도 30일 동안 유지한다', () => {
+  assert.equal(SESSION_MAX_AGE, 60 * 60 * 24 * 30);
+});
 
 test('카카오 세션은 암호화해 복원하고 만료 시 거부한다', () => {
   const now = Date.now();

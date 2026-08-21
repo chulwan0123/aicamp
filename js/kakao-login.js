@@ -1,5 +1,4 @@
 const shell = window.SILVER_SHELL;
-const ANALYSIS_SESSION_KEY = 'silver-analysis-session-v2';
 const authState = { authenticated: false, user: null };
 
 function syncAuthUi() {
@@ -50,8 +49,6 @@ async function logout() {
   try {
     await fetch('./api/auth/logout', { method: 'POST', credentials: 'same-origin' });
   } finally {
-    localStorage.removeItem(ANALYSIS_SESSION_KEY);
-    localStorage.removeItem('plus-parent-result-complete');
     authState.authenticated = false;
     authState.user = null;
     window.SILVER_AUTH = authState;

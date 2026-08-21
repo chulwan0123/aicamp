@@ -5,6 +5,7 @@ import fs from 'node:fs';
 const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const source = fs.readFileSync(new URL('../js/service-features.js', import.meta.url), 'utf8');
 const shareSource = fs.readFileSync(new URL('../js/kakao-share.js', import.meta.url), 'utf8');
+const loginSource = fs.readFileSync(new URL('../js/kakao-login.js', import.meta.url), 'utf8');
 
 test('상담·초대·콘텐츠 메뉴 모듈이 기존 화면 뒤에 연결된다', () => {
   assert.match(html, /<script type="module" src="\.\/js\/service-features\.js"><\/script>/);
@@ -32,11 +33,17 @@ test('결과 공유와 부모님 초대는 카카오 공식 SDK 호출을 우선
   assert.doesNotMatch(shareSource, /[a-f0-9]{32}/i);
 });
 
-test('알림 설정과 로그아웃은 브라우저 기능과 저장 상태에 연결된다', () => {
+test('알림 설정과 로그아웃은 로그인만 종료하고 기기 분석 결과는 보존한다', () => {
   assert.match(source, /Notification\.requestPermission/);
   assert.match(source, /new Notification\('SILVER 알림 설정 완료'/);
-  assert.match(source, /localStorage\.removeItem\(SESSION_KEY\)/);
-  assert.match(source, /localStorage\.removeItem\('plus-parent-result-complete'\)/);
+  assert.doesNotMatch(loginSource, /localStorage\.removeItem/);
+  assert.doesNotMatch(source, /if \(event\.target\.closest\('\[data-logout\]'\)\) \{\s*localStorage\.removeItem/);
+});
+
+test('카카오 공유창이 차단돼도 링크 복사 안내를 표시한다', () => {
+  assert.match(source, /카카오톡 공유창을 열었어요/);
+  assert.match(source, /공유 링크 복사하기/);
+  assert.match(shareSource, /preparedKakaoShare/);
 });
 
 test('만료되거나 변조된 공유 링크 오류를 사용자에게 보여준다', () => {
