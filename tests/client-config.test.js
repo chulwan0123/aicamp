@@ -15,9 +15,18 @@ test('카카오 키가 없으면 클라이언트 설정은 미연결 상태만 �
 });
 
 test('카카오 JavaScript 키는 설정된 경우에만 SDK 초기화용으로 반환한다', () => {
-  const config = clientConfig({ KAKAO_JAVASCRIPT_KEY: 'public-js-key' });
+  const config = clientConfig({
+    KAKAO_JAVASCRIPT_KEY: 'public-js-key',
+    KAKAO_REDIRECT_URI: 'https://hanwha-ai-camp-silver.vercel.app/api/auth/kakao/callback',
+  });
   assert.equal(config.kakao.configured, true);
   assert.equal(config.kakao.javascriptKey, 'public-js-key');
+  assert.equal(config.kakao.appUrl, 'https://hanwha-ai-camp-silver.vercel.app');
+});
+
+test('공유 기준 주소는 http·https 운영 origin만 노출한다', () => {
+  assert.equal(clientConfig({ PUBLIC_APP_URL: 'https://silver.example/path' }).kakao.appUrl, 'https://silver.example');
+  assert.equal('appUrl' in clientConfig({ PUBLIC_APP_URL: 'javascript:alert(1)' }).kakao, false);
 });
 
 test('클라이언트 설정 API는 GET만 허용하고 캐시하지 않는다', () => {

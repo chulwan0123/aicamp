@@ -1,4 +1,16 @@
 let kakaoSdkPromise;
+let kakaoConfigPromise;
+let preparedShare;
+
+const RESULT_HASHES = new Set([
+  '#result',
+  '#tax',
+  '#cashflow',
+  '#downsizing',
+  '#recommendation',
+  '#home-pension',
+  '#inheritance',
+]);
 
 const SHARE_COPY = {
   result: {
@@ -13,25 +25,53 @@ const SHARE_COPY = {
   },
 };
 
-export async function createResultLink(session) {
-  const response = await fetch('./api/share', {
+async function createShareToken(session) {
+  if (preparedShare?.advice === session?.advice) return preparedShare.promise;
+  const promise = fetch('./api/share', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ session }),
+  }).then(async (response) => {
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok || !body.token) throw new Error(body.error || '공유 링크를 만들지 못했어요.');
+    return body.token;
   });
-  const body = await response.json().catch(() => ({}));
-  if (!response.ok || !body.token) throw new Error(body.error || '공유 링크를 만들지 못했어요.');
-  const url = new URL(location.origin + location.pathname);
-  url.searchParams.set('r', body.token);
-  url.hash = 'result';
-  return { token: body.token, url: url.toString() };
+  preparedShare = { advice: session?.advice, promise };
+  promise.catch(() => {
+    if (preparedShare?.promise === promise) preparedShare = undefined;
+  });
+  return promise;
+}
+
+function resultHash(hash) {
+  const normalized = String(hash || '').startsWith('#') ? String(hash) : `#${hash || ''}`;
+  return RESULT_HASHES.has(normalized) ? normalized : '#result';
+}
+
+async function publicResultUrl() {
+  const config = await getKakaoConfig().catch(() => ({}));
+  if (config.appUrl) return new URL(config.appUrl);
+  return new URL(location.origin + location.pathname);
+}
+
+export async function createResultLink(session, options = {}) {
+  const [token, url] = await Promise.all([createShareToken(session), publicResultUrl()]);
+  url.searchParams.set('r', token);
+  url.hash = resultHash(options.hash);
+  return { token, url: url.toString() };
 }
 
 async function getKakaoConfig() {
-  const response = await fetch('./api/client-config', { cache: 'no-store' });
-  const body = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(body.error || '카카오톡 공유 설정을 확인하지 못했어요.');
-  return body.kakao || {};
+  if (kakaoConfigPromise) return kakaoConfigPromise;
+  kakaoConfigPromise = fetch('./api/client-config', { cache: 'no-store' }).then(async (response) => {
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(body.error || '카카오톡 공유 설정을 확인하지 못했어요.');
+    return body.kakao || {};
+  }).catch((error) => {
+    kakaoConfigPromise = undefined;
+    throw error;
+  });
+  return kakaoConfigPromise;
 }
 
 function appendKakaoSdk(config) {
@@ -72,7 +112,7 @@ async function openKakaoShare({ url, title, text, buttonTitle }) {
     content: {
       title,
       description: text,
-      imageUrl: new URL('./assets/og-silver-share.png', document.baseURI).toString(),
+      imageUrl: new URL('./assets/og-silver-share.png', url).toString(),
       imageWidth: 1200,
       imageHeight: 630,
       link: { webUrl: url, mobileWebUrl: url },
@@ -82,18 +122,55 @@ async function openKakaoShare({ url, title, text, buttonTitle }) {
   return { method: 'kakao', url };
 }
 
+export async function preloadKakaoShare() {
+  const config = await getKakaoConfig();
+  if (!config.configured || !config.javascriptKey) return false;
+  const Kakao = await appendKakaoSdk(config);
+  if (!Kakao.isInitialized()) Kakao.init(config.javascriptKey);
+  return true;
+}
+
+export function prepareResultShare(session) {
+  return createShareToken(session).then((token) => ({ token }));
+}
+
+function copyWithTextarea(value) {
+  if (!document.body?.appendChild || !document.execCommand) return false;
+  const textarea = document.createElement('textarea');
+  textarea.value = value;
+  textarea.setAttribute('readonly', '');
+  textarea.style.position = 'fixed';
+  textarea.style.opacity = '0';
+  document.body.appendChild(textarea);
+  textarea.select();
+  const copied = document.execCommand('copy');
+  textarea.remove();
+  return copied;
+}
+
 async function fallbackShare({ url, title, text }) {
   if (navigator.share) {
-    await navigator.share({ title, text, url });
-    return { method: 'native', url };
+    try {
+      await navigator.share({ title, text, url });
+      return { method: 'native', url };
+    } catch (error) {
+      if (error?.name === 'AbortError') throw error;
+    }
   }
-  if (!navigator.clipboard?.writeText) throw new Error('이 브라우저에서는 공유 링크를 복사할 수 없어요.');
-  await navigator.clipboard.writeText(url);
-  return { method: 'clipboard', url };
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(url);
+      return { method: 'clipboard', url };
+    } catch {
+      /* 권한이 제한된 WebView에서는 임시 입력 요소 복사를 시도한다. */
+    }
+  }
+  if (copyWithTextarea(url)) return { method: 'clipboard', url };
+  throw new Error('이 브라우저에서는 공유 링크를 복사할 수 없어요.');
 }
 
 export async function shareResult(session, options = {}) {
-  const shared = await createResultLink(session);
+  const shared = await createResultLink(session, { hash: options.hash });
   const preset = SHARE_COPY[options.purpose] || SHARE_COPY.result;
   const payload = {
     url: shared.url,

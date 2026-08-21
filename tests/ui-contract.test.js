@@ -16,7 +16,7 @@ test('공유 미리보기는 1200×630 전용 이미지와 일관된 OG 문구�
   assert.equal(ogImage.readUInt32BE(16), 1200);
   assert.equal(ogImage.readUInt32BE(20), 630);
   assert.match(html, /property="og:title" content="부모님 노후 준비, 함께 확인해요"/);
-  assert.match(html, /property="og:image" content="https:\/\/aicamp-sigma\.vercel\.app\/assets\/og-silver-share\.png"/);
+  assert.match(html, /property="og:image" content="https:\/\/hanwha-ai-camp-silver\.vercel\.app\/assets\/og-silver-share\.png"/);
   assert.match(html, /property="og:image:width" content="1200"/);
   assert.match(html, /name="twitter:card" content="summary_large_image"/);
   assert.match(engine, /purpose: 'result'/);
@@ -113,6 +113,19 @@ test('모바일 편집 필드는 iOS 포커스 확대를 막도록 16px 이상�
 test('결과 공유와 상담 버튼 글자는 AI 컨설팅 버튼과 같은 크기와 굵기다', () => {
   assert.match(html, /\.result-status \.ai-consult-button\{[^}]*font-size:17px/);
   assert.match(html, /\.result-cta \.share-primary,\.result-cta \.share-secondary\{font-size:17px;font-weight:700\}/);
+});
+
+test('결과 요약과 여섯 상세 화면에는 카카오 공유와 요약 복귀 동작이 함께 있다', () => {
+  for (let screen = 10; screen <= 16; screen += 1) {
+    const start = html.indexOf(`<section class="screen" data-screen="${screen}"`);
+    const end = html.indexOf('<section class="screen"', start + 1);
+    const fragment = html.slice(start, end < 0 ? undefined : end);
+    assert.match(fragment, /data-share/);
+    if (screen > 10) assert.match(fragment, /data-go="10">결과 요약으로 돌아가기/);
+  }
+  for (const hash of ['result', 'tax', 'cashflow', 'downsizing', 'recommendation', 'home-pension', 'inheritance']) {
+    assert.match(fs.readFileSync(new URL('../js/kakao-share.js', import.meta.url), 'utf8'), new RegExp(`'#${hash}'`));
+  }
 });
 
 test('마이페이지의 다섯 바로가기 메뉴 글자는 기존 16px보다 1.5px 작게 표시한다', () => {

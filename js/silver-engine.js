@@ -2,7 +2,7 @@ import { fmtKRW } from './format.js';
 import { openAddressSearch } from './address.js';
 import { lookupApartmentMarket, lookupOfficialPrice, lookupProperty } from './property.js';
 import { refineAnswerLabel } from './refine-fields.js';
-import { shareResult } from './kakao-share.js';
+import { preloadKakaoShare, prepareResultShare, shareResult } from './kakao-share.js';
 
 const SESSION_KEY = 'silver-analysis-session-v2';
 const shell = window.SILVER_SHELL;
@@ -829,6 +829,7 @@ async function runAnalysis() {
   state.advice = advice;
   renderAdvice(advice, properties[0], subject);
   persist();
+  prepareResultShare(state).catch((error) => console.warn('[silver] 공유 링크 준비 실패', error));
   return advice;
 }
 
@@ -1171,6 +1172,7 @@ function restore() {
     if (!saved?.advice || !saved?.property || !saved?.subject) return false;
     Object.assign(state, saved);
     renderAdvice(state.advice, state.property, state.subject);
+    prepareResultShare(state).catch((error) => console.warn('[silver] 공유 링크 준비 실패', error));
     return true;
   } catch (error) {
     console.warn('[silver] 저장 결과 복원 실패', error);
@@ -1180,7 +1182,7 @@ function restore() {
 
 async function share() {
   if (!state.advice) throw new Error('먼저 분석 결과를 확인해 주세요.');
-  return shareResult(state, { purpose: 'result' });
+  return shareResult(state, { purpose: 'result', hash: location.hash });
 }
 
 async function restoreShared() {
@@ -1192,6 +1194,7 @@ async function restoreShared() {
   Object.assign(state, body.session);
   renderAdvice(state.advice, state.property, state.subject);
   persist();
+  prepareResultShare(state).catch((error) => console.warn('[silver] 공유 링크 준비 실패', error));
   const clean = new URL(location.href);
   clean.searchParams.delete('r');
   history.replaceState({ screen: 'result' }, '', `${clean.pathname}${clean.search}${clean.hash}`);
@@ -1325,15 +1328,24 @@ document.addEventListener('click', (event) => {
     return;
   }
 
-  if (event.target.closest('[data-share]')) {
+  const shareButton = event.target.closest('[data-share]');
+  if (shareButton) {
     event.preventDefault();
+    if (shareButton.getAttribute('aria-busy') === 'true') return;
+    shareButton.setAttribute('aria-busy', 'true');
+    shareButton.disabled = true;
     share()
       .then((result) => document.dispatchEvent(new CustomEvent('silver:share-complete', { detail: result })))
       .catch((error) => {
         if (error?.name === 'AbortError') return;
         console.error('[silver] 공유 실패', error);
         document.dispatchEvent(new CustomEvent('silver:share-error', { detail: { message: error.message } }));
+      })
+      .finally(() => {
+        shareButton.removeAttribute('aria-busy');
+        shareButton.disabled = false;
       });
+    return;
   }
   if (event.target.closest('[data-reset-result]')) {
     localStorage.removeItem(SESSION_KEY);
@@ -1352,6 +1364,7 @@ document.addEventListener('change', () => {
 });
 
 const hasSharedToken = new URLSearchParams(location.search).has('r');
+preloadKakaoShare().catch((error) => console.warn('[silver] 카카오 SDK 준비 실패', error));
 if (hasSharedToken) {
   try {
     await restoreShared();
